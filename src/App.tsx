@@ -1,9 +1,9 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
 import DashboardPage from './pages/DashboardPage';
 import MapPage from './pages/MapPage';
+import './main.css'; // Import the main.css file
 
 const theme = createTheme({
   palette: {

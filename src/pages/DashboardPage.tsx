@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Box, Card, CardContent, LinearProgress, CircularProgress } from '@mui/material';
+import { Container, Typography, Grid, Box, Card, CardContent, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SpaceOccupancy from '../components/Dashboard/SpaceOccupancy';
 import { fetchSpaces } from '../services/api';
