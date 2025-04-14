@@ -12,6 +12,16 @@ export const fetchSpaces = async () => {
   }
 };
 
+export const fetchBuildingLocations = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/buildings`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching building locations:', error);
+    throw error;
+  }
+};
+
 export const updateSpaceOccupancy = async (id: string, currentOccupancy: number) => {
   try {
     const response = await axios.put(`${API_URL}/spaces/${id}/occupancy`, { currentOccupancy });

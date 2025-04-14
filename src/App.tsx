@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
 import DashboardPage from './pages/DashboardPage';
+import MapPage from './pages/MapPage';
 
 const theme = createTheme({
   palette: {
@@ -23,6 +24,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/map" element={<MapPage />} />
           {/* Add more routes as you develop */}
         </Routes>
       </Router>
