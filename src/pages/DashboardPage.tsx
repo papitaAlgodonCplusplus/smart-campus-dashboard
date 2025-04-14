@@ -18,10 +18,10 @@ interface Space {
 
 // Mock data for initial state
 const mockSpaceData = [
-  { _id: '1', name: 'Main Library', building: 'Library', floor: 1, capacity: 100, currentOccupancy: 45, lastUpdated: new Date() },
-  { _id: '2', name: 'Computer Lab', building: 'Tech Center', floor: 2, capacity: 30, currentOccupancy: 12, lastUpdated: new Date() },
-  { _id: '3', name: 'Study Room A', building: 'Student Center', floor: 1, capacity: 10, currentOccupancy: 8, lastUpdated: new Date() },
-  { _id: '4', name: 'Cafeteria', building: 'Commons', floor: 1, capacity: 150, currentOccupancy: 75, lastUpdated: new Date() }
+  { _id: '1', name: 'Biblioteca Principal', building: 'Biblioteca', floor: 1, capacity: 100, currentOccupancy: 45, lastUpdated: new Date() },
+  { _id: '2', name: 'Lab de Computación', building: 'Centro Tecnológico', floor: 2, capacity: 30, currentOccupancy: 12, lastUpdated: new Date() },
+  { _id: '3', name: 'Sala de Estudio A', building: 'Centro Estudiantil', floor: 1, capacity: 10, currentOccupancy: 8, lastUpdated: new Date() },
+  { _id: '4', name: 'Cafetería', building: 'Comedor', floor: 1, capacity: 150, currentOccupancy: 75, lastUpdated: new Date() }
 ];
 
 const DashboardPage: React.FC = () => {
@@ -39,7 +39,7 @@ const DashboardPage: React.FC = () => {
         setError(null);
       } catch (err) {
         console.error('Failed to fetch spaces', err);
-        setError('Failed to load spaces. Please try again later.');
+        setError('No se pudieron cargar los espacios. Por favor, inténtelo de nuevo más tarde.');
         // Keep the mock data if API fails
       } finally {
         setLoading(false);
@@ -52,11 +52,11 @@ const DashboardPage: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Campus Dashboard
+        Panel de Control del Campus
       </Typography>
       
       <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 3 }}>
-        Space Availability
+        Disponibilidad de Espacios
       </Typography>
       
       {error && (
