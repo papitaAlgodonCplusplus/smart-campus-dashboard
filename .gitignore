@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/smart-campus-api/node_modules
 /.pnp
 .pnp.js
 
