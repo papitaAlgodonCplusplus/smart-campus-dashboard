@@ -5,9 +5,10 @@ interface SpaceProps {
   name: string;
   currentOccupancy: number;
   maxCapacity: number;
+  sx?: React.CSSProperties;
 }
 
-const SpaceOccupancy: React.FC<SpaceProps> = ({ name, currentOccupancy, maxCapacity }) => {
+const SpaceOccupancy: React.FC<SpaceProps> = ({ name, currentOccupancy, maxCapacity, sx }) => {
   const occupancyPercentage = (currentOccupancy / maxCapacity) * 100;
   
   return (

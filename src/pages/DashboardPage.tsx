@@ -42,19 +42,18 @@ const hourlyData = [
 ];
 
 const DashboardPage: React.FC = () => {
-  const theme = useTheme();
   const [spaces, setSpaces] = useState<Space[]>(mockSpaceData);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Data for pie chart
   const pieData = [
     { name: 'Disponible', value: spaces.reduce((acc, space) => acc + (space.capacity - space.currentOccupancy), 0) },
     { name: 'Ocupado', value: spaces.reduce((acc, space) => acc + space.currentOccupancy, 0) }
   ];
-  
+
   const COLORS = ['#0f8', '#f08'];
-  
+
   // Simulate loading delay
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -62,7 +61,7 @@ const DashboardPage: React.FC = () => {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Dynamic glow effect
   useEffect(() => {
     const style = document.createElement('style');
@@ -92,19 +91,19 @@ const DashboardPage: React.FC = () => {
       }
     `;
     document.head.appendChild(style);
-    
+
     // Add Google Font
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;700&display=swap';
     document.head.appendChild(link);
-    
+
     return () => {
       document.head.removeChild(style);
       document.head.removeChild(link);
     };
   }, []);
-  
+
   // Fetch real data from API
   useEffect(() => {
     const getSpaces = async () => {
@@ -125,10 +124,10 @@ const DashboardPage: React.FC = () => {
         setTimeout(() => setLoading(false), 1000);
       }
     };
-    
+
     getSpaces();
   }, []);
-  
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -158,13 +157,13 @@ const DashboardPage: React.FC = () => {
     }
     return null;
   };
-  
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom className="with-glow">
         Dashboard de Ocupación - Campus UCR
       </Typography>
-      
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
           <div className="neon-loading"></div>
@@ -180,12 +179,12 @@ const DashboardPage: React.FC = () => {
           {/* Overview Stats */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid container>
-              <Card>
+              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+                  <Typography variant="h5" sx={{ mb: 0 }}>
                     Ocupación Total del Campus
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0 }}>
                     <Typography variant="body1">
                       {pieData[1].value} de {pieData[0].value + pieData[1].value} espacios ocupados
                     </Typography>
@@ -200,10 +199,10 @@ const DashboardPage: React.FC = () => {
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={80}
+                        outerRadius={65}
                         paddingAngle={5}
                         dataKey="value"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -215,9 +214,9 @@ const DashboardPage: React.FC = () => {
                 </CardContent>
               </Card>
             </Grid>
-            
+
             <Grid container>
-              <Card>
+              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 2 }}>
                     Ocupación por Hora
@@ -241,43 +240,43 @@ const DashboardPage: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
-          
+
           {/* Space Occupancy Cards */}
           <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
             Espacios del Campus
           </Typography>
-          
+
           <Grid container spacing={2}>
             {spaces.map((space) => (
               <Grid container key={space._id}>
-                <SpaceOccupancy 
-                  name={space.name} 
-                  currentOccupancy={space.currentOccupancy} 
-                  maxCapacity={space.capacity} 
+                <SpaceOccupancy
+                  name={space.name}
+                  currentOccupancy={space.currentOccupancy}
+                  maxCapacity={space.capacity}
                 />
               </Grid>
             ))}
           </Grid>
-          
+
           {/* Buildings Stats */}
           <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
             Estadísticas por Edificio
           </Typography>
-          
+
           <Grid container spacing={2}>
             {Array.from(new Set(spaces.map(space => space.building))).map((building, index) => {
               const buildingSpaces = spaces.filter(space => space.building === building);
               const totalCapacity = buildingSpaces.reduce((acc, space) => acc + space.capacity, 0);
               const totalOccupancy = buildingSpaces.reduce((acc, space) => acc + space.currentOccupancy, 0);
               const percentage = (totalOccupancy / totalCapacity) * 100;
-              
+
               let color = 'success';
               if (percentage > 80) color = 'error';
               else if (percentage > 50) color = 'warning';
-              
+
               return (
                 <Grid container key={index}>
-                  <Card>
+                  <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
                     <CardContent>
                       <Typography variant="h6" component="div" sx={{ mb: 1 }}>
                         {building}
@@ -287,8 +286,8 @@ const DashboardPage: React.FC = () => {
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
                         <Box sx={{ width: '100%', mr: 1 }}>
-                          <LinearProgress 
-                            variant="determinate" 
+                          <LinearProgress
+                            variant="determinate"
                             value={percentage}
                             color={color as "success" | "error" | "warning" | "primary" | "secondary" | "info" | undefined}
                           />
@@ -308,7 +307,7 @@ const DashboardPage: React.FC = () => {
               );
             })}
           </Grid>
-          
+
           {/* Current Time and Last Updated */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4, color: 'text.secondary' }}>
             <Typography variant="body2">
