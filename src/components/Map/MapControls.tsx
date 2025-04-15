@@ -62,69 +62,7 @@ const MapControls: React.FC<MapControlsProps> = ({
         Controles del Mapa
       </Typography>
       
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Tooltip title="Recorrido virtual">
-          <Button 
-            variant="outlined"
-            size="small"
-            onClick={onTourStart}
-            sx={{ 
-              fontSize: '0.7rem', 
-              borderColor: 'var(--neon-blue)',
-              color: 'var(--neon-blue)',
-              '&:hover': {
-                borderColor: 'var(--neon-primary)',
-                color: 'var(--neon-primary)',
-                boxShadow: '0 0 10px var(--neon-primary)'
-              }
-            }}
-          >
-            Recorrido
-          </Button>
-        </Tooltip>
-        
-        <Tooltip title="Reiniciar vista">
-          <Button 
-            variant="outlined"
-            size="small"
-            onClick={onReset}
-            sx={{ 
-              fontSize: '0.7rem',
-              borderColor: 'var(--neon-green)',
-              color: 'var(--neon-green)',
-              '&:hover': {
-                borderColor: 'var(--neon-primary)',
-                color: 'var(--neon-primary)',
-                boxShadow: '0 0 10px var(--neon-primary)'
-              }
-            }}
-          >
-            Reiniciar
-          </Button>
-        </Tooltip>
-      </Box>
-      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip title={showLabels ? "Ocultar etiquetas" : "Mostrar etiquetas"}>
-          <Button 
-            variant="outlined"
-            size="small"
-            onClick={onToggleBuildingLabels}
-            sx={{ 
-              fontSize: '0.7rem',
-              borderColor: showLabels ? 'var(--neon-primary)' : 'gray',
-              color: showLabels ? 'var(--neon-primary)' : 'gray',
-              '&:hover': {
-                borderColor: 'var(--neon-primary)',
-                color: 'var(--neon-primary)',
-                boxShadow: '0 0 10px var(--neon-primary)'
-              }
-            }}
-          >
-            {showLabels ? "Ocultar Nombres" : "Mostrar Nombres"}
-          </Button>
-        </Tooltip>
-        
         <Tooltip title={isNightMode ? "Modo día" : "Modo noche"}>
           <Button 
             variant="outlined"

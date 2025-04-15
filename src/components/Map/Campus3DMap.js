@@ -966,25 +966,7 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
   // Handle time of day change
   const handleTimeChange = (value) => {
     setTimeOfDay(value);
-    // Automatically set night mode
     setIsNightMode(value >= 50 && value < 100);
-  };
-  
-  // Reset camera to default view
-  const handleResetView = () => {
-    // Implementation depends on how you handle the camera
-    // This will be handled by the Camera component
-  };
-  
-  // Start campus tour
-  const handleStartTour = () => {
-    // Implementation for campus tour animation
-    // Could be implemented with camera animations
-  };
-  
-  // Toggle building labels
-  const handleToggleLabels = () => {
-    setShowLabels(prev => !prev);
   };
   
   // Handle camera position change
@@ -997,7 +979,7 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
   
   return (
     <div className="campus-3d-map-container">
-      <Canvas shadows camera={{ position: [30, 30, 30], fov: 60 }}>
+      <Canvas shadows camera={{ position: [30, 30, 30], fov: 60 }} sx={{ background: isNightMode ? '#0f172a' : '#f8fafc', height: '90vh' }}>
         <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
         <CameraController onCameraChange={handleCameraChange} />
         <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
@@ -1048,10 +1030,6 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
       
       {/* Map controls UI */}
       <MapControls 
-        onTourStart={handleStartTour}
-        onReset={handleResetView}
-        onToggleBuildingLabels={handleToggleLabels}
-        showLabels={showLabels}
         onToggleNightMode={handleToggleNightMode}
         isNightMode={isNightMode}
         timeOfDay={timeOfDay}
