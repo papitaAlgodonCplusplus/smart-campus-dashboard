@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Custom Building component
 const Building = ({ building, onClick }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
 
   // Calculate building dimensions
@@ -77,7 +77,6 @@ const Building = ({ building, onClick }) => {
           lineHeight={1}
           letterSpacing={0.02}
           textAlign="center"
-          font="/fonts/Orbitron-Regular.ttf"
           outlineWidth={0.05}
           outlineColor="#000"
         >
@@ -301,11 +300,14 @@ const CameraController = () => {
   />;
 };
 
-const Campus3DMap = ({ buildings = [], onBuildingSelect }) => {
-  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+const Campus3DMap = ({ buildings, onBuildingSelect }) => {
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+
+  // Make sure buildings is an array before using it
+  const buildingsArray = Array.isArray(buildings) ? buildings : [];
 
   const handleBuildingClick = (id) => {
-    const building = buildings.find(b => b.id === id) || null;
+    const building = buildingsArray.find(b => b.id === id) || null;
     setSelectedBuilding(building);
     if (building && onBuildingSelect) {
       onBuildingSelect(building);
@@ -322,7 +324,7 @@ const Campus3DMap = ({ buildings = [], onBuildingSelect }) => {
         <Ground />
         <CampusPaths />
         
-        {buildings.map(building => (
+        {buildingsArray.map(building => (
           <Building 
             key={building.id} 
             building={building} 

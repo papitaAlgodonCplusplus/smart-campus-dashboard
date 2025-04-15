@@ -1,4 +1,3 @@
-// Building interface
 interface Building {
   id: number;
   name: string;
@@ -10,10 +9,9 @@ interface Building {
   peakHours: string;
   rules: string;
   services: string[];
-  height?: number; // Building height in 3D space
-  width?: number;  // Building width in 3D space
-  depth?: number;  // Building depth in 3D space
-  color?: string;  // Building color
+  height: number;
+  width: number;
+  depth: number;
 }
 
 export default Building;
