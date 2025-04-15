@@ -5,7 +5,8 @@ import {
   Tooltip, 
   Slider, 
   Typography,
-  Button
+  Button,
+  Switch
 } from '@mui/material';
 
 // Define types for the controls props
@@ -17,7 +18,7 @@ interface MapControlsProps {
   onToggleNightMode: () => void;
   isNightMode: boolean;
   timeOfDay: number;
-  onTimeChange: (value: number) => void;
+  onTimeChange: (value: number | number[]) => void;
 }
 
 const MapControls: React.FC<MapControlsProps> = ({
@@ -38,6 +39,11 @@ const MapControls: React.FC<MapControlsProps> = ({
     { value: 75, label: '12 AM' },
     { value: 100, label: '6 AM' }
   ];
+  
+  // Handle slider change
+  const handleSliderChange = (event: Event, newValue: number | number[]) => {
+    onTimeChange(newValue);
+  };
   
   return (
     <Box 
@@ -62,26 +68,88 @@ const MapControls: React.FC<MapControlsProps> = ({
         Controles del Mapa
       </Typography>
       
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Tooltip title={isNightMode ? "Modo día" : "Modo noche"}>
-          <Button 
-            variant="outlined"
-            size="small"
-            onClick={onToggleNightMode}
-            sx={{ 
-              fontSize: '0.7rem',
-              borderColor: isNightMode ? 'var(--neon-blue)' : '#f80',
-              color: isNightMode ? 'var(--neon-blue)' : '#f80',
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+        <Button 
+          variant="outlined"
+          size="small"
+          onClick={onReset}
+          sx={{ 
+            fontSize: '0.7rem',
+            flex: 1,
+            borderColor: 'var(--neon-primary)',
+            color: 'var(--neon-primary)',
+            '&:hover': {
+              borderColor: 'var(--neon-primary)',
+              color: 'var(--neon-primary)',
+              boxShadow: '0 0 10px var(--neon-primary)'
+            }
+          }}
+        >
+          Reset Vista
+        </Button>
+        
+        <Button 
+          variant="outlined"
+          size="small"
+          onClick={onTourStart}
+          sx={{ 
+            fontSize: '0.7rem',
+            flex: 1,
+            borderColor: 'var(--neon-blue)',
+            color: 'var(--neon-blue)',
+            '&:hover': {
+              borderColor: 'var(--neon-blue)',
+              color: 'var(--neon-blue)',
+              boxShadow: '0 0 10px var(--neon-blue)'
+            }
+          }}
+        >
+          Tour Guiado
+        </Button>
+      </Box>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ color: 'white' }}>
+          Etiquetas
+        </Typography>
+        <Switch
+          checked={showLabels}
+          onChange={onToggleBuildingLabels}
+          size="small"
+          sx={{ 
+            '& .MuiSwitch-switchBase.Mui-checked': {
+              color: 'var(--neon-primary)',
               '&:hover': {
-                borderColor: 'var(--neon-primary)',
-                color: 'var(--neon-primary)',
-                boxShadow: '0 0 10px var(--neon-primary)'
-              }
-            }}
-          >
-            {isNightMode ? "Modo Día" : "Modo Noche"}
-          </Button>
-        </Tooltip>
+                backgroundColor: 'rgba(0, 255, 255, 0.08)',
+              },
+            },
+            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+              backgroundColor: 'var(--neon-primary)',
+            },
+          }}
+        />
+      </Box>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ color: 'white' }}>
+          {isNightMode ? "Modo Noche" : "Modo Día"}
+        </Typography>
+        <Switch
+          checked={isNightMode}
+          onChange={onToggleNightMode}
+          size="small"
+          sx={{ 
+            '& .MuiSwitch-switchBase.Mui-checked': {
+              color: 'var(--neon-blue)',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 140, 255, 0.08)',
+              },
+            },
+            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+              backgroundColor: 'var(--neon-blue)',
+            },
+          }}
+        />
       </Box>
       
       <Box sx={{ px: 1, pt: 1 }}>
@@ -89,8 +157,8 @@ const MapControls: React.FC<MapControlsProps> = ({
           Hora del día
         </Typography>
         <Slider
-          value={timeOfDay}
-          onChange={(_, value) => onTimeChange(value)}
+          value={typeof timeOfDay === 'number' ? timeOfDay : 0}
+          onChange={handleSliderChange}
           min={0}
           max={100}
           step={1}
@@ -107,6 +175,36 @@ const MapControls: React.FC<MapControlsProps> = ({
             }
           }}
         />
+      </Box>
+      
+      {/* Time cycle visualization */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        position: 'relative',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)', 
+        borderRadius: '20px',
+        padding: '5px 10px',
+        marginTop: 1
+      }}>
+        <Box sx={{ fontSize: '1rem', color: '#f59e0b' }}>☀️</Box>
+        <Box 
+          sx={{ 
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: `${timeOfDay}%`,
+            background: isNightMode 
+              ? 'linear-gradient(90deg, rgba(0, 0, 255, 0.2) 0%, rgba(8, 26, 81, 0.5) 100%)' 
+              : 'linear-gradient(90deg, rgba(173, 216, 230, 0.3) 0%, rgba(135, 206, 235, 0.4) 100%)',
+            borderRadius: '20px',
+            transition: 'width 0.3s ease',
+            zIndex: 0
+          }}
+        />
+        <Box sx={{ fontSize: '1rem', color: '#93c5fd', zIndex: 1 }}>🌙</Box>
       </Box>
     </Box>
   );

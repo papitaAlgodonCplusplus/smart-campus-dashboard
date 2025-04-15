@@ -3,6 +3,11 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Billboard, Sky, Cloud, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import MapControls from './MapControls';
+// Import coordinate files
+import { treeCoordinates } from '../../data/treeCoordinates';
+import { benchCoordinates } from '../../data/benchCoordinates.js';
+import { fountainCoordinates } from '../../data/fountainCoordinates';
+import { CAMPUS_CONSTANTS } from '../../data/campusConstants';
 
 // Enhanced Building component with windows
 const Building = ({ building, onClick, isNightMode }) => {
@@ -242,6 +247,310 @@ const Building = ({ building, onClick, isNightMode }) => {
         />
       </mesh>
     </group>
+  );
+};
+
+// Enhanced Campus3DMap
+const Campus3DMap = ({ buildings, onBuildingSelect }) => {
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [isNightMode, setIsNightMode] = useState(false);
+  const [timeOfDay, setTimeOfDay] = useState(CAMPUS_CONSTANTS.DEFAULT_TIME); // Default to noon (25)
+  const [showLabels, setShowLabels] = useState(true);
+  const [cameraPosition, setCameraPosition] = useState(CAMPUS_CONSTANTS.DEFAULT_CAMERA.position);
+
+  // Auto set night mode based on time of day
+  useEffect(() => {
+    // Night between 6PM and 6AM (timeOfDay between 50-100)
+    setIsNightMode(timeOfDay >= 50 && timeOfDay < 100);
+  }, [timeOfDay]);
+
+  // Handle building click
+  const handleBuildingClick = (id) => {
+    const building = Array.isArray(buildings) ? buildings.find(b => b.id === id) : null;
+    setSelectedBuilding(building);
+    if (building && onBuildingSelect) {
+      onBuildingSelect(building);
+    }
+  };
+
+  // Toggle night mode
+  const handleToggleNightMode = () => {
+    setIsNightMode(prev => !prev);
+    // Set appropriate time of day
+    setTimeOfDay(prev => isNightMode ? 25 : 75);
+  };
+
+  // Toggle building labels
+  const handleToggleBuildingLabels = () => {
+    setShowLabels(prev => !prev);
+  };
+
+  // Handle time of day change
+  const handleTimeChange = (value) => {
+    setTimeOfDay(value);
+    setIsNightMode(value >= 50 && value < 100);
+  };
+
+  // Handle camera position change
+  const handleCameraChange = (position) => {
+    setCameraPosition(position);
+  };
+
+  // Reset view to default
+  const handleReset = () => {
+    setCameraPosition(CAMPUS_CONSTANTS.DEFAULT_CAMERA.position);
+  };
+
+  // Start guided tour
+  const handleTourStart = () => {
+    // Implementation for tour functionality could go here
+    console.log("Starting campus tour");
+  };
+
+  // Make sure buildings is an array before using it
+  const buildingsArray = Array.isArray(buildings) ? buildings : [];
+
+  return (
+    <div className="campus-3d-map-container">
+      <Canvas shadows camera={{ 
+        position: CAMPUS_CONSTANTS.DEFAULT_CAMERA.position, 
+        fov: CAMPUS_CONSTANTS.DEFAULT_CAMERA.fov 
+      }} className="canvas">
+        <ambientLight intensity={0.4} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
+        <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
+        <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
+        <CameraController onCameraChange={handleCameraChange} />
+
+        {/* Sky and environment */}
+        <EnhancedSky isNightMode={isNightMode} timeOfDay={timeOfDay} />
+
+        {/* Ground and paths */}
+        <Ground />
+        <CampusPaths isNightMode={isNightMode} />
+
+        {/* Campus buildings */}
+        {buildingsArray.map(building => (
+          <Building
+            key={building.id}
+            building={building}
+            onClick={handleBuildingClick}
+            isNightMode={isNightMode}
+          />
+        ))}
+
+        {/* Trees - using imported coordinates */}
+        {treeCoordinates.map((tree, index) => (
+          <Tree
+            key={`tree-${index}`}
+            position={tree.position}
+            scale={tree.scale}
+          />
+        ))}
+
+        {/* Benches - using imported coordinates */}
+        {benchCoordinates.map((bench, index) => (
+          <Bench
+            key={`bench-${index}`}
+            position={bench.position}
+            rotation={bench.rotation}
+          />
+        ))}
+
+        {/* Fountains - using imported coordinates */}
+        {fountainCoordinates.map((fountain, index) => (
+          <Fountain
+            key={`fountain-${index}`}
+            position={fountain.position}
+          />
+        ))}
+      </Canvas>
+
+      {/* Map controls UI */}
+      <MapControls
+        onTourStart={handleTourStart}
+        onReset={handleReset}
+        onToggleBuildingLabels={handleToggleBuildingLabels}
+        showLabels={showLabels}
+        onToggleNightMode={handleToggleNightMode}
+        isNightMode={isNightMode}
+        timeOfDay={timeOfDay}
+        onTimeChange={handleTimeChange}
+      />
+
+      {/* Building info panel */}
+      {selectedBuilding && (
+        <BuildingInfoPanel
+          building={selectedBuilding}
+          onClose={() => setSelectedBuilding(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Campus3DMap;
+
+// Info panel displayed when a building is selected
+const BuildingInfoPanel = ({ building, onClose }) => {
+  if (!building) return null;
+
+  const occupancyPercentage = Math.round((building.currentOccupancy / building.capacity) * 100);
+
+  // Get occupancy status and color
+  let statusColor, statusText;
+  if (occupancyPercentage < 40) {
+    statusColor = '#0f8';
+    statusText = 'Baja';
+  } else if (occupancyPercentage < 70) {
+    statusColor = '#f80';
+    statusText = 'Media';
+  } else {
+    statusColor = '#f08';
+    statusText = 'Alta';
+  }
+
+  return (
+    <div className="building-info-panel">
+      <button className="close-button" onClick={onClose}>×</button>
+      <h2>{building.name}</h2>
+      <p>{building.info}</p>
+
+      <div className="info-section">
+        <h3>Ocupación Actual</h3>
+        <div className="progress-container">
+          <div
+            className="progress-bar"
+            style={{
+              width: `${occupancyPercentage}%`,
+              backgroundColor: statusColor,
+              boxShadow: `0 0 10px ${statusColor}`
+            }}
+          ></div>
+        </div>
+        <div className="occupancy-stats">
+          <span style={{ color: statusColor }}>
+            {building.currentOccupancy}/{building.capacity} ({occupancyPercentage}%)
+          </span>
+          <span style={{ color: statusColor }}>{statusText}</span>
+        </div>
+      </div>
+
+      <div className="info-section">
+        <h3>Horario</h3>
+        <p>{building.openHours}</p>
+      </div>
+
+      <div className="info-section">
+        <h3>Horas Pico</h3>
+        <p>{building.peakHours}</p>
+      </div>
+
+      <div className="info-section">
+        <h3>Reglas</h3>
+        <p>{building.rules}</p>
+      </div>
+
+      <div className="info-section">
+        <h3>Servicios</h3>
+        <p>{Array.isArray(building.services) ? building.services.join(", ") : "No services available"}</p>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced CameraController
+const CameraController = ({ onCameraChange }) => {
+  const { camera, gl } = useThree();
+  const controlsRef = useRef();
+
+  useEffect(() => {
+    camera.position.set(30, 30, 30);
+    camera.lookAt(0, 0, 0);
+
+    if (onCameraChange) {
+      onCameraChange(camera.position);
+    }
+  }, [camera, onCameraChange]);
+
+  useFrame(() => {
+    if (controlsRef.current && onCameraChange) {
+      onCameraChange(camera.position);
+    }
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      args={[camera, gl.domElement]}
+      enableDamping
+      dampingFactor={0.1}
+      rotateSpeed={0.5}
+      minDistance={10}
+      maxDistance={150}
+      maxPolarAngle={Math.PI / 2 - 0.1} // Prevent camera from going below ground level
+    />
+  );
+};
+
+// Custom scene lighting
+const SceneLighting = ({ isNightMode, timeOfDay }) => {
+  // Determine light intensities based on time of day/night mode
+  const ambientIntensity = isNightMode ? 0.1 : 0.4;
+
+  // Sunlight intensity based on time of day
+  const sunIntensity = () => {
+    if (isNightMode) return 0.1;
+
+    const normalizedTime = (timeOfDay % 100) / 100; // 0 to 1
+    // Highest at noon (25%), lowest at midnight (75%)
+    return Math.max(0.2, Math.sin(normalizedTime * Math.PI * 2 + Math.PI / 2) * 0.8 + 0.2);
+  };
+
+  // Sun position based on time of day
+  const sunPosition = () => {
+    const normalizedTime = (timeOfDay % 100) / 100; // 0 to 1
+    const angle = normalizedTime * Math.PI * 2; // 0 to 2π
+
+    const height = Math.sin(angle + Math.PI / 2) * 100;
+    const xz = Math.cos(angle + Math.PI / 2) * 100;
+
+    return [xz, Math.max(5, height), xz];
+  };
+
+  // Moonlight for night
+  const moonlightColor = '#8fb3ff'; // Slight blue tint for moonlight
+
+  return (
+    <>
+      {/* Ambient light */}
+      <ambientLight intensity={ambientIntensity} color={isNightMode ? moonlightColor : '#ffffff'} />
+
+      {/* Directional light (sun/moon) */}
+      <directionalLight
+        position={sunPosition()}
+        intensity={sunIntensity()}
+        color={isNightMode ? moonlightColor : '#ffffff'}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={100}
+        shadow-camera-left={-50}
+        shadow-camera-right={50}
+        shadow-camera-top={50}
+        shadow-camera-bottom={-50}
+      />
+
+      {/* Night lights around campus */}
+      {isNightMode && (
+        <>
+          <pointLight position={[0, 10, 0]} intensity={0.3} color="#0ff" />
+          <pointLight position={[20, 5, 20]} intensity={0.2} color="#f0f" />
+          <pointLight position={[-20, 5, -20]} intensity={0.2} color="#0f8" />
+          <pointLight position={[40, 5, -30]} intensity={0.2} color="#f80" />
+          <pointLight position={[-40, 5, 30]} intensity={0.2} color="#0ff" />
+        </>
+      )}
+    </>
   );
 };
 
@@ -615,376 +924,4 @@ const Stars = () => {
       </points>
     </group>
   );
-};
-
-// Enhanced CameraController
-const CameraController = ({ onCameraChange }) => {
-  const { camera, gl } = useThree();
-  const controlsRef = useRef();
-
-  useEffect(() => {
-    camera.position.set(30, 30, 30);
-    camera.lookAt(0, 0, 0);
-
-    if (onCameraChange) {
-      onCameraChange(camera.position);
-    }
-  }, [camera, onCameraChange]);
-
-  useFrame(() => {
-    if (controlsRef.current && onCameraChange) {
-      onCameraChange(camera.position);
-    }
-  });
-
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      args={[camera, gl.domElement]}
-      enableDamping
-      dampingFactor={0.1}
-      rotateSpeed={0.5}
-      minDistance={10}
-      maxDistance={150}
-      maxPolarAngle={Math.PI / 2 - 0.1} // Prevent camera from going below ground level
-    />
-  );
-};
-
-// Custom scene lighting
-const SceneLighting = ({ isNightMode, timeOfDay }) => {
-  // Determine light intensities based on time of day/night mode
-  const ambientIntensity = isNightMode ? 0.1 : 0.4;
-
-  // Sunlight intensity based on time of day
-  const sunIntensity = () => {
-    if (isNightMode) return 0.1;
-
-    const normalizedTime = (timeOfDay % 100) / 100; // 0 to 1
-    // Highest at noon (25%), lowest at midnight (75%)
-    return Math.max(0.2, Math.sin(normalizedTime * Math.PI * 2 + Math.PI / 2) * 0.8 + 0.2);
-  };
-
-  // Sun position based on time of day
-  const sunPosition = () => {
-    const normalizedTime = (timeOfDay % 100) / 100; // 0 to 1
-    const angle = normalizedTime * Math.PI * 2; // 0 to 2π
-
-    const height = Math.sin(angle + Math.PI / 2) * 100;
-    const xz = Math.cos(angle + Math.PI / 2) * 100;
-
-    return [xz, Math.max(5, height), xz];
-  };
-
-  // Moonlight for night
-  const moonlightColor = '#8fb3ff'; // Slight blue tint for moonlight
-
-  return (
-    <>
-      {/* Ambient light */}
-      <ambientLight intensity={ambientIntensity} color={isNightMode ? moonlightColor : '#ffffff'} />
-
-      {/* Directional light (sun/moon) */}
-      <directionalLight
-        position={sunPosition()}
-        intensity={sunIntensity()}
-        color={isNightMode ? moonlightColor : '#ffffff'}
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-far={100}
-        shadow-camera-left={-50}
-        shadow-camera-right={50}
-        shadow-camera-top={50}
-        shadow-camera-bottom={-50}
-      />
-
-      {/* Night lights around campus */}
-      {isNightMode && (
-        <>
-          <pointLight position={[0, 10, 0]} intensity={0.3} color="#0ff" />
-          <pointLight position={[20, 5, 20]} intensity={0.2} color="#f0f" />
-          <pointLight position={[-20, 5, -20]} intensity={0.2} color="#0f8" />
-          <pointLight position={[40, 5, -30]} intensity={0.2} color="#f80" />
-          <pointLight position={[-40, 5, 30]} intensity={0.2} color="#0ff" />
-        </>
-      )}
-    </>
-  );
-};
-
-// Info panel displayed when a building is selected
-const BuildingInfoPanel = ({ building, onClose }) => {
-  if (!building) return null;
-
-  const occupancyPercentage = Math.round((building.currentOccupancy / building.capacity) * 100);
-
-  // Get occupancy status and color
-  let statusColor, statusText;
-  if (occupancyPercentage < 40) {
-    statusColor = '#0f8';
-    statusText = 'Baja';
-  } else if (occupancyPercentage < 70) {
-    statusColor = '#f80';
-    statusText = 'Media';
-  } else {
-    statusColor = '#f08';
-    statusText = 'Alta';
-  }
-
-  return (
-    <div className="building-info-panel">
-      <button className="close-button" onClick={onClose}>×</button>
-      <h2>{building.name}</h2>
-      <p>{building.info}</p>
-
-      <div className="info-section">
-        <h3>Ocupación Actual</h3>
-        <div className="progress-container">
-          <div
-            className="progress-bar"
-            style={{
-              width: `${occupancyPercentage}%`,
-              backgroundColor: statusColor,
-              boxShadow: `0 0 10px ${statusColor}`
-            }}
-          ></div>
-        </div>
-        <div className="occupancy-stats">
-          <span style={{ color: statusColor }}>
-            {building.currentOccupancy}/{building.capacity} ({occupancyPercentage}%)
-          </span>
-          <span style={{ color: statusColor }}>{statusText}</span>
-        </div>
-      </div>
-
-      <div className="info-section">
-        <h3>Horario</h3>
-        <p>{building.openHours}</p>
-      </div>
-
-      <div className="info-section">
-        <h3>Horas Pico</h3>
-        <p>{building.peakHours}</p>
-      </div>
-
-      <div className="info-section">
-        <h3>Reglas</h3>
-        <p>{building.rules}</p>
-      </div>
-
-      <div className="info-section">
-        <h3>Servicios</h3>
-        <p>{Array.isArray(building.services) ? building.services.join(", ") : "No services available"}</p>
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Campus3DMap
-const Campus3DMap = ({ buildings, onBuildingSelect }) => {
-  const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [isNightMode, setIsNightMode] = useState(false);
-  const [timeOfDay, setTimeOfDay] = useState(25); // Default to noon (25)
-  const [cameraPosition, setCameraPosition] = useState([30, 30, 30]);
-
-  // Auto set night mode based on time of day
-  useEffect(() => {
-    // Night between 6PM and 6AM (timeOfDay between 50-100)
-    setIsNightMode(timeOfDay >= 50 && timeOfDay < 100);
-  }, [timeOfDay]);
-
-  // Create random props positions based on building positions
-  const createEnvironmentProps = () => {
-    // Make sure buildings is an array before using it
-    const buildingsArray = Array.isArray(buildings) ? buildings : [];
-
-    // Generate trees positions
-    const trees = [];
-    const treeCount = 10;
-
-    for (let i = 0; i < treeCount; i++) {
-      // Random position within campus bounds
-      let x = (Math.random() * 100) - 100;
-      let z = (Math.random() * 100) - 100;
-      const scale = 0.0
-      trees.push({ position: [x, 0, z], scale });
-    }
-
-    // Generate benches near buildings
-    const benches = [];
-    const benchCount = 15;
-
-    buildingsArray.forEach(building => {
-      const buildingX = (building.position[1] - -84.05) * 500;
-      const buildingZ = (building.position[0] - 9.94) * 500;
-      const width = building.width || 5;
-      const depth = building.depth || 5;
-
-      // Add 1-2 benches near each building
-      const benchesPerBuilding = Math.floor(Math.random() * 2) + 1;
-
-      for (let i = 0; i < benchesPerBuilding; i++) {
-        // Position benches at a reasonable distance from buildings
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.max(width, depth) * 1.5;
-
-        const x = buildingX + Math.cos(angle) * distance;
-        const z = buildingZ + Math.sin(angle) * distance;
-
-        benches.push({
-          position: [x, -0.5, z],
-          rotation: Math.random() * Math.PI * 2
-        });
-      }
-    });
-
-    // Generate fountains in open areas
-    const fountains = [];
-    const fountainPositions = [
-      [-30, 0, 20],  // Central plaza
-      [40, 0, -30],  // Near engineering
-      [-20, 0, -50]  // Near library
-    ];
-
-    fountainPositions.forEach(position => {
-      // Check if fountain is too close to buildings
-      let tooClose = false;
-      buildingsArray.forEach(building => {
-        const buildingX = (building.position[1] - -84.05) * 500;
-        const buildingZ = (building.position[0] - 9.94) * 500;
-
-        const distX = Math.abs(position[0] - buildingX);
-        const distZ = Math.abs(position[2] - buildingZ);
-
-        if (distX < 15 && distZ < 15) {
-          tooClose = true;
-        }
-      });
-
-      if (!tooClose) {
-        fountains.push({ position });
-      }
-    });
-
-    return { trees, benches, fountains };
-  };
-
-  // Generate environment props
-  const environmentProps = createEnvironmentProps();
-
-  // Handle building click
-  const handleBuildingClick = (id) => {
-    const building = Array.isArray(buildings) ? buildings.find(b => b.id === id) : null;
-    setSelectedBuilding(building);
-    if (building && onBuildingSelect) {
-      onBuildingSelect(building);
-    }
-  };
-
-  // Toggle night mode
-  const handleToggleNightMode = () => {
-    setIsNightMode(prev => !prev);
-    // Set appropriate time of day
-    setTimeOfDay(prev => isNightMode ? 25 : 75);
-  };
-
-  // Handle time of day change
-  const handleTimeChange = (value) => {
-    setTimeOfDay(value);
-    setIsNightMode(value >= 50 && value < 100);
-  };
-
-  // Handle camera position change
-  const handleCameraChange = (position) => {
-    setCameraPosition(position);
-  };
-
-  // Make sure buildings is an array before using it
-  const buildingsArray = Array.isArray(buildings) ? buildings : [];
-
-  return (
-    <div className="campus-3d-map-container">
-      <Canvas shadows camera={{ position: [30, 30, 30], fov: 60 }} className="canvas">
-        <ambientLight intensity={0.5} color={isNightMode ? '#ffffff' : '#ffffff'} />
-        <directionalLight
-          position={[10, 10, 5]} // Adjusted for better lighting
-          intensity={isNightMode ? 0.5 : 1}
-          color={isNightMode ? '#ffffff' : '#ffffff'}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-          shadow-camera-far={100}
-          shadow-camera-left={-50}
-          shadow-camera-right={50}
-          shadow-camera-top={50}
-          shadow-camera-bottom={-50}
-        />
-        <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
-        <CameraController onCameraChange={handleCameraChange} />
-        <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
-
-        {/* Sky and environment */}
-        <EnhancedSky isNightMode={isNightMode} timeOfDay={timeOfDay} />
-
-        {/* Ground and paths */}
-        <Ground />
-        <CampusPaths isNightMode={isNightMode} />
-
-        {/* Campus buildings */}
-        {buildingsArray.map(building => (
-          <Building
-            key={building.id}
-            building={building}
-            onClick={handleBuildingClick}
-            isNightMode={isNightMode}
-          />
-        ))}
-
-        {/* Environmental props - trees */}
-        {environmentProps.trees.map((tree, index) => (
-          <Tree
-            key={`tree-${index}`}
-            position={tree.position}
-            scale={tree.scale}
-          />
-        ))}
-
-        {/* Benches */}
-        {environmentProps.benches.map((bench, index) => (
-          <Bench
-            key={`bench-${index}`}
-            position={bench.position}
-            rotation={bench.rotation}
-          />
-        ))}
-
-        {/* Fountains */}
-        {environmentProps.fountains.map((fountain, index) => (
-          <Fountain
-            key={`fountain-${index}`}
-            position={fountain.position}
-          />
-        ))}
-      </Canvas>
-
-      {/* Map controls UI */}
-      <MapControls
-        onToggleNightMode={handleToggleNightMode}
-        isNightMode={isNightMode}
-        timeOfDay={timeOfDay}
-        onTimeChange={handleTimeChange}
-      />
-
-      {/* Building info panel */}
-      {selectedBuilding && (
-        <BuildingInfoPanel
-          building={selectedBuilding}
-          onClose={() => setSelectedBuilding(null)}
-        />
-      )}
-    </div>
-  );
-};
-
-export default Campus3DMap;
+}

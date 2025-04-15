@@ -358,31 +358,6 @@ const MapPage: React.FC = () => {
               </Typography>
             }
           />
-          
-          <FormControlLabel
-            control={
-              <Switch 
-                checked={showLabels}
-                onChange={() => setShowLabels(!showLabels)}
-                sx={{ 
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: 'var(--neon-primary)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 255, 255, 0.08)',
-                    },
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: 'var(--neon-primary)',
-                  },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ color: showLabels ? 'var(--neon-primary)' : 'gray' }}>
-                Mostrar Etiquetas
-              </Typography>
-            }
-          />
         </Box>
       </Box>
       
