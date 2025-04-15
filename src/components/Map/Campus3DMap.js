@@ -8,6 +8,7 @@ import { treeCoordinates } from '../../data/treeCoordinates';
 import { benchCoordinates } from '../../data/benchCoordinates.js';
 import { fountainCoordinates } from '../../data/fountainCoordinates';
 import { CAMPUS_CONSTANTS } from '../../data/campusConstants';
+import './Campus3DMap.css';
 
 // Enhanced Building component with windows
 const Building = ({ building, onClick, isNightMode }) => {
@@ -78,9 +79,9 @@ const Building = ({ building, onClick, isNightMode }) => {
 
   // Scale position from Leaflet coordinates to 3D space
   const scaledPosition = [
-    (building.position[1] - -84.05) * 10000, // X (longitude)
+    (building.position[1] - -84.05) * 20000, // X (longitude)
     height / 2.5, // Y (height)
-    (building.position[0] - 9.94) * 10000 // Z (latitude)
+    (building.position[0] - 9.94) * 20000 // Z (latitude)
   ];
 
   return (
@@ -314,7 +315,7 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
     <div className="campus-3d-map-container">
       <Canvas shadows camera={{ 
         position: CAMPUS_CONSTANTS.DEFAULT_CAMERA.position, 
-        fov: CAMPUS_CONSTANTS.DEFAULT_CAMERA.fov 
+        fov: CAMPUS_CONSTANTS.DEFAULT_CAMERA.fov
       }} className="canvas">
         <ambientLight intensity={0.4} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
         <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
@@ -464,7 +465,7 @@ const CameraController = ({ onCameraChange }) => {
   const controlsRef = useRef();
 
   useEffect(() => {
-    camera.position.set(30, 30, 30);
+    camera.position.set(30, 30, 0);
     camera.lookAt(0, 0, 0);
 
     if (onCameraChange) {
@@ -708,9 +709,8 @@ const Ground = () => {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
         <planeGeometry args={[1000, 1000]} />
         <meshStandardMaterial
-          color="#94a3b8"
+          color="#54c754"
           roughness={0.9}
-          metalness={0.1}
         />
       </mesh>
     </>
@@ -721,19 +721,7 @@ const Ground = () => {
 const CampusPaths = ({ isNightMode }) => {
   // Define more detailed path network and memoize it
   const mainPaths = useMemo(() => [
-    // Main paths connecting major buildings
-    [-84.050, 9.937, -84.049, 9.936], // Library to Education Faculty
-    [-84.049, 9.936, -84.051, 9.939], // Education Faculty to Cafeteria
-    [-84.051, 9.939, -84.049, 9.938], // Cafeteria to General Studies
-    [-84.049, 9.938, -84.049, 9.941], // General Studies to Social Sciences
-    [-84.049, 9.941, -84.052, 9.937], // Social Sciences to Letters Faculty
-    [-84.052, 9.937, -84.052, 9.940], // Letters Faculty to Engineering Faculty
-    [-84.052, 9.940, -84.050, 9.937], // Engineering Faculty to Library
-
-    // Secondary paths
-    [-84.050, 9.937, -84.051, 9.939], // Direct Library to Cafeteria
-    [-84.049, 9.936, -84.049, 9.938], // Direct Education to General Studies
-    [-84.049, 9.938, -84.052, 9.937], // Direct General Studies to Letters
+    [-84.050, 9.937, -84.049, 9.936]
   ], []);
 
   // Convert path coordinates and create path meshes
@@ -741,10 +729,10 @@ const CampusPaths = ({ isNightMode }) => {
     <group>
       {mainPaths.map((path, index) => {
         // Convert coordinates to 3D space
-        const startX = (path[0] - -84.05) * 10000;
-        const startZ = (path[1] - 9.94) * 10000;
-        const endX = (path[2] - -84.05) * 10000;
-        const endZ = (path[3] - 9.94) * 10000;
+        const startX = (path[0] - -84.05) * 20000;
+        const startZ = (path[1] - 9.94) * 20000;
+        const endX = (path[2] - -84.05) * 20000;
+        const endZ = (path[3] - 9.94) * 20000;
 
         // Calculate midpoint, length and angle
         const midX = (startX + endX) / 2;

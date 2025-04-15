@@ -28,6 +28,7 @@ import {
   Legend
 } from 'recharts';
 
+
 // Interface for space data
 interface Space {
   _id: string;
@@ -42,12 +43,506 @@ interface Space {
 
 // Mock data for initial state and charts
 const mockSpaceData = [
-  { _id: '1', name: 'Biblioteca Principal', building: 'Biblioteca', floor: 1, capacity: 100, currentOccupancy: 45, lastUpdated: new Date(), position: [9.937368, -84.050815] as [number, number] },
-  { _id: '2', name: 'Lab de Computo', building: 'Centro Tecnológico', floor: 2, capacity: 30, currentOccupancy: 12, lastUpdated: new Date(), position: [9.939987, -84.051587] as [number, number] },
-  { _id: '3', name: 'Sala de Estudio A', building: 'Centro Estudiantil', floor: 1, capacity: 10, currentOccupancy: 8, lastUpdated: new Date(), position: [9.937889, -84.048725] as [number, number] },
-  { _id: '4', name: 'Cafetería', building: 'Comedor', floor: 1, capacity: 150, currentOccupancy: 75, lastUpdated: new Date(), position: [9.939028, -84.050881] as [number, number] },
-  { _id: '5', name: 'Auditorio Principal', building: 'Auditorio', floor: 1, capacity: 200, currentOccupancy: 65, lastUpdated: new Date(), position: [9.935941, -84.049742] as [number, number] },
-  { _id: '6', name: 'Gimnasio', building: 'Deportes', floor: 1, capacity: 80, currentOccupancy: 30, lastUpdated: new Date(), position: [9.941135, -84.048746] as [number, number] }
+  { 
+    _id: '1', 
+    name: 'Biblioteca Carlos Monge Alfaro', 
+    building: 'Biblioteca', 
+    floor: 1, 
+    capacity: 500, 
+    currentOccupancy: 237, 
+    lastUpdated: new Date(), 
+    position: [9.936058, -84.051060] as [number, number] 
+  },
+  { 
+    _id: '2', 
+    name: 'Facultad de Educación', 
+    building: 'Educación', 
+    floor: 1, 
+    capacity: 300, 
+    currentOccupancy: 142, 
+    lastUpdated: new Date(), 
+    position: [9.936004, -84.048674] as [number, number] 
+  },
+  { 
+    _id: '3', 
+    name: 'Comedor Estudiantil', 
+    building: 'Comedor', 
+    floor: 1, 
+    capacity: 400, 
+    currentOccupancy: 318, 
+    lastUpdated: new Date(), 
+    position: [9.937167, -84.053081] as [number, number] 
+  },
+  { 
+    _id: '4', 
+    name: 'Escuela de Estudios Generales', 
+    building: 'Estudios Generales', 
+    floor: 1, 
+    capacity: 600, 
+    currentOccupancy: 481, 
+    lastUpdated: new Date(), 
+    position: [9.936153, -84.050379] as [number, number] 
+  },
+  { 
+    _id: '5', 
+    name: 'Edificio de Aulas (Antigua Facultad de Ciencias Sociales)', 
+    building: 'Ciencias Sociales', 
+    floor: 1, 
+    capacity: 800, 
+    currentOccupancy: 325, 
+    lastUpdated: new Date(), 
+    position: [9.936731, -84.050758] as [number, number] 
+  },
+  { 
+    _id: '6', 
+    name: 'Facultad de Letras', 
+    building: 'Letras', 
+    floor: 1, 
+    capacity: 350, 
+    currentOccupancy: 187, 
+    lastUpdated: new Date(), 
+    position: [9.938592, -84.052863] as [number, number] 
+  },
+  { 
+    _id: '7', 
+    name: 'Facultad de Ingeniería (Edificio antiguo)', 
+    building: 'Ingeniería', 
+    floor: 1, 
+    capacity: 700, 
+    currentOccupancy: 492, 
+    lastUpdated: new Date(), 
+    position: [9.936173, -84.051970] as [number, number] 
+  },
+  { 
+    _id: '8', 
+    name: 'Facultad de Ciencias Económicas', 
+    building: 'Ciencias Económicas', 
+    floor: 1, 
+    capacity: 550, 
+    currentOccupancy: 320, 
+    lastUpdated: new Date(), 
+    position: [9.937149, -84.051689] as [number, number] 
+  },
+  { 
+    _id: '9', 
+    name: 'Facultad de Derecho', 
+    building: 'Derecho', 
+    floor: 1, 
+    capacity: 450, 
+    currentOccupancy: 270, 
+    lastUpdated: new Date(), 
+    position: [9.936368, -84.053911] as [number, number] 
+  },
+  { 
+    _id: '10', 
+    name: 'Biblioteca Luis Demetrio Tinoco', 
+    building: 'Biblioteca Tinoco', 
+    floor: 1, 
+    capacity: 480, 
+    currentOccupancy: 230, 
+    lastUpdated: new Date(), 
+    position: [9.936010, -84.052726] as [number, number] 
+  },
+  { 
+    _id: '11', 
+    name: 'Facultad de Medicina', 
+    building: 'Medicina', 
+    floor: 1, 
+    capacity: 700, 
+    currentOccupancy: 410, 
+    lastUpdated: new Date(), 
+    position: [9.938594, -84.050590] as [number, number] 
+  },
+  { 
+    _id: '12', 
+    name: 'Escuela de Química', 
+    building: 'Química', 
+    floor: 1, 
+    capacity: 400, 
+    currentOccupancy: 220, 
+    lastUpdated: new Date(), 
+    position: [9.937249, -84.048989] as [number, number] 
+  },
+  { 
+    _id: '13', 
+    name: 'Escuela de Física y Matemática', 
+    building: 'Física y Matemática', 
+    floor: 1, 
+    capacity: 350, 
+    currentOccupancy: 180, 
+    lastUpdated: new Date(), 
+    position: [9.936491, -84.051588] as [number, number] 
+  },
+  { 
+    _id: '14', 
+    name: 'Facultad de Bellas Artes', 
+    building: 'Bellas Artes', 
+    floor: 1, 
+    capacity: 300, 
+    currentOccupancy: 190, 
+    lastUpdated: new Date(), 
+    position: [9.936598, -84.048422] as [number, number] 
+  },
+  { 
+    _id: '15', 
+    name: 'Escuela de Artes Musicales', 
+    building: 'Artes Musicales', 
+    floor: 1, 
+    capacity: 250, 
+    currentOccupancy: 135, 
+    lastUpdated: new Date(), 
+    position: [9.937429, -84.048234] as [number, number] 
+  },
+  { 
+    _id: '16', 
+    name: 'Facultad de Farmacia', 
+    building: 'Farmacia', 
+    floor: 1, 
+    capacity: 380, 
+    currentOccupancy: 210, 
+    lastUpdated: new Date(), 
+    position: [9.938940, -84.049794] as [number, number] 
+  },
+  { 
+    _id: '17', 
+    name: 'Facultad de Microbiología', 
+    building: 'Microbiología', 
+    floor: 1, 
+    capacity: 320, 
+    currentOccupancy: 175, 
+    lastUpdated: new Date(), 
+    position: [9.938047, -84.049196] as [number, number] 
+  },
+  { 
+    _id: '18', 
+    name: 'Biblioteca de Ciencias de la Salud', 
+    building: 'Biblioteca Salud', 
+    floor: 1, 
+    capacity: 180, 
+    currentOccupancy: 85, 
+    lastUpdated: new Date(), 
+    position: [9.938394, -84.051333] as [number, number] 
+  },
+  { 
+    _id: '19', 
+    name: 'Escuela de Arquitectura', 
+    building: 'Arquitectura', 
+    floor: 1, 
+    capacity: 250, 
+    currentOccupancy: 160, 
+    lastUpdated: new Date(), 
+    position: [9.934783, -84.052608] as [number, number] 
+  },
+  { 
+    _id: '20', 
+    name: 'Edificio Administrativo A', 
+    building: 'Administrativo', 
+    floor: 1, 
+    capacity: 420, 
+    currentOccupancy: 280, 
+    lastUpdated: new Date(), 
+    position: [9.935491, -84.054193] as [number, number] 
+  },
+  { 
+    _id: '21', 
+    name: 'Centro de Informática', 
+    building: 'Informática', 
+    floor: 1, 
+    capacity: 150, 
+    currentOccupancy: 95, 
+    lastUpdated: new Date(), 
+    position: [9.937736, -84.052048] as [number, number] 
+  },
+  { 
+    _id: '22', 
+    name: 'Escuela de Ciencias de la Computación e Informática', 
+    building: 'ECCI', 
+    floor: 1, 
+    capacity: 280, 
+    currentOccupancy: 190, 
+    lastUpdated: new Date(), 
+    position: [9.937967, -84.051959] as [number, number] 
+  },
+  { 
+    _id: '23', 
+    name: 'Escuela de Biología', 
+    building: 'Biología', 
+    floor: 1, 
+    capacity: 300, 
+    currentOccupancy: 170, 
+    lastUpdated: new Date(), 
+    position: [9.937612, -84.049506] as [number, number] 
+  },
+  { 
+    _id: '24', 
+    name: 'Oficina de Bienestar y Salud', 
+    building: 'Bienestar y Salud', 
+    floor: 1, 
+    capacity: 120, 
+    currentOccupancy: 65, 
+    lastUpdated: new Date(), 
+    position: [9.935158, -84.052424] as [number, number] 
+  },
+  { 
+    _id: '25', 
+    name: 'FEUCR', 
+    building: 'Federación de Estudiantes', 
+    floor: 1, 
+    capacity: 80, 
+    currentOccupancy: 35, 
+    lastUpdated: new Date(), 
+    position: [9.937351, -84.053294] as [number, number] 
+  },
+  { 
+    _id: '26', 
+    name: 'Auditorio Abelardo Bonilla', 
+    building: 'Auditorio', 
+    floor: 1, 
+    capacity: 200, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.936408, -84.050290] as [number, number] 
+  },
+  { 
+    _id: '27', 
+    name: 'Facultad de Ciencias Agroalimentarias', 
+    building: 'Agroalimentarias', 
+    floor: 1, 
+    capacity: 350, 
+    currentOccupancy: 210, 
+    lastUpdated: new Date(), 
+    position: [9.939027, -84.048140] as [number, number] 
+  },
+  { 
+    _id: '28', 
+    name: 'Instituto Confucio', 
+    building: 'Confucio', 
+    floor: 1, 
+    capacity: 120, 
+    currentOccupancy: 60, 
+    lastUpdated: new Date(), 
+    position: [9.934765, -84.052973] as [number, number] 
+  },
+  { 
+    _id: '29', 
+    name: 'Museo de Insectos', 
+    building: 'Museo', 
+    floor: 1, 
+    capacity: 80, 
+    currentOccupancy: 35, 
+    lastUpdated: new Date(), 
+    position: [9.9375461, -84.0480803] as [number, number] 
+  },
+  { 
+    _id: '30', 
+    name: 'Teatro Universitario', 
+    building: 'Teatro', 
+    floor: 1, 
+    capacity: 250, 
+    currentOccupancy: 120, 
+    lastUpdated: new Date(), 
+    position: [9.9351473, -84.0505921] as [number, number] 
+  },
+  { 
+    _id: '31', 
+    name: 'Museo Integral de Cultura e Identidad Nacional', 
+    building: 'Museo CIICLA', 
+    floor: 1, 
+    capacity: 100, 
+    currentOccupancy: 40, 
+    lastUpdated: new Date(), 
+    position: [9.9387108, -84.0526236] as [number, number] 
+  },
+  { 
+    _id: '32', 
+    name: 'Soda de Generales', 
+    building: 'Soda', 
+    floor: 1, 
+    capacity: 150, 
+    currentOccupancy: 90, 
+    lastUpdated: new Date(), 
+    position: [9.9360374, -84.0504853] as [number, number] 
+  },
+  { 
+    _id: '33', 
+    name: 'Soda de Educación', 
+    building: 'Soda', 
+    floor: 1, 
+    capacity: 120, 
+    currentOccupancy: 70, 
+    lastUpdated: new Date(), 
+    position: [9.9362101, -84.048928] as [number, number] 
+  },
+  { 
+    _id: '34', 
+    name: 'Soda de Económicas', 
+    building: 'Soda', 
+    floor: 1, 
+    capacity: 130, 
+    currentOccupancy: 75, 
+    lastUpdated: new Date(), 
+    position: [9.9373607, -84.0519182] as [number, number] 
+  },
+  { 
+    _id: '35', 
+    name: 'Soda de Agroalimentarias', 
+    building: 'Soda', 
+    floor: 1, 
+    capacity: 100, 
+    currentOccupancy: 55, 
+    lastUpdated: new Date(), 
+    position: [9.9389716, -84.0484428] as [number, number] 
+  },
+  { 
+    _id: '36', 
+    name: 'Soda de Farmacia', 
+    building: 'Soda', 
+    floor: 1, 
+    capacity: 80, 
+    currentOccupancy: 45, 
+    lastUpdated: new Date(), 
+    position: [9.938747, -84.0496005] as [number, number] 
+  },
+  { 
+    _id: '37', 
+    name: 'Control de Ingreso Ciudad Universitaria', 
+    building: 'Control', 
+    floor: 1, 
+    capacity: 20, 
+    currentOccupancy: 10, 
+    lastUpdated: new Date(), 
+    position: [9.9365233, -84.0532717] as [number, number] 
+  },
+  { 
+    _id: '38', 
+    name: 'Centro de Asesoría Estudiantil', 
+    building: 'Asesoría', 
+    floor: 1, 
+    capacity: 60, 
+    currentOccupancy: 30, 
+    lastUpdated: new Date(), 
+    position: [9.9366332, -84.0488604] as [number, number] 
+  },
+  { 
+    _id: '39', 
+    name: 'Red Sismológica Nacional', 
+    building: 'Red Sismológica', 
+    floor: 1, 
+    capacity: 40, 
+    currentOccupancy: 25, 
+    lastUpdated: new Date(), 
+    position: [9.9380336, -84.052239] as [number, number] 
+  },
+  { 
+    _id: '40', 
+    name: 'CIICLA', 
+    building: 'Centro de Investigación', 
+    floor: 1, 
+    capacity: 70, 
+    currentOccupancy: 35, 
+    lastUpdated: new Date(), 
+    position: [9.9389097, -84.0527094] as [number, number] 
+  },
+  { 
+    _id: '41', 
+    name: 'Fuente de Cupido y el Cisne', 
+    building: 'Espacio Común', 
+    floor: 1, 
+    capacity: 0, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.9357604, -84.0511821] as [number, number] 
+  },
+  { 
+    _id: '42', 
+    name: 'Sección de Correo - UCR', 
+    building: 'Servicios', 
+    floor: 1, 
+    capacity: 30, 
+    currentOccupancy: 15, 
+    lastUpdated: new Date(), 
+    position: [9.9349976, -84.0508776] as [number, number] 
+  },
+  { 
+    _id: '43', 
+    name: 'Butterfly Garden', 
+    building: 'Jardín', 
+    floor: 1, 
+    capacity: 40, 
+    currentOccupancy: 20, 
+    lastUpdated: new Date(), 
+    position: [9.9370255, -84.050435] as [number, number] 
+  },
+  { 
+    _id: '44', 
+    name: 'Centro de Investigación en Protección de Cultivos', 
+    building: 'Investigación', 
+    floor: 1, 
+    capacity: 50, 
+    currentOccupancy: 30, 
+    lastUpdated: new Date(), 
+    position: [9.9389959, -84.0480981] as [number, number] 
+  },
+  { 
+    _id: '45', 
+    name: 'Equipo de Migración a Software Libre', 
+    building: 'Software Libre', 
+    floor: 1, 
+    capacity: 25, 
+    currentOccupancy: 15, 
+    lastUpdated: new Date(), 
+    position: [9.9377169, -84.0523201] as [number, number] 
+  },
+  { 
+    _id: '46', 
+    name: 'Monumento a Rodrigo Facio Brenes', 
+    building: 'Monumento', 
+    floor: 1, 
+    capacity: 0, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.9357298, -84.050846] as [number, number] 
+  },
+  { 
+    _id: '47', 
+    name: 'FEUCR', 
+    building: 'Federación de Estudiantes', 
+    floor: 2, 
+    capacity: 80, 
+    currentOccupancy: 40, 
+    lastUpdated: new Date(), 
+    position: [9.937351, -84.053294] as [number, number] 
+  },
+  { 
+    _id: '48', 
+    name: 'Monumento a Carlos Monge Alfaro', 
+    building: 'Monumento', 
+    floor: 1, 
+    capacity: 0, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.9356051, -84.0512781] as [number, number] 
+  },
+  { 
+    _id: '49', 
+    name: 'Monumento XXV Aniversario de Ingeniería Eléctrica', 
+    building: 'Monumento', 
+    floor: 1, 
+    capacity: 0, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.9356424, -84.0521828] as [number, number] 
+  },
+  { 
+    _id: '50', 
+    name: 'Soy UCR', 
+    building: 'Monumento', 
+    floor: 1, 
+    capacity: 0, 
+    currentOccupancy: 0, 
+    lastUpdated: new Date(), 
+    position: [9.9358579, -84.0514281] as [number, number] 
+  }
 ];
 
 // Enhanced hourly data with all spaces
@@ -99,6 +594,31 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [hourlyData, setHourlyData] = useState<any[]>([]);
   const [visibleLines, setVisibleLines] = useState<{ [key: string]: boolean }>({});
+
+  // Define space categories
+  const categories = {
+    facultades: ["Biblioteca", "Educación", "Estudios Generales", "Ciencias Sociales", "Letras", "Ingeniería", 
+                 "Ciencias Económicas", "Derecho", "Biblioteca Tinoco", "Medicina", "Química", "Física y Matemática", 
+                 "Bellas Artes", "Artes Musicales", "Farmacia", "Microbiología", "Biblioteca Salud", "Arquitectura", 
+                 "ECCI", "Biología", "Agroalimentarias"],
+    sodas: ["Comedor", "Soda", "Cafetería"],
+    amenidades: ["Administrativo", "Informática", "Bienestar y Salud", "Federación de Estudiantes", "Auditorio", 
+                 "Confucio", "Teatro", "Control", "Asesoría", "Red Sismológica", "Centro de Investigación", 
+                 "Servicios", "Investigación", "Software Libre"],
+    museos: ["Museo", "Jardín", "CIICLA"],
+    monumentos: ["Espacio Común", "Monumento"]
+  };
+
+  // Function to categorize spaces
+  const categorizeSpaces = () => {
+    return {
+      facultades: spaces.filter(space => categories.facultades.some(cat => space.building.includes(cat))),
+      sodas: spaces.filter(space => categories.sodas.some(cat => space.building.includes(cat))),
+      amenidades: spaces.filter(space => categories.amenidades.some(cat => space.building.includes(cat))),
+      museos: spaces.filter(space => categories.museos.some(cat => space.building.includes(cat))),
+      monumentos: spaces.filter(space => categories.monumentos.some(cat => space.building.includes(cat)))
+    };
+  };
 
   // Data for pie chart
   const pieData = [
@@ -258,6 +778,124 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Render a category chart
+  const renderCategoryChart = (categoryName: string, categorySpaces: Space[]) => {
+    if (categorySpaces.length === 0) return null;
+    
+    return (
+      <Grid container sx={{ mb: 4, width: '100%' }}>
+        <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%', width: '100%' }}>
+          <CardContent>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              Ocupación por Hora - {categoryName}
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={hourlyData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="hour" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                {categorySpaces.map((space, index) => {
+                  const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+                  return visibleLines[spaceKey] ? (
+                    <Line
+                      key={spaceKey}
+                      type="monotone"
+                      dataKey={spaceKey}
+                      name={space.name}
+                      stroke={SPACE_COLORS[index % SPACE_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6, onClick: () => handleViewInMap(spaceKey) }}
+                    />
+                  ) : null;
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+
+            {/* Filter chips for toggling line visibility */}
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}
+            >
+              {categorySpaces.map((space, index) => {
+                const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+                return (
+                  <Chip
+                    key={spaceKey}
+                    label={space.name}
+                    onClick={() => toggleLineVisibility(spaceKey)}
+                    sx={{
+                      color: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
+                      borderColor: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
+                      backgroundColor: visibleLines[spaceKey] ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
+                      boxShadow: visibleLines[spaceKey] ? `0 0 5px ${SPACE_COLORS[index % SPACE_COLORS.length]}` : 'none',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 255, 255, 0.2)',
+                      },
+                      mb: 1
+                    }}
+                    variant="outlined"
+                  />
+                );
+              })}
+            </Stack>
+          </CardContent>
+        </Card>
+      </Grid>
+    );
+  };
+
+  // Render space occupancy cards for a category
+  const renderCategorySpaces = (categoryName: string, categorySpaces: Space[]) => {
+    if (categorySpaces.length === 0) return null;
+    
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
+          {categoryName}
+        </Typography>
+
+        <Grid container spacing={2} sx={{ color: 'white' }}>
+          {categorySpaces.map((space) => (
+            <Grid container key={space._id}>
+              <Box sx={{ position: 'relative' }}>
+                <SpaceOccupancy
+                  name={space.name}
+                  currentOccupancy={space.currentOccupancy}
+                  maxCapacity={space.capacity}
+                  sx={{ color: 'white' }}
+                />
+                {space.position && (
+                  <Button
+                    size="small"
+                    onClick={() => handleViewInMap(space.name.toLowerCase().replace(/\s+/g, '_'))}
+                    sx={{
+                      position: 'absolute',
+                      right: '-5px',
+                      top: '4px',
+                      fontSize: '20px',
+                    }}
+                  >
+                    🌎
+                  </Button>
+                )}
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  };
+
+  // Categorize spaces
+  const categorizedSpaces = categorizeSpaces();
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom className="with-glow">
@@ -279,7 +917,7 @@ const DashboardPage: React.FC = () => {
           {/* Overview Stats */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid container>
-              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%' }}>
+              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%', width: '100%' }}>
                 <CardContent>
                   <Typography variant="h5" sx={{ mb: 1 }}>
                     Ocupación Total del Campus
@@ -314,107 +952,21 @@ const DashboardPage: React.FC = () => {
                 </CardContent>
               </Card>
             </Grid>
-
-            <Grid container sx={{ width: '100%' }}>
-              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%', width: '100%' }}>
-                <CardContent>
-                  <Typography variant="h5" sx={{ mb: 2 }}>
-                    Ocupación por Hora
-                  </Typography>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart
-                      data={hourlyData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      {spaces.map((space, index) => {
-                        const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
-                        return visibleLines[spaceKey] ? (
-                          <Line
-                            key={spaceKey}
-                            type="monotone"
-                            dataKey={spaceKey}
-                            name={space.name}
-                            stroke={SPACE_COLORS[index % SPACE_COLORS.length]}
-                            strokeWidth={2}
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6, onClick: () => handleViewInMap(spaceKey) }}
-                          />
-                        ) : null;
-                      })}
-                    </LineChart>
-                  </ResponsiveContainer>
-
-                  {/* Filter chips for toggling line visibility */}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}
-                  >
-                    {spaces.map((space, index) => {
-                      const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
-                      return (
-                        <Chip
-                          key={spaceKey}
-                          label={space.name}
-                          onClick={() => toggleLineVisibility(spaceKey)}
-                          sx={{
-                            color: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
-                            borderColor: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
-                            backgroundColor: visibleLines[spaceKey] ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
-                            boxShadow: visibleLines[spaceKey] ? `0 0 5px ${SPACE_COLORS[index % SPACE_COLORS.length]}` : 'none',
-                            '&:hover': {
-                              backgroundColor: 'rgba(0, 255, 255, 0.2)',
-                            },
-                            mb: 1
-                          }}
-                          variant="outlined"
-                        />
-                      );
-                    })}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
           </Grid>
 
-          {/* Space Occupancy Cards */}
-          <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
-            Espacios del Campus
-          </Typography>
+          {/* Separate category charts */}
+          {renderCategoryChart("Facultades", categorizedSpaces.facultades)}
+          {renderCategoryChart("Sodas", categorizedSpaces.sodas)}
+          {renderCategoryChart("Amenidades", categorizedSpaces.amenidades)}
+          {renderCategoryChart("Museos y Reservas", categorizedSpaces.museos)}
+          {renderCategoryChart("Monumentos", categorizedSpaces.monumentos)}
 
-          <Grid container spacing={2} sx={{ color: 'white' }}>
-            {spaces.map((space) => (
-              <Grid container key={space._id}>
-                <Box sx={{ position: 'relative' }}>
-                  <SpaceOccupancy
-                    name={space.name}
-                    currentOccupancy={space.currentOccupancy}
-                    maxCapacity={space.capacity}
-                    sx={{ color: 'white' }}
-                  />
-                  {space.position && (
-                    <Button
-                      size="small"
-                      onClick={() => handleViewInMap(space.name.toLowerCase().replace(/\s+/g, '_'))}
-                      sx={{
-                        position: 'absolute',
-                        right: '-5px',
-                        top: '4px',
-                        fontSize: '20px',
-                      }}
-                    >
-                      🌎
-                    </Button>
-                  )}
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+          {/* Separate category space occupancy cards */}
+          {renderCategorySpaces("Facultades", categorizedSpaces.facultades)}
+          {renderCategorySpaces("Sodas", categorizedSpaces.sodas)}
+          {renderCategorySpaces("Amenidades", categorizedSpaces.amenidades)}
+          {renderCategorySpaces("Museos y Reservas", categorizedSpaces.museos)}
+          {renderCategorySpaces("Monumentos", categorizedSpaces.monumentos)}
 
           {/* Buildings Stats */}
           <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
@@ -471,7 +1023,7 @@ const DashboardPage: React.FC = () => {
                         onClick={() => navigate(`/map?lat=${buildingPosition[0]}&lng=${buildingPosition[1]}&name=${building}`)}
                         sx={{
                           position: 'absolute',
-                          left: '13px',
+                          left: '5px',
                           bottom: '20px',
                           fontSize: '20px',
                         }}
