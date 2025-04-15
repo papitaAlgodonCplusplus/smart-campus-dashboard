@@ -833,7 +833,7 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
         const z = buildingZ + Math.sin(angle) * distance;
 
         benches.push({
-          position: [x, 0, z],
+          position: [x, -0.5, z],
           rotation: Math.random() * Math.PI * 2
         });
       }
@@ -905,7 +905,21 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
 
   return (
     <div className="campus-3d-map-container">
-      <Canvas shadows camera={{ position: [30, 30, 30], fov: 60 }} sx={{ background: isNightMode ? '#0f172a' : '#f8fafc', height: '90vh' }}>
+      <Canvas shadows camera={{ position: [30, 30, 30], fov: 60 }} className="canvas">
+        <ambientLight intensity={0.5} color={isNightMode ? '#ffffff' : '#ffffff'} />
+        <directionalLight
+          position={[10, 10, 5]} // Adjusted for better lighting
+          intensity={isNightMode ? 0.5 : 1}
+          color={isNightMode ? '#ffffff' : '#ffffff'}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-far={100}
+          shadow-camera-left={-50}
+          shadow-camera-right={50}
+          shadow-camera-top={50}
+          shadow-camera-bottom={-50}
+        />
         <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
         <CameraController onCameraChange={handleCameraChange} />
         <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
