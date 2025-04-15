@@ -112,6 +112,18 @@ function App() {
   // Load fonts when the app initializes
   React.useEffect(() => {
     loadFonts();
+    
+    // Add Leaflet CSS for maps
+    const linkLeaflet = document.createElement('link');
+    linkLeaflet.rel = 'stylesheet';
+    linkLeaflet.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    linkLeaflet.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+    linkLeaflet.crossOrigin = '';
+    document.head.appendChild(linkLeaflet);
+    
+    return () => {
+      document.head.removeChild(linkLeaflet);
+    };
   }, []);
 
   return (

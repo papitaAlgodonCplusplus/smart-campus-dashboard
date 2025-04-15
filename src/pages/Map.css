@@ -1,0 +1,184 @@
+/* Custom map styling for neon effect */
+.leaflet-container {
+  background-color: #020617 !important;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Custom popup styling */
+.leaflet-popup-content-wrapper {
+  background-color: rgba(5, 5, 25, 0.9);
+  color: white;
+  border: 1px solid var(--neon-primary);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  border-radius: 8px;
+  padding: 0;
+  min-width: 250px;
+}
+
+.leaflet-popup-tip {
+  background-color: var(--neon-primary);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+
+/* Neon popup styles */
+.neon-popup {
+  padding: 1rem;
+}
+
+.neon-popup-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: white;
+  text-shadow: 0 0 5px var(--neon-primary);
+  border-bottom: 1px solid var(--neon-primary);
+  padding-bottom: 0.5rem;
+}
+
+.neon-popup-content {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+}
+
+.neon-popup-section {
+  margin-top: 0.8rem;
+}
+
+.neon-popup-section-title {
+  font-weight: bold;
+  color: var(--neon-blue);
+  text-shadow: 0 0 3px var(--neon-blue);
+  margin-bottom: 0.3rem;
+}
+
+.occupancy-low {
+  color: var(--neon-green);
+  text-shadow: 0 0 3px var(--neon-green);
+}
+
+.occupancy-medium {
+  color: var(--neon-orange);
+  text-shadow: 0 0 3px var(--neon-orange);
+}
+
+.occupancy-high {
+  color: var(--neon-red);
+  text-shadow: 0 0 3px var(--neon-red);
+}
+
+.neon-popup-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-family: 'Rajdhani', monospace;
+}
+
+.neon-popup-progress {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.neon-popup-progress-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Controls styling */
+.leaflet-control-zoom {
+  border: 1px solid var(--neon-primary) !important;
+  border-radius: 8px !important;
+  background-color: rgba(5, 5, 25, 0.8) !important;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+.leaflet-control-zoom a {
+  color: var(--neon-primary) !important;
+  background-color: transparent !important;
+  border-color: var(--neon-primary) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  color: white !important;
+  background-color: rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Map pulsing effect for markers */
+.leaflet-marker-icon {
+  transition: transform 0.3s ease;
+}
+
+.leaflet-marker-icon:hover {
+  filter: drop-shadow(0 0 8px var(--neon-primary));
+}
+
+/* Custom scrollbar for popup */
+.leaflet-popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaflet-popup-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.leaflet-popup-content::-webkit-scrollbar-thumb {
+  background: var(--neon-primary);
+  border-radius: 3px;
+  box-shadow: 0 0 5px var(--neon-primary);
+}
+
+/* Map tiles styling for dark mode */
+.dark-mode .leaflet-tile {
+  filter: invert(1) contrast(1.5) brightness(0.8) hue-rotate(180deg);
+}
+
+/* Loading screen for the map */
+.map-loading-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(5, 5, 25, 0.9);
+  z-index: 1000;
+  border-radius: 8px;
+}
+
+.map-loading-text {
+  margin-top: 20px;
+  font-family: 'Orbitron', sans-serif;
+  color: var(--neon-primary);
+  text-shadow: 0 0 5px var(--neon-primary);
+}
+
+/* Building markers pulse animation */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.building-marker-high {
+  animation: marker-pulse 2s infinite;
+}
