@@ -30,6 +30,12 @@
   }
   
   /* Typography */
+  .MuiTypography-body2 {
+    font-family: 'Orbitron', sans-serif;
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  }
+
   h1, h2, h3, h4, h5, h6, .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6 {
     font-family: 'Orbitron', 'Rajdhani', sans-serif;
     text-transform: uppercase;
@@ -60,9 +66,13 @@
     letter-spacing: 1px;
     transition: all 0.3s ease;
     margin: 0 0.5rem;
+    background-color: transparent;
   }
   
   .MuiButton-root:hover {
+    background-color: transparent;
+    transform: scale(1.2);
+    transition: transform 0.3s ease;
     color: var(--neon-primary);
     text-shadow: 0 0 8px var(--neon-primary);
   }
@@ -74,11 +84,9 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: var(--neon-primary);
     transform: scaleX(0);
     transform-origin: bottom right;
     transition: transform 0.3s ease;
-    box-shadow: var(--glow-effect) var(--neon-primary);
   }
   
   .MuiButton-root:hover::after {
@@ -98,12 +106,13 @@
   }
   
   .MuiCard-root:hover {
-    box-shadow: 0 0 15px var(--neon-primary);
+    box-shadow: 0 0 15px var(--neon-);
     transform: translateY(-5px);
   }
   
   .MuiCardContent-root {
     background-color: #041020;
+    color: white;
     padding: 1.5rem;
   }
   

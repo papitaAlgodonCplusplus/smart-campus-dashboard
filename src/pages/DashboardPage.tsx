@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Box, Card, CardContent, LinearProgress } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import {
+  Container,
+  Typography,
+  Grid,
+  Box,
+  Card,
+  CardContent,
+  LinearProgress,
+  Button,
+  Chip,
+  Stack
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import SpaceOccupancy from '../components/Dashboard/SpaceOccupancy';
 import { fetchSpaces } from '../services/api';
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
 
 // Interface for space data
 interface Space {
@@ -14,37 +37,68 @@ interface Space {
   capacity: number;
   currentOccupancy: number;
   lastUpdated: Date;
+  position?: [number, number]; // Coordinates for map location
 }
 
 // Mock data for initial state and charts
 const mockSpaceData = [
-  { _id: '1', name: 'Biblioteca Principal', building: 'Biblioteca', floor: 1, capacity: 100, currentOccupancy: 45, lastUpdated: new Date() },
-  { _id: '2', name: 'Lab de Computación', building: 'Centro Tecnológico', floor: 2, capacity: 30, currentOccupancy: 12, lastUpdated: new Date() },
-  { _id: '3', name: 'Sala de Estudio A', building: 'Centro Estudiantil', floor: 1, capacity: 10, currentOccupancy: 8, lastUpdated: new Date() },
-  { _id: '4', name: 'Cafetería', building: 'Comedor', floor: 1, capacity: 150, currentOccupancy: 75, lastUpdated: new Date() },
-  { _id: '5', name: 'Auditorio Principal', building: 'Auditorio', floor: 1, capacity: 200, currentOccupancy: 65, lastUpdated: new Date() },
-  { _id: '6', name: 'Gimnasio', building: 'Deportes', floor: 1, capacity: 80, currentOccupancy: 30, lastUpdated: new Date() }
+  { _id: '1', name: 'Biblioteca Principal', building: 'Biblioteca', floor: 1, capacity: 100, currentOccupancy: 45, lastUpdated: new Date(), position: [9.937368, -84.050815] as [number, number] },
+  { _id: '2', name: 'Lab de Computo', building: 'Centro Tecnológico', floor: 2, capacity: 30, currentOccupancy: 12, lastUpdated: new Date(), position: [9.939987, -84.051587] as [number, number] },
+  { _id: '3', name: 'Sala de Estudio A', building: 'Centro Estudiantil', floor: 1, capacity: 10, currentOccupancy: 8, lastUpdated: new Date(), position: [9.937889, -84.048725] as [number, number] },
+  { _id: '4', name: 'Cafetería', building: 'Comedor', floor: 1, capacity: 150, currentOccupancy: 75, lastUpdated: new Date(), position: [9.939028, -84.050881] as [number, number] },
+  { _id: '5', name: 'Auditorio Principal', building: 'Auditorio', floor: 1, capacity: 200, currentOccupancy: 65, lastUpdated: new Date(), position: [9.935941, -84.049742] as [number, number] },
+  { _id: '6', name: 'Gimnasio', building: 'Deportes', floor: 1, capacity: 80, currentOccupancy: 30, lastUpdated: new Date(), position: [9.941135, -84.048746] as [number, number] }
 ];
 
-const hourlyData = [
-  { hour: '7AM', biblioteca: 20, laboratorio: 5, cafeteria: 30 },
-  { hour: '8AM', biblioteca: 35, laboratorio: 15, cafeteria: 45 },
-  { hour: '9AM', biblioteca: 50, laboratorio: 25, cafeteria: 40 },
-  { hour: '10AM', biblioteca: 65, laboratorio: 30, cafeteria: 35 },
-  { hour: '11AM', biblioteca: 70, laboratorio: 20, cafeteria: 60 },
-  { hour: '12PM', biblioteca: 75, laboratorio: 15, cafeteria: 80 },
-  { hour: '1PM', biblioteca: 80, laboratorio: 25, cafeteria: 90 },
-  { hour: '2PM', biblioteca: 65, laboratorio: 30, cafeteria: 60 },
-  { hour: '3PM', biblioteca: 60, laboratorio: 25, cafeteria: 45 },
-  { hour: '4PM', biblioteca: 55, laboratorio: 20, cafeteria: 50 },
-  { hour: '5PM', biblioteca: 45, laboratorio: 10, cafeteria: 65 },
-  { hour: '6PM', biblioteca: 30, laboratorio: 5, cafeteria: 40 },
-];
+// Enhanced hourly data with all spaces
+const generateHourlyData = (spaces: Space[]) => {
+  const hours = ['7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM', '9PM', '10PM'];
+
+  return hours.map(hour => {
+    // Create base object with hour
+    const dataPoint: any = { hour };
+
+    // Generate random but realistic occupancy data for each space
+    spaces.forEach(space => {
+      // Create a space key that's safe for object properties
+      const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+
+      // Generate percentage based on typical patterns
+      let basePercentage = 0;
+      const hourNum = parseInt(hour.replace('AM', '').replace('PM', ''));
+
+      // Morning hours gradually increase
+      if (hour.includes('AM')) {
+        basePercentage = hourNum * 8;
+      }
+      // Peak at noon
+      else if (hour === '12PM') {
+        basePercentage = 80;
+      }
+      // Afternoon has higher occupancy with gradual decline
+      else {
+        basePercentage = 75 - ((hourNum) * 10);
+      }
+
+      // Add some randomness for realism
+      const percentage = Math.min(100, Math.max(5,
+        basePercentage + (Math.random() * 20 - 10)
+      ));
+
+      dataPoint[spaceKey] = Math.round(percentage);
+    });
+
+    return dataPoint;
+  });
+};
 
 const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const [spaces, setSpaces] = useState<Space[]>(mockSpaceData);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [hourlyData, setHourlyData] = useState<any[]>([]);
+  const [visibleLines, setVisibleLines] = useState<{ [key: string]: boolean }>({});
 
   // Data for pie chart
   const pieData = [
@@ -53,6 +107,33 @@ const DashboardPage: React.FC = () => {
   ];
 
   const COLORS = ['#0f8', '#f08'];
+
+  // Line chart colors for spaces
+  const SPACE_COLORS = [
+    '#0ff', // cyan
+    '#0f8', // green
+    '#f0f', // magenta
+    '#f80', // orange
+    '#08f', // blue
+    '#ff0', // yellow
+    '#f08', // pink
+  ];
+
+  // Initialize hourly data and visible lines
+  useEffect(() => {
+    if (spaces.length > 0) {
+      const hourlyData = generateHourlyData(spaces);
+      setHourlyData(hourlyData);
+
+      // Initialize all lines as visible
+      const initialVisibleLines: { [key: string]: boolean } = {};
+      spaces.forEach(space => {
+        const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+        initialVisibleLines[spaceKey] = true;
+      });
+      setVisibleLines(initialVisibleLines);
+    }
+  }, [spaces]);
 
   // Simulate loading delay
   useEffect(() => {
@@ -148,14 +229,33 @@ const DashboardPage: React.FC = () => {
             {label}
           </Typography>
           {payload.map((entry: any, index: number) => (
-            <Typography key={`tooltip-${index}`} sx={{ color: entry.color, mb: 0.5 }}>
-              {entry.name}: {entry.value}%
-            </Typography>
+            <Box key={`tooltip-${index}`} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+              <Typography sx={{ color: entry.color, mr: 2 }}>
+                {entry.name.replace(/_/g, ' ')}: {entry.value}%
+              </Typography>
+            </Box>
           ))}
         </Box>
       );
     }
     return null;
+  };
+
+  // Toggle visibility of specific lines
+  const toggleLineVisibility = (spaceKey: string) => {
+    setVisibleLines(prev => ({
+      ...prev,
+      [spaceKey]: !prev[spaceKey]
+    }));
+  };
+
+  // Navigate to map with selected space
+  const handleViewInMap = (spaceKey: string) => {
+    const space = spaces.find(space => space.name.toLowerCase().replace(/\s+/g, '_') === spaceKey);
+    if (space?.position) {
+      // Navigate to map page and pass location in URL params
+      navigate(`/map?lat=${space.position[0]}&lng=${space.position[1]}&name=${space.name}`);
+    }
   };
 
   return (
@@ -179,12 +279,12 @@ const DashboardPage: React.FC = () => {
           {/* Overview Stats */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid container>
-              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
+              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h5" sx={{ mb: 0 }}>
+                  <Typography variant="h5" sx={{ mb: 1 }}>
                     Ocupación Total del Campus
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Typography variant="body1">
                       {pieData[1].value} de {pieData[0].value + pieData[1].value} espacios ocupados
                     </Typography>
@@ -215,13 +315,13 @@ const DashboardPage: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid container>
-              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
+            <Grid container sx={{ width: '100%' }}>
+              <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white', height: '100%', width: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+                  <Typography variant="h5" sx={{ mb: 2 }}>
                     Ocupación por Hora
                   </Typography>
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <LineChart
                       data={hourlyData}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -231,11 +331,52 @@ const DashboardPage: React.FC = () => {
                       <YAxis />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend />
-                      <Line type="monotone" dataKey="biblioteca" stroke="#0ff" strokeWidth={2} dot={{ r: 4 }} />
-                      <Line type="monotone" dataKey="laboratorio" stroke="#0f8" strokeWidth={2} dot={{ r: 4 }} />
-                      <Line type="monotone" dataKey="cafeteria" stroke="#f0f" strokeWidth={2} dot={{ r: 4 }} />
+                      {spaces.map((space, index) => {
+                        const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+                        return visibleLines[spaceKey] ? (
+                          <Line
+                            key={spaceKey}
+                            type="monotone"
+                            dataKey={spaceKey}
+                            name={space.name}
+                            stroke={SPACE_COLORS[index % SPACE_COLORS.length]}
+                            strokeWidth={2}
+                            dot={{ r: 4 }}
+                            activeDot={{ r: 6, onClick: () => handleViewInMap(spaceKey) }}
+                          />
+                        ) : null;
+                      })}
                     </LineChart>
                   </ResponsiveContainer>
+
+                  {/* Filter chips for toggling line visibility */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}
+                  >
+                    {spaces.map((space, index) => {
+                      const spaceKey = space.name.toLowerCase().replace(/\s+/g, '_');
+                      return (
+                        <Chip
+                          key={spaceKey}
+                          label={space.name}
+                          onClick={() => toggleLineVisibility(spaceKey)}
+                          sx={{
+                            color: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
+                            borderColor: visibleLines[spaceKey] ? SPACE_COLORS[index % SPACE_COLORS.length] : 'gray',
+                            backgroundColor: visibleLines[spaceKey] ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
+                            boxShadow: visibleLines[spaceKey] ? `0 0 5px ${SPACE_COLORS[index % SPACE_COLORS.length]}` : 'none',
+                            '&:hover': {
+                              backgroundColor: 'rgba(0, 255, 255, 0.2)',
+                            },
+                            mb: 1
+                          }}
+                          variant="outlined"
+                        />
+                      );
+                    })}
+                  </Stack>
                 </CardContent>
               </Card>
             </Grid>
@@ -246,14 +387,31 @@ const DashboardPage: React.FC = () => {
             Espacios del Campus
           </Typography>
 
-          <Grid container spacing={2}>
+          <Grid container spacing={2} sx={{ color: 'white' }}>
             {spaces.map((space) => (
               <Grid container key={space._id}>
-                <SpaceOccupancy
-                  name={space.name}
-                  currentOccupancy={space.currentOccupancy}
-                  maxCapacity={space.capacity}
-                />
+                <Box sx={{ position: 'relative' }}>
+                  <SpaceOccupancy
+                    name={space.name}
+                    currentOccupancy={space.currentOccupancy}
+                    maxCapacity={space.capacity}
+                    sx={{ color: 'white' }}
+                  />
+                  {space.position && (
+                    <Button
+                      size="small"
+                      onClick={() => handleViewInMap(space.name.toLowerCase().replace(/\s+/g, '_'))}
+                      sx={{
+                        position: 'absolute',
+                        right: '-5px',
+                        top: '4px',
+                        fontSize: '20px',
+                      }}
+                    >
+                      🌎
+                    </Button>
+                  )}
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -274,35 +432,54 @@ const DashboardPage: React.FC = () => {
               if (percentage > 80) color = 'error';
               else if (percentage > 50) color = 'warning';
 
+              // Find a position for this building (use first space's position)
+              const buildingPosition = buildingSpaces.find(space => space.position)?.position;
+
               return (
                 <Grid container key={index}>
-                  <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
-                    <CardContent>
-                      <Typography variant="h6" component="div" sx={{ mb: 1 }}>
-                        {building}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {buildingSpaces.length} espacios monitoreados
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                        <Box sx={{ width: '100%', mr: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={percentage}
-                            color={color as "success" | "error" | "warning" | "primary" | "secondary" | "info" | undefined}
-                          />
+                  <Box sx={{ position: 'relative' }}>
+                    <Card sx={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}>
+                      <CardContent>
+                        <Typography variant="h6" component="div" sx={{ mb: 1 }}>
+                          {building}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {buildingSpaces.length} espacios monitoreados
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                          <Box sx={{ width: '100%', mr: 1 }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={percentage}
+                              color={color as "success" | "error" | "warning" | "primary" | "secondary" | "info" | undefined}
+                            />
+                          </Box>
+                          <Box sx={{ minWidth: 35 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {Math.round(percentage)}%
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box sx={{ minWidth: 35 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {Math.round(percentage)}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
-                        {totalOccupancy} de {totalCapacity} ocupados
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                        <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
+                          {totalOccupancy} de {totalCapacity} ocupados
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                    {buildingPosition && (
+                      <Button
+                        size="small"
+                        onClick={() => navigate(`/map?lat=${buildingPosition[0]}&lng=${buildingPosition[1]}&name=${building}`)}
+                        sx={{
+                          position: 'absolute',
+                          left: '13px',
+                          bottom: '20px',
+                          fontSize: '20px',
+                        }}
+                      >
+                        🌎
+                      </Button>
+                    )}
+                  </Box>
                 </Grid>
               );
             })}
