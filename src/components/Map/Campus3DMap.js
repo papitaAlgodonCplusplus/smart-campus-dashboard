@@ -1,8 +1,10 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Billboard, Sky, Cloud, useTexture } from '@react-three/drei';
+import { OrbitControls, Text, Billboard, Sky, Cloud } from '@react-three/drei';
 import * as THREE from 'three';
-import MapControls from './MapControls';
+import MapControls from './Utils/MapControls';
+import Ground from './Utils/Ground';
+
 // Import coordinate files
 import { treeCoordinates } from '../../data/treeCoordinates';
 import { benchCoordinates } from '../../data/benchCoordinates.js';
@@ -313,8 +315,8 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
 
   return (
     <div className="campus-3d-map-container">
-      <Canvas shadows camera={{ 
-        position: CAMPUS_CONSTANTS.DEFAULT_CAMERA.position, 
+      <Canvas shadows camera={{
+        position: CAMPUS_CONSTANTS.DEFAULT_CAMERA.position,
         fov: CAMPUS_CONSTANTS.DEFAULT_CAMERA.fov
       }} className="canvas">
         <ambientLight intensity={0.4} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
@@ -465,9 +467,6 @@ const CameraController = ({ onCameraChange }) => {
   const controlsRef = useRef();
 
   useEffect(() => {
-    camera.position.set(30, 30, 0);
-    camera.lookAt(0, 0, 0);
-
     if (onCameraChange) {
       onCameraChange(camera.position);
     }
@@ -698,22 +697,6 @@ const Bench = ({ position, rotation = 0 }) => {
         <meshStandardMaterial color="#422006" roughness={0.9} />
       </mesh>
     </group>
-  );
-};
-
-// Enhanced ground component with textures
-const Ground = () => {
-  return (
-    <>
-      {/* Base ground */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
-        <planeGeometry args={[1000, 1000]} />
-        <meshStandardMaterial
-          color="#54c754"
-          roughness={0.9}
-        />
-      </mesh>
-    </>
   );
 };
 

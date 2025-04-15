@@ -70,10 +70,10 @@
   background: none;
   border: none;
   color: var(--neon-primary);
-  font-size: 24px;
+  font-size: 32px;
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 10px;
+  height: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

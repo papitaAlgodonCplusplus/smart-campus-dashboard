@@ -18,7 +18,7 @@ export const CAMPUS_CONSTANTS = {
 
     // Camera settings
     DEFAULT_CAMERA: {
-        position: [30, 30, 30],
+        position: [-200, -300, -350],
         fov: 60
     }
 };

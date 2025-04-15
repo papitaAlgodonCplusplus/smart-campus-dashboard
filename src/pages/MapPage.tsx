@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'rea
 import L from 'leaflet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchSpaces } from '../services/api';
-import MapLegend from '../components/Map/MapLegend';
+import MapLegend from '../components/Map/Utils/MapLegend';
 import Campus3DMap from '../components/Map/Campus3DMap';
 import './Map.css';
 import 'leaflet/dist/leaflet.css';
