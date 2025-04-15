@@ -1,16 +1,16 @@
 export const fountainCoordinates = [
-    // Central plaza fountain
+    // Central plaza fountain - adjusted based on new building coordinates
     { position: [0, 0, 0] },
 
-    // Near Library
-    { position: [-25, 0, 25] },
+    // Near Library (Biblioteca Carlos Monge Alfaro)
+    { position: [-35, 0, 30] },
 
     // Near Engineering Faculty
-    { position: [25, 0, -25] },
+    { position: [30, 0, -20] },
 
     // Near Social Sciences
-    { position: [25, 0, 25] },
+    { position: [40, 0, 35] },
 
     // Near Letters Faculty
-    { position: [-25, 0, -25] },
+    { position: [-30, 0, -25] },
 ];

@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "other_relations",
+"bbox": [ -84.0499212, 9.9380214, -84.0478345, 9.9410594 ],                                                                        
+"features": [
+{ "type": "Feature", "properties": { "osm_id": "2951301", "type": "restriction", "other_tags": "\"restriction\"=>\"no_left_turn\"" }, "bbox": [ -84.0499212, 9.9410594, -84.0499212, 9.9410594 ], "geometry": { "type": "GeometryCollection", "geometries": [ { "type": "Point", "coordinates": [ -84.0499212, 9.9410594 ] } ] } },
+{ "type": "Feature", "properties": { "osm_id": "5510727", "type": "restriction", "other_tags": "\"restriction\"=>\"no_left_turn\"" }, "bbox": [ -84.0482636, 9.9380214, -84.0478345, 9.9384149 ], "geometry": { "type": "GeometryCollection", "geometries": [ { "type": "LineString", "coordinates": [ [ -84.047913, 9.9380214 ], [ -84.0479054, 9.9381702 ], [ -84.0478961, 9.9382673 ], [ -84.0478345, 9.9383839 ] ] }, { "type": "LineString", "coordinates": [ [ -84.0482636, 9.9384149 ], [ -84.048084, 9.9383754 ], [ -84.0480009, 9.9383402 ], [ -84.0479564, 9.9383337 ], [ -84.0479118, 9.9383392 ], [ -84.047876, 9.9383607 ], [ -84.0478345, 9.9383839 ] ] } ] } },
+{ "type": "Feature", "properties": { "osm_id": "5510728", "type": "restriction", "other_tags": "\"restriction\"=>\"no_right_turn\"" }, "bbox": [ -84.0482636, 9.9380214, -84.0478345, 9.9384149 ], "geometry": { "type": "GeometryCollection", "geometries": [ { "type": "LineString", "coordinates": [ [ -84.0482636, 9.9384149 ], [ -84.048084, 9.9383754 ], [ -84.0480009, 9.9383402 ], [ -84.0479564, 9.9383337 ], [ -84.0479118, 9.9383392 ], [ -84.047876, 9.9383607 ], [ -84.0478345, 9.9383839 ] ] }, { "type": "LineString", "coordinates": [ [ -84.047913, 9.9380214 ], [ -84.0479054, 9.9381702 ], [ -84.0478961, 9.9382673 ], [ -84.0478345, 9.9383839 ] ] } ] } },
+{ "type": "Feature", "properties": { "osm_id": "5921919", "type": "restriction", "other_tags": "\"restriction\"=>\"no_u_turn\"" }, "bbox": [ -84.0499212, 9.9410594, -84.0499212, 9.9410594 ], "geometry": { "type": "GeometryCollection", "geometries": [ { "type": "Point", "coordinates": [ -84.0499212, 9.9410594 ] } ] } }
+]
+}
