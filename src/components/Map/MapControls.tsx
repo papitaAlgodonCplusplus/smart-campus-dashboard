@@ -63,6 +63,26 @@ const MapControls: React.FC<MapControlsProps> = ({
       </Typography>
       
       <Box sx={{ display: 'flex', gap: 1 }}>
+        <Tooltip title="Recorrido virtual">
+          <Button 
+            variant="outlined"
+            size="small"
+            onClick={onTourStart}
+            sx={{ 
+              fontSize: '0.7rem', 
+              borderColor: 'var(--neon-blue)',
+              color: 'var(--neon-blue)',
+              '&:hover': {
+                borderColor: 'var(--neon-primary)',
+                color: 'var(--neon-primary)',
+                boxShadow: '0 0 10px var(--neon-primary)'
+              }
+            }}
+          >
+            Recorrido
+          </Button>
+        </Tooltip>
+        
         <Tooltip title="Reiniciar vista">
           <Button 
             variant="outlined"
@@ -132,7 +152,7 @@ const MapControls: React.FC<MapControlsProps> = ({
         </Typography>
         <Slider
           value={timeOfDay}
-          onChange={(_, value) => onTimeChange(value as number)}
+          onChange={(_, value) => onTimeChange(value)}
           min={0}
           max={100}
           step={1}
