@@ -42,9 +42,9 @@ const Building = ({ building, onClick }) => {
 
   // Scale position from Leaflet coordinates to 3D space
   const scaledPosition = [
-    (building.position[1] - -84.05) * 500, // X (longitude)
+    (building.position[1] - -84.05) * 10000, // X (longitude)
     height / 2, // Y (height)
-    (building.position[0] - 9.94) * 500 // Z (latitude)
+    (building.position[0] - 9.94) * 10000 // Z (latitude)
   ];
 
   return (
@@ -137,9 +137,9 @@ const CampusPaths = () => {
   // Convert path points to 3D space
   const scaledPoints = pathPoints.map(([lng, lat]) => {
     return [
-      (lng - -84.05) * 500, // X (longitude)
+      (lng - -84.05) * 10000, // X (longitude)
       0.05, // Y (slightly above ground)
-      (lat - 9.94) * 500 // Z (latitude)
+      (lat - 9.94) * 10000 // Z (latitude)
     ];
   });
   
@@ -316,7 +316,7 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
 
   return (
     <div className="campus-3d-map-container">
-      <Canvas shadows camera={{ position: [0, 0, 0], fov: 60 }}>
+      <Canvas shadows camera={{ position: [0, 0, 0], fov: 60 }} style={{ height: '70vh' }}>
         <fog attach="fog" args={['#020617', 30, 100]} />
         <CameraController />
         <SceneLighting />

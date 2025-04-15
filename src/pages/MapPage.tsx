@@ -293,12 +293,6 @@ const MapPage: React.FC = () => {
     );
   };
 
-  // Function to start a campus tour (for 3D view)
-  const startCampusTour = () => {
-    // This would be implemented in the Campus3DMap component
-    console.log('Starting campus tour');
-  };
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom className="with-glow">
@@ -337,25 +331,6 @@ const MapPage: React.FC = () => {
               Vista 3D
             </Button>
           </ButtonGroup>
-
-          {viewMode === '3D' && (
-            <Button 
-              variant="outlined"
-              size="small"
-              onClick={startCampusTour}
-              sx={{ 
-                color: 'var(--neon-blue)',
-                borderColor: 'var(--neon-blue)',
-                '&:hover': {
-                  borderColor: 'var(--neon-primary)',
-                  color: 'var(--neon-primary)',
-                  boxShadow: '0 0 10px var(--neon-primary)'
-                }
-              }}
-            >
-              Recorrido Virtual
-            </Button>
-          )}
         </Box>
         
         <Box>
@@ -466,7 +441,7 @@ const MapPage: React.FC = () => {
             </>
           ) : (
             // 3D Map View
-            <Box sx={{ height: '600px' }}>
+            <Box sx={{ height: '1000px' }}>
               <Campus3DMap 
                 buildings={buildings} 
                 onBuildingSelect={handleBuildingSelect}
