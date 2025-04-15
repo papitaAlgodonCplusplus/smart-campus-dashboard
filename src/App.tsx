@@ -1,22 +1,119 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
 import DashboardPage from './pages/DashboardPage';
 import MapPage from './pages/MapPage';
-import './main.css'; // Import the main.css file
+import './main.css';
 
+// Create a theme that complements the 3D visualization
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#1976d2',
+      main: '#00ffff', // Neon cyan
     },
     secondary: {
-      main: '#dc004e',
+      main: '#ff00ff', // Neon magenta
+    },
+    background: {
+      default: '#08080f',
+      paper: 'rgba(5, 5, 25, 0.8)',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+  },
+  typography: {
+    fontFamily: '"Rajdhani", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+    h2: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+    h3: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+    h4: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+    h5: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+    h6: {
+      fontFamily: '"Orbitron", "Rajdhani", sans-serif',
+    },
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(0, 0, 0, 0.3)',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#00ffff',
+            borderRadius: '4px',
+            boxShadow: '0 0 5px #00ffff',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#00ccff',
+            boxShadow: '0 0 8px #00ccff',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          backgroundColor: 'rgba(5, 5, 25, 0.8)',
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+          textTransform: 'none',
+          transition: '0.3s',
+          '&:hover': {
+            transform: 'scale(1.05)',
+            boxShadow: '0 0 10px #00ffff',
+          },
+        },
+      },
     },
   },
 });
 
+// Ensure fonts are loaded
+const loadFonts = () => {
+  const linkOrbitron = document.createElement('link');
+  linkOrbitron.rel = 'stylesheet';
+  linkOrbitron.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap';
+  document.head.appendChild(linkOrbitron);
+
+  const linkRajdhani = document.createElement('link');
+  linkRajdhani.rel = 'stylesheet';
+  linkRajdhani.href = 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;700&display=swap';
+  document.head.appendChild(linkRajdhani);
+};
+
 function App() {
+  // Load fonts when the app initializes
+  React.useEffect(() => {
+    loadFonts();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
