@@ -1,8 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
-import DashboardPage from './pages/DashboardPage';
+import DashboardProviderWrapper from './components/Dashboard/DashboardProviderWrapper';
 import MapPage from './pages/MapPage';
 import './main.css';
 
@@ -110,7 +110,7 @@ const loadFonts = () => {
 
 function App() {
   // Load fonts when the app initializes
-  React.useEffect(() => {
+  useEffect(() => {
     loadFonts();
     
     // Add Leaflet CSS for maps
@@ -130,11 +130,24 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Navbar />
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/map" element={<MapPage />} />
-          {/* Add more routes as you develop */}
+          {/* Dashboard Routes */}
+          <Route path="/dashboard/*" element={<DashboardProviderWrapper />} />
+          
+          {/* Map Route with Navbar */}
+          <Route
+            path="/map"
+            element={
+              <>
+                <Navbar />
+                <MapPage />
+              </>
+            }
+          />
+          
+          {/* Default redirect to dashboard */}
+          <Route path="/" element={<Navigate replace to="/dashboard" />} />
+          <Route path="*" element={<Navigate replace to="/dashboard" />} />
         </Routes>
       </Router>
     </ThemeProvider>
