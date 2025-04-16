@@ -1,0 +1,146 @@
+/* Styles for the 3D user avatar */
+.user-avatar-3d-container {
+    position: relative;
+  }
+  
+  /* Classes for the 3D avatar effect in canvas */
+  .user-avatar-3d-pulse {
+    animation: pulse-3d 2s infinite;
+  }
+  
+  @keyframes pulse-3d {
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.2);
+    }
+    100% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+  }
+  
+  /* User instructions tooltip for avatar */
+  .user-avatar-instructions {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 15px;
+    background-color: rgba(5, 5, 25, 0.8);
+    border: 1px solid var(--neon-primary);
+    border-radius: 5px;
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 0 10px var(--neon-primary);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .user-avatar-instructions.visible {
+    opacity: 1;
+  }
+  
+  /* Avatar controls panel */
+  .avatar-controls-panel {
+    position: absolute;
+    bottom: 65px;
+    right: 20px;
+    background-color: rgba(5, 5, 25, 0.8);
+    border: 1px solid var(--neon-primary);
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 0 10px var(--neon-primary);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .avatar-controls-panel.hidden {
+    transform: translateX(120%);
+  }
+  
+  .avatar-controls-panel-title {
+    color: var(--neon-primary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 5px var(--neon-primary);
+  }
+  
+  /* Customize user avatar dot color */
+  .customize-color-selector {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  
+  .color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .color-option:hover {
+    transform: scale(1.2);
+  }
+  
+  .color-option.selected {
+    box-shadow: 0 0 10px 3px white;
+  }
+  
+  /* User avatar animation style options */
+  .avatar-animation-selector {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  
+  .animation-option {
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--neon-blue);
+    border-radius: 4px;
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .animation-option:hover {
+    background-color: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 8px var(--neon-blue);
+  }
+  
+  .animation-option.selected {
+    background-color: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 8px var(--neon-primary);
+    border-color: var(--neon-primary);
+  }
+  
+  /* 3D follow button styling */
+  .follow-avatar-button-3d {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .follow-avatar-button-3d:hover {
+    filter: brightness(1.2);
+  }
+  
+  /* Hide canvas cursor when interacting with avatar */
+  .canvas-no-cursor {
+    cursor: none !important;
+  }

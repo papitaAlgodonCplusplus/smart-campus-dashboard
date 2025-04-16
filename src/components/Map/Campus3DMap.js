@@ -1,16 +1,21 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Billboard, Sky, Cloud } from '@react-three/drei';
+import { OrbitControls, Text, Billboard, Sky, Cloud, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import MapControls from './Utils/MapControls';
 import Ground from './Utils/Ground';
+import UserAvatar3D from './Utils/UserAvatar3D';
 
 // Import coordinate files
 import { treeCoordinates } from '../../data/treeCoordinates';
 import { benchCoordinates } from '../../data/benchCoordinates.js';
 import { fountainCoordinates } from '../../data/fountainCoordinates';
 import { CAMPUS_CONSTANTS } from '../../data/campusConstants';
+
 import './Campus3DMap.css';
+
+import buildingTexture from '../../textures/concrete_wall_007_diff_4k.jpg';
+import buildingDisp from '../../textures/concrete_wall_007_disp_4k.png';
 
 // Enhanced Building component with windows
 const Building = ({ building, onClick, isNightMode }) => {
@@ -40,7 +45,7 @@ const Building = ({ building, onClick, isNightMode }) => {
   } else if (occupancyPercentage < 70) {
     color = '#f80'; // Medium occupancy - orange
   } else {
-    color = '#f08'; // High occupancy - red
+    color = '#f02222'; // High occupancy - red
   }
 
   // Base building color (various shades of blue/gray for different buildings)
@@ -60,9 +65,6 @@ const Building = ({ building, onClick, isNightMode }) => {
       } else {
         meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, 1, 0.1);
       }
-
-      // Add a subtle floating animation
-      meshRef.current.position.y = height / 2 + Math.sin(Date.now() * 0.001 + building.id) * 0.05;
     }
 
     // Flicker some windows randomly in night mode
@@ -81,10 +83,16 @@ const Building = ({ building, onClick, isNightMode }) => {
 
   // Scale position from Leaflet coordinates to 3D space
   const scaledPosition = [
-    (building.position[1] - -84.05) * 20000, // X (longitude)
+    (building.position[1] - -84.05) * 40000, // X (longitude)
     height / 2.5, // Y (height)
-    (building.position[0] - 9.94) * 20000 // Z (latitude)
+    (building.position[0] - 9.94) * 40000 // Z (latitude)
   ];
+
+
+  const textures = useTexture({
+    map: buildingTexture,
+    normalMap: buildingDisp,
+  });
 
   return (
     <group position={scaledPosition}>
@@ -102,6 +110,8 @@ const Building = ({ building, onClick, isNightMode }) => {
           color={hovered ? '#00ffff' : buildingBaseColor}
           emissive={hovered ? color : '#000'}
           emissiveIntensity={hovered ? 0.5 : 0}
+          map={textures.map}
+          normalMap={textures.normalMap}
           metalness={0.4}
           roughness={0.7}
         />
@@ -118,12 +128,7 @@ const Building = ({ building, onClick, isNightMode }) => {
               const windowHeight = 0.7;
               const windowDepth = 0.05;
               const posX = -width / 2 + (windowIndex + 0.5) * (width / windowsPerFloorWidth);
-
-              // Fixed window positioning based on floor height
-              // Calculate the height of each floor
-              const floorHeight = height / floors;
-              // Position the window in the middle of the floor
-              const posY = height / 16 + (floorIndex * floorHeight) + 0.2;
+              const posY = height / 8 + (floorIndex * (height / floors)) - (height * 0.5);
 
               // Create windows on front side
               return (
@@ -168,10 +173,7 @@ const Building = ({ building, onClick, isNightMode }) => {
               const windowHeight = 0.7;
               const windowDepth = depth / windowsPerFloorDepth - windowPadding;
               const posZ = -depth / 2 + (windowIndex + 0.5) * (depth / windowsPerFloorDepth);
-
-              // Fixed window positioning based on floor height
-              const floorHeight = height / floors;
-              const posY = height / 16 + (floorIndex * floorHeight) + 0.2;
+              const posY = height / 8 + (floorIndex * (height / floors)) - (height * 0.5);
 
               return (
                 <React.Fragment key={`window-depth-${floorIndex}-${windowIndex}`}>
@@ -230,34 +232,23 @@ const Building = ({ building, onClick, isNightMode }) => {
           {building.name}
         </Text>
       </Billboard>
-
-      {/* Occupancy indicator */}
-      <mesh position={[0, -height / 2 - 0.1, 0]}>
-        <boxGeometry args={[width, 0.1, depth]} />
-        <meshStandardMaterial
-          color="#000"
-          emissive="#000"
-          transparent
-          opacity={0.5}
-        />
-      </mesh>
-      <mesh position={[(width * (occupancyPercentage / 100 - 1)) / 2, -height / 2 - 0.05, 0]}>
-        <boxGeometry args={[width * (occupancyPercentage / 100), 0.2, depth]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.5}
-        />
-      </mesh>
     </group>
   );
 };
 
 // Enhanced Campus3DMap
-const Campus3DMap = ({ buildings, onBuildingSelect }) => {
+const Campus3DMap = ({
+  buildings,
+  onBuildingSelect,
+  userLocation,
+  isTracking,
+  followUser,
+  setFollowUser
+}) => {
+  const current_device_time = new Date();
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [isNightMode, setIsNightMode] = useState(false);
-  const [timeOfDay, setTimeOfDay] = useState(CAMPUS_CONSTANTS.DEFAULT_TIME); // Default to noon (25)
+  const [timeOfDay, setTimeOfDay] = useState((current_device_time.getHours() / 24 * 100) - 25);
   const [showLabels, setShowLabels] = useState(true);
   const [cameraPosition, setCameraPosition] = useState(CAMPUS_CONSTANTS.DEFAULT_CAMERA.position);
 
@@ -302,12 +293,18 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
   // Reset view to default
   const handleReset = () => {
     setCameraPosition(CAMPUS_CONSTANTS.DEFAULT_CAMERA.position);
+    setFollowUser(false);
   };
 
   // Start guided tour
   const handleTourStart = () => {
     // Implementation for tour functionality could go here
     console.log("Starting campus tour");
+  };
+
+  // Handle followUser toggle from UserAvatar3D
+  const handleFollowUser = (value) => {
+    setFollowUser(value);
   };
 
   // Make sure buildings is an array before using it
@@ -322,7 +319,10 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
         <ambientLight intensity={0.4} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
         <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
         <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
-        <CameraController onCameraChange={handleCameraChange} />
+        <CameraController
+          onCameraChange={handleCameraChange}
+          followUser={followUser}
+        />
 
         {/* Sky and environment */}
         <EnhancedSky isNightMode={isNightMode} timeOfDay={timeOfDay} />
@@ -366,6 +366,15 @@ const Campus3DMap = ({ buildings, onBuildingSelect }) => {
             position={fountain.position}
           />
         ))}
+
+        {/* User location avatar */}
+        {isTracking && userLocation && (
+          <UserAvatar3D
+            position={userLocation}
+            followUser={followUser}
+            onFollowUser={handleFollowUser}
+          />
+        )}
       </Canvas>
 
       {/* Map controls UI */}
@@ -461,8 +470,9 @@ const BuildingInfoPanel = ({ building, onClose }) => {
   );
 };
 
+
 // Enhanced CameraController
-const CameraController = ({ onCameraChange }) => {
+const CameraController = ({ onCameraChange, followUser }) => {
   const { camera, gl } = useThree();
   const controlsRef = useRef();
 
@@ -488,6 +498,7 @@ const CameraController = ({ onCameraChange }) => {
       minDistance={10}
       maxDistance={150}
       maxPolarAngle={Math.PI / 2 - 0.1} // Prevent camera from going below ground level
+      enabled={!followUser} // Disable controls when following user
     />
   );
 };
@@ -712,10 +723,10 @@ const CampusPaths = ({ isNightMode }) => {
     <group>
       {mainPaths.map((path, index) => {
         // Convert coordinates to 3D space
-        const startX = (path[0] - -84.05) * 20000;
-        const startZ = (path[1] - 9.94) * 20000;
-        const endX = (path[2] - -84.05) * 20000;
-        const endZ = (path[3] - 9.94) * 20000;
+        const startX = (path[0] - -84.05) * 40000;
+        const startZ = (path[1] - 9.94) * 40000;
+        const endX = (path[2] - -84.05) * 40000;
+        const endZ = (path[3] - 9.94) * 40000;
 
         // Calculate midpoint, length and angle
         const midX = (startX + endX) / 2;
