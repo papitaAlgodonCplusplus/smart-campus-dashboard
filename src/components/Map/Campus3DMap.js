@@ -16,6 +16,11 @@ import './Campus3DMap.css';
 
 import buildingTexture from '../../textures/concrete_wall_007_diff_4k.jpg';
 import buildingDisp from '../../textures/concrete_wall_007_disp_4k.png';
+import leavesTexture from '../../textures/aerial_grass_rock_diff_4k.jpg';
+import leavesDisp from '../../textures/aerial_grass_rock_disp_4k.png';
+import leavesRoughness from '../../textures/aerial_grass_rock_rough_4k.jpg';
+import trunkTexture from '../../textures/wood_table_worn_diff_4k.jpg'
+import trunkDisp from '../../textures/wood_table_worn_disp_4k.png';
 
 // Enhanced Building component with windows
 const Building = ({ building, onClick, isNightMode }) => {
@@ -111,7 +116,7 @@ const Building = ({ building, onClick, isNightMode }) => {
           emissive={hovered ? color : '#000'}
           emissiveIntensity={hovered ? 0.5 : 0}
           map={textures.map}
-          normalMap={textures.normalMap}
+          bumpMap={textures.normalMap}
           metalness={0.4}
           roughness={0.7}
         />
@@ -316,7 +321,7 @@ const Campus3DMap = ({
         position: CAMPUS_CONSTANTS.DEFAULT_CAMERA.position,
         fov: CAMPUS_CONSTANTS.DEFAULT_CAMERA.fov
       }} className="canvas">
-        <ambientLight intensity={0.4} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
+        <ambientLight intensity={0.9} color={isNightMode ? '#8fb3ff' : '#ffffff'} />
         <SceneLighting isNightMode={isNightMode} timeOfDay={timeOfDay} />
         <fog attach="fog" args={[isNightMode ? '#0f172a' : '#f8fafc', 30, 200]} />
         <CameraController
@@ -608,18 +613,28 @@ const Tree = ({ position, scale = 1 }) => {
     }
   });
 
+  const textures = useTexture({
+    map: leavesTexture,
+    normalMap: leavesDisp,
+    roughnessMap: leavesRoughness,
+  });
+  const trunkTextures = useTexture({
+    map: trunkTexture,
+    normalMap: trunkDisp,
+  });
+
   return (
     <group position={position} scale={[scale, scale, scale]}>
       {/* Tree trunk */}
       <mesh ref={trunkRef} castShadow position={[0, treeType.trunkHeight / 2, 0]}>
         <cylinderGeometry args={[treeType.trunkRadius, treeType.trunkRadius * 1.2, treeType.trunkHeight, 8]} />
-        <meshStandardMaterial color="#614b2a" roughness={0.9} />
+        <meshStandardMaterial color="#614b2a" roughness={0.9} map={trunkTextures.map} normalMap={trunkTextures.normalMap} emissive={'#614b2a'} emissiveIntensity={0.5} />
       </mesh>
 
       {/* Tree leaves */}
       <mesh ref={leavesRef} castShadow position={[0, treeType.trunkHeight, 0]}>
         <coneGeometry args={[treeType.leavesRadius, treeType.leavesHeight, 8]} />
-        <meshStandardMaterial color={treeType.leavesColor} roughness={0.8} />
+        <meshStandardMaterial color={treeType.leavesColor} roughness={0.9} map={textures.map} normalMap={textures.normalMap} roughnessMap={textures.roughnessMape} emissive={treeType.leavesColor} emissiveIntensity={0.5} />
       </mesh>
     </group>
   );
