@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import spaceRoutes from './routes/spaceRoutes';
+import hourlyDataRoutes from './routes/hourlyDataRoutes';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/spaces', spaceRoutes);
+app.use('/api/hourly-data', hourlyDataRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

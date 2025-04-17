@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { fetchSpaces } from '../../services/api';
+import { fetchSpaces, fetchHourlyData } from '../../services/api';
 
 // Define space data interface
 export interface Space {
@@ -50,7 +50,7 @@ interface DashboardContextData {
 
 const DashboardContext = createContext<DashboardContextData | undefined>(undefined);
 
-// Generate hourly data for charts
+// Fallback hourly data generation in case API fails
 const generateHourlyData = (spaces: Space[]) => {
     const hours = ['7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM', '9PM', '10PM'];
 
@@ -120,12 +120,9 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         { name: 'Ocupado', value: spaces.reduce((acc, space) => acc + space.currentOccupancy, 0) }
     ];
 
-    // Initialize hourly data and visible lines
+    // Initialize visible lines
     useEffect(() => {
-        if (spaces.length > 0) {
-            const data = generateHourlyData(spaces);
-            setHourlyData(data);
-
+        if (spaces.length > 0 && hourlyData.length > 0) {
             // Initialize all lines as visible
             const initialVisibleLines: { [key: string]: boolean } = {};
             spaces.forEach(space => {
@@ -134,7 +131,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
             });
             setVisibleLines(initialVisibleLines);
         }
-    }, [spaces]);
+    }, [spaces, hourlyData]);
 
     // Toggle visibility of specific lines
     const toggleLineVisibility = (spaceKey: string) => {
@@ -150,19 +147,44 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
             try {
                 setLoading(true);
                 const data = await fetchSpaces();
-                // If we get data back, use it, otherwise keep using mock data
                 if (data && data.length > 0) {
                     setSpaces(data);
                 }
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch spaces', err);
-                setError('Failed to fetch spaces data. Using mock data instead.');
+                setError('Failed to fetch spaces data: ' + (err instanceof Error ? err.message : 'Unknown error'));
             }
         };
 
         getSpaces();
     }, []);
+
+    // Fetch hourly data from API
+    useEffect(() => {
+        const getHourlyData = async () => {
+            try {
+                if (spaces.length > 0) {
+                    const data = await fetchHourlyData();
+                    
+                    if (data && data.length > 0) {
+                        setHourlyData(data);
+                    } else {
+                        // Fall back to generated data if API returns empty result
+                        console.warn('No hourly data available from API, generating fallback data');
+                        setHourlyData(generateHourlyData(spaces));
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch hourly data', err);
+                // Fall back to generated data on error
+                console.warn('Using generated hourly data as fallback');
+                setHourlyData(generateHourlyData(spaces));
+            }
+        };
+
+        getHourlyData();
+    }, [spaces]);
 
     // Simulate loading delay for demo purposes
     useEffect(() => {
