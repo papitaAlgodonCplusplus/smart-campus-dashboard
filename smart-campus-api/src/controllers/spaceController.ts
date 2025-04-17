@@ -4,7 +4,9 @@ import Space from '../models/Space';
 // Get all spaces
 export const getSpaces = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('Fetching all spaces...');
     const spaces = await Space.find({});
+    console.log('Spaces fetched:', spaces);
     res.status(200).json(spaces);
   } catch (error) {
     res.status(500).json({ message: (error instanceof Error) ? error.message : 'An unknown error occurred' });

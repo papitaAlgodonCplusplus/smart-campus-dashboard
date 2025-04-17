@@ -86,8 +86,7 @@ const theme = createTheme({
           textTransform: 'none',
           transition: '0.3s',
           '&:hover': {
-            transform: 'scale(1.05)',
-            boxShadow: '0 0 10px #00ffff',
+            transform: 'scale(1.2)',
           },
         },
       },

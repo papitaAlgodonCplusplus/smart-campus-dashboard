@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { fetchSpaces } from '../../services/api';
-import mockSpaceData from '../../data/mockSpaceData';
 
 // Define space data interface
 export interface Space {
@@ -95,7 +94,7 @@ const generateHourlyData = (spaces: Space[]) => {
 
 // Provider component
 export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [spaces, setSpaces] = useState<Space[]>(mockSpaceData);
+    const [spaces, setSpaces] = useState<Space[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [hourlyData, setHourlyData] = useState<any[]>([]);
@@ -158,11 +157,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch spaces', err);
-                // setError('No se pudieron cargar los espacios. Por favor, inténtelo de nuevo más tarde.');
-            } finally {
-                // We'll keep the artificial delay for demo purposes
-                // In production, you'd remove this
-                setTimeout(() => setLoading(false), 1000);
+                setError('Failed to fetch spaces data. Using mock data instead.');
             }
         };
 

@@ -1,0 +1,14 @@
+{
+    "name": "mongodb-seed",
+    "version": "1.0.0",
+    "description": "Seed script for smartcampus MongoDB database",
+    "type": "module",
+    "main": "seed.js",
+    "scripts": {
+      "seed": "node seed.js"
+    },
+    "dependencies": {
+      "dotenv": "^16.4.1",
+      "mongoose": "^8.1.1"
+    }
+  }

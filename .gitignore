@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /smart-campus-api/node_modules
+/mongodb-seed/node_modules
 /.pnp
 .pnp.js
 

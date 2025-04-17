@@ -1,6 +1,8 @@
-"scripts": {
-  "start": "node dist/server.js",
-  "build": "tsc",
-  "dev": "nodemon src/server.ts",
-  "test": "echo \"Error: no test specified\" && exit 1"
+{
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "nodemon src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
