@@ -35,7 +35,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start:api": "cd smart-campus-api && npm run dev",
+    "start:api": "cd api && npm run dev",
     "start:web": "npm run start",
     "start_all": "concurrently \"npm run start:api\" \"npm run start:web\""
   },
