@@ -4,16 +4,20 @@ import {
   MeshReflectorMaterial,
   Image,
   Text,
-  Environment,
-  Html
+  Environment
 } from '@react-three/drei';
 import * as THREE from 'three';
+import { useTexture } from '@react-three/drei';
+import bitumenTexture from '../../../textures/bitumen_diff_4k.jpg';
+import bitumenDisp from '../../../textures/bitumen_disp_4k.png';
 
 // Golden ratio for frame dimensions
 const GOLDENRATIO = 1.61803398875;
 
-// Main AmenidadesGallery component
-const AmenidadesGallery = ({ spaces = [] }) => {
+// Default image path to use as fallback
+const DEFAULT_IMAGE_PATH = '/images/default.jpg';
+
+const Gallery = ({ spaces = [] }) => {
   const [rotation, setRotation] = useState(0);
   const [selectedItemId, setSelectedItemId] = useState(null);
 
@@ -30,18 +34,16 @@ const AmenidadesGallery = ({ spaces = [] }) => {
       capacity,
       occupancy,
       percentage,
-      color,
-      url: '/images/default.jpg', // Placeholder image
+      color
     };
   }) : Array(8).fill(0).map((_, i) => ({
     id: `demo-${i}`,
-    name: `Amenidad ${i + 1}`,
+    name: `Item ${i + 1}`,
     building: `Edificio ${i + 1}`,
     capacity: 100,
     occupancy: Math.floor(Math.random() * 100),
     percentage: Math.floor(Math.random() * 100),
-    color: ['#f08', '#f80', '#0f8'][Math.floor(Math.random() * 3)],
-    url: '/images/default.jpg', // Placeholder image
+    color: ['#f08', '#f80', '#0f8'][Math.floor(Math.random() * 3)]
   }));
 
   // Rotate gallery left
@@ -55,37 +57,66 @@ const AmenidadesGallery = ({ spaces = [] }) => {
   };
 
   return (
-    <div>
-      <Canvas dpr={[1, 1.5]} camera={{ fov: 35, position: [0, 0, 4] }} style={{ height: '32rem' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Canvas dpr={[1, 1.5]} camera={{ fov: 35, position: [0, 0, 4] }} style={{ height: '42rem' }}>
         <color attach="background" args={['#08080f']} />
         <fog attach="fog" args={['#08080f', 5, 15]} />
-        <CircularGallery 
-          items={items} 
-          rotation={rotation} 
+        <CircularGallery
+          items={items}
+          rotation={rotation}
           selectedItemId={selectedItemId}
           setSelectedItemId={setSelectedItemId}
         />
         <Environment preset="city" />
       </Canvas>
-      
+
       {/* Navigation Controls - Positioned at bottom center */}
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8 z-10">
-        <button 
+      <div style={{
+        position: 'relative',
+        bottom: '5rem',
+        left: '0',
+        right: '0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '0 10%',
+        zIndex: 10
+      }}>
+        <button
           onClick={rotateLeft}
-          className="flex items-center justify-center w-12 h-12 rounded-full bg-transparent border border-cyan-400 text-cyan-400 hover:bg-cyan-900 hover:bg-opacity-20 focus:outline-none transition-all duration-300"
-          style={{ boxShadow: '0 0 10px #0ff, inset 0 0 5px #0ff' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'none',
+            border: 'none',
+            color: '#0ff',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
-        
-        <button 
+
+        <button
           onClick={rotateRight}
-          className="flex items-center justify-center w-12 h-12 rounded-full bg-transparent border border-cyan-400 text-cyan-400 hover:bg-cyan-900 hover:bg-opacity-20 focus:outline-none transition-all duration-300"
-          style={{ boxShadow: '0 0 10px #0ff, inset 0 0 5px #0ff' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'none',
+            border: 'none',
+            color: '#0ff',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
@@ -98,7 +129,7 @@ const AmenidadesGallery = ({ spaces = [] }) => {
 function CircularGallery({ items, rotation, selectedItemId, setSelectedItemId }) {
   const groupRef = useRef();
   const angle = (Math.PI * 2) / items.length; // Angle between items
-  const radius = 6; // Radius of the circular arrangement
+  const radius = 8; // Radius of the circular arrangement
 
   // Smoothly rotate the entire gallery
   useFrame((_, delta) => {
@@ -106,10 +137,15 @@ function CircularGallery({ items, rotation, selectedItemId, setSelectedItemId })
       const targetRotation = rotation;
       const currentRotation = groupRef.current.rotation.y;
       const smoothFactor = 0.25;
-      
+
       // Calculate the next rotation with simple lerp
       groupRef.current.rotation.y += (targetRotation - currentRotation) * smoothFactor * delta * 10;
     }
+  });
+
+  const textures = useTexture({
+    map: bitumenTexture,
+    normalMap: bitumenDisp,
   });
 
   return (
@@ -126,10 +162,11 @@ function CircularGallery({ items, rotation, selectedItemId, setSelectedItemId })
           minDepthThreshold={0.4}
           maxDepthThreshold={1.4}
           color="#050505"
-          metalness={0.5}
+          envMapIntensity={0.5}
+          toneMapped={false}
         />
       </mesh>
-      
+
       {items.map((item, index) => (
         <GalleryItem
           key={item.id}
@@ -154,43 +191,41 @@ function GalleryItem({ item, isSelected, onClick, ...props }) {
   const frameRef = useRef();
   const imageRef = useRef();
   const [hovered, setHovered] = useState(false);
-  const [rnd] = useState(() => Math.random());
-  
+
   // Enhanced zoom and float effect when selected
   useFrame((state, delta) => {
     if (groupRef.current) {
       // Zoom to camera when selected
       if (isSelected) {
         // Move toward camera and slightly up when selected
-        const targetPos = new THREE.Vector3(0, 0, -1.5);
+        const targetPos = new THREE.Vector3(0, 0, -3);
 
         // Faster interpolation for position and rotation
         groupRef.current.position.lerp(targetPos, delta * 5);
       } else {
         // Return to original position when not selected
         const originalPos = new THREE.Vector3(props.position[0], props.position[1], props.position[2]);
-        const originalRot = new THREE.Euler(props.rotation[0], props.rotation[1], props.rotation[2]);
 
-        // Faster interpolation back to original position and rotation
+        // Faster interpolation back to original position
         groupRef.current.position.lerp(originalPos, delta * 5);
       }
     }
-    
+
     // Frame color effect on hover or selection
     if (frameRef.current && frameRef.current.material) {
       const targetColor = hovered || isSelected ? new THREE.Color(item.color) : new THREE.Color('white');
       const currentColor = frameRef.current.material.color;
-      
+
       // Smoothly interpolate color
       currentColor.r += (targetColor.r - currentColor.r) * 0.1 * delta * 10;
       currentColor.g += (targetColor.g - currentColor.g) * 0.1 * delta * 10;
       currentColor.b += (targetColor.b - currentColor.b) * 0.1 * delta * 10;
     }
-    
+
     // Image scale effect on hover
     if (imageRef.current) {
       const targetScale = hovered && !isSelected ? 0.95 : 1;
-      
+
       // Custom smooth scale interpolation
       imageRef.current.scale.x += (targetScale - imageRef.current.scale.x) * 0.1 * delta * 10;
       imageRef.current.scale.y += (targetScale - imageRef.current.scale.y) * 0.1 * delta * 10;
@@ -213,25 +248,19 @@ function GalleryItem({ item, isSelected, onClick, ...props }) {
           <boxGeometry />
           <meshStandardMaterial color="#151515" metalness={0.5} roughness={0.5} envMapIntensity={2} />
         </mesh>
-        
+
         {/* Frame border with glow effect */}
         <mesh ref={frameRef} scale={[1.05, 1.05, 1.1]} position={[0, 0, 0]}>
           <boxGeometry />
           <meshBasicMaterial color="white" toneMapped={false} />
         </mesh>
-        
-        {/* Image */}
+
+        {/* Image with error handling - Using simple approach */}
         <group ref={imageRef} position={[0, 0, 0.7]}>
-          <Image
-            url={item.url}
-            scale={[0.9, 0.9 / GOLDENRATIO, 1]}
-            position={[0, 0, 0]}
-            transparent
-            opacity={0.9}
-          />
+          <SimpleImage name={item.name} />
         </group>
       </group>
-      
+
       {/* Item name with glow effect */}
       <Text
         position={[0, GOLDENRATIO / 2 + 0.3, 0]}
@@ -239,11 +268,11 @@ function GalleryItem({ item, isSelected, onClick, ...props }) {
         color={isSelected || hovered ? item.color : "white"}
         anchorX="center"
         anchorY="middle"
-        maxWidth={2}
+        maxWidth={3}
       >
         {item.name}
       </Text>
-      
+
       {/* Display details when selected with enhanced visibility */}
       {isSelected && (
         <group position={[0, -GOLDENRATIO / 2 - 0.2, 0]}>
@@ -267,22 +296,23 @@ function GalleryItem({ item, isSelected, onClick, ...props }) {
           >
             {`${item.percentage}%`}
           </Text>
-          
-          {/* Additional details for selected item */}
-          <Text
-            position={[0, -0.4, 0]}
-            fontSize={0.1}
-            color="#8fb3ff"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={2}
-          >
-            {item.building}
-          </Text>
         </group>
       )}
     </group>
   );
 }
 
-export default AmenidadesGallery;
+// Simplified Image component that uses a standard texture
+function SimpleImage({ name }) {
+  // Always use the default image for simplicity and reliability
+  return (
+    <Image
+      url={DEFAULT_IMAGE_PATH}
+      scale={[0.9, 0.9 / GOLDENRATIO, 1]}
+      transparent
+      opacity={0.9}
+    />
+  );
+}
+
+export default Gallery;

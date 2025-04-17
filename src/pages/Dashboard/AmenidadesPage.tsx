@@ -12,7 +12,7 @@ import {
 import { useDashboard } from '../../components/Dashboard/DashboardContext';
 import CategoryChart from '../../components/Dashboard/CategoryChart';
 import CategorySpaces from '../../components/Dashboard/CategorySpaces';
-import AmenidadesGallery from './Utils/AmenidadesGallery';
+import Gallery from './Utils/Gallery';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 
@@ -99,7 +99,7 @@ const AmenidadesPage: React.FC = () => {
             elevation={3}
             sx={{
               p: 2,
-              height: '42rem',
+              height: '52rem',
               backgroundColor: 'rgba(5, 5, 25, 0.8)',
               backdropFilter: 'blur(5px)',
               border: '1px solid var(--neon-primary)',
@@ -111,14 +111,14 @@ const AmenidadesPage: React.FC = () => {
             {view3D ? (
               <Box sx={{
                 mt: 2, mb: 2,
-                height: '32rem'
+                height: '64rem'
               }}>
                 <Typography variant="subtitle1" gutterBottom>
                   Galería 3D de Amenidades - Haz clic en cualquier marco para ampliar
                 </Typography>
                 <br />
                 <br />
-                <AmenidadesGallery spaces={amenidadesSpaces} />
+                <Gallery spaces={amenidadesSpaces} />
               </Box>
             ) : (
               <CategorySpaces

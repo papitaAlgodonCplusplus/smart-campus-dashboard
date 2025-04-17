@@ -1,6 +1,6 @@
 # TODO
 
-[] Add effects to Dashboard comme 3D carousel
+[] Add images for the carousel
 [] Users can buck space in X place from 0:00 to 0:00
 
 # Smart Campus Dashboard: End-to-End System Design
