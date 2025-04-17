@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { v4 as uuidv4 } from 'uuid'; // We'll need to add this package
 import { fetchSpaces, fetchHourlyData } from '../../services/api';
+import { Reservation, ReservationFormData } from '../../types/ReservationTypes';
 
 // Define space data interface
 export interface Space {
@@ -37,7 +39,7 @@ export const categories = {
     monumentos: ["Espacio Común", "Monumento"]
 };
 
-// Define context interface
+// Define context interface with reservations
 interface DashboardContextData {
     spaces: Space[];
     loading: boolean;
@@ -56,9 +58,25 @@ interface DashboardContextData {
     pieData: { name: string; value: number }[];
     // Methods
     toggleLineVisibility: (spaceKey: string) => void;
+    
+    // Reservation methods
+    reservations: Reservation[];
+    addReservation: (formData: ReservationFormData) => void;
+    deleteReservation: (id: string) => void;
+    getUserReservations: (userName: string) => Reservation[];
+    getSpaceReservations: (spaceId: string) => Reservation[];
+    getAvailableTimeSlots: (spaceId: string, date: string) => { start: string; end: string }[];
+    getReservedTimeSlots: (spaceId: string, date: string) => { start: string; end: string }[];
+    isTimeSlotAvailable: (spaceId: string, date: string, startTime: string, endTime: string) => boolean;
 }
 
 const DashboardContext = createContext<DashboardContextData | undefined>(undefined);
+
+// Time slots available for reservations (hourly increments)
+const ALL_TIME_SLOTS = [
+    '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
+    '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
+];
 
 // Fallback hourly data generation in case API fails
 const generateHourlyData = (spaces: Space[]) => {
@@ -109,6 +127,30 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     const [error, setError] = useState<string | null>(null);
     const [hourlyData, setHourlyData] = useState<any[]>([]);
     const [visibleLines, setVisibleLines] = useState<{ [key: string]: boolean }>({});
+
+    // Add reservations state
+    const [reservations, setReservations] = useState<Reservation[]>([]);
+
+    // Load saved reservations from localStorage
+    useEffect(() => {
+        try {
+            const savedReservations = localStorage.getItem('campusDashboard_reservations');
+            if (savedReservations) {
+                setReservations(JSON.parse(savedReservations));
+            }
+        } catch (err) {
+            console.error('Failed to load saved reservations', err);
+        }
+    }, []);
+
+    // Save reservations to localStorage when changed
+    useEffect(() => {
+        try {
+            localStorage.setItem('campusDashboard_reservations', JSON.stringify(reservations));
+        } catch (err) {
+            console.error('Failed to save reservations', err);
+        }
+    }, [reservations]);
 
     // Function to categorize spaces
     const categorizeSpaces = () => {
@@ -244,6 +286,100 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         };
     }, []);
 
+    // Reservation methods
+    const addReservation = (formData: ReservationFormData) => {
+        // Create a new reservation for each selected space
+        const newReservations = formData.spaces.map(spaceId => {
+            const space = spaces.find(s => s._id === spaceId);
+            
+            return {
+                id: uuidv4(),
+                spaceId,
+                spaceName: space ? space.name : 'Unknown Space',
+                date: formData.date,
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+                isAnonymous: formData.isAnonymous,
+                userId: formData.isAnonymous ? null : uuidv4(), // For future login integration
+                userName: formData.isAnonymous ? null : formData.userName,
+                createdAt: new Date().toISOString()
+            };
+        });
+
+        setReservations(prev => [...prev, ...newReservations]);
+    };
+
+    const deleteReservation = (id: string) => {
+        setReservations(prev => prev.filter(reservation => reservation.id !== id));
+    };
+
+    const getUserReservations = (userName: string) => {
+        return reservations.filter(reservation => reservation.userName === userName);
+    };
+
+    const getSpaceReservations = (spaceId: string) => {
+        return reservations.filter(reservation => reservation.spaceId === spaceId);
+    };
+
+    const getReservedTimeSlots = (spaceId: string, date: string) => {
+        return reservations
+            .filter(reservation => 
+                reservation.spaceId === spaceId && 
+                reservation.date === date
+            )
+            .map(reservation => ({
+                start: reservation.startTime,
+                end: reservation.endTime
+            }));
+    };
+
+    // Check if a time slot conflicts with existing reservations
+    const isTimeSlotAvailable = (spaceId: string, date: string, startTime: string, endTime: string) => {
+        const conflictingReservations = reservations.filter(reservation => {
+            if (reservation.spaceId !== spaceId || reservation.date !== date) {
+                return false;
+            }
+
+            // Convert times to minutes for easier comparison
+            const convertToMinutes = (time: string) => {
+                const [hours, minutes] = time.split(':').map(Number);
+                return hours * 60 + minutes;
+            };
+
+            const newStart = convertToMinutes(startTime);
+            const newEnd = convertToMinutes(endTime);
+            const existingStart = convertToMinutes(reservation.startTime);
+            const existingEnd = convertToMinutes(reservation.endTime);
+
+            // Check for any overlap
+            return (
+                (newStart < existingEnd && newStart >= existingStart) || // New start is within existing
+                (newEnd > existingStart && newEnd <= existingEnd) || // New end is within existing
+                (newStart <= existingStart && newEnd >= existingEnd) // New completely encloses existing
+            );
+        });
+
+        return conflictingReservations.length === 0;
+    };
+
+    // Get available time slots for a space on a specific date
+    const getAvailableTimeSlots = (spaceId: string, date: string) => {
+        const reservedSlots = getReservedTimeSlots(spaceId, date);
+        const availableSlots: { start: string; end: string }[] = [];
+
+        // Iterate through all time slots and check if they're available
+        for (let i = 0; i < ALL_TIME_SLOTS.length - 1; i++) {
+            const start = ALL_TIME_SLOTS[i];
+            const end = ALL_TIME_SLOTS[i + 1];
+
+            if (isTimeSlotAvailable(spaceId, date, start, end)) {
+                availableSlots.push({ start, end });
+            }
+        }
+
+        return availableSlots;
+    };
+
     return (
         <DashboardContext.Provider
             value={{
@@ -254,7 +390,17 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 visibleLines,
                 categorizedSpaces,
                 pieData,
-                toggleLineVisibility
+                toggleLineVisibility,
+                
+                // Reservation methods and state
+                reservations,
+                addReservation,
+                deleteReservation,
+                getUserReservations,
+                getSpaceReservations,
+                getAvailableTimeSlots,
+                getReservedTimeSlots,
+                isTimeSlotAvailable
             }}
         >
             {children}

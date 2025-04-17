@@ -1,3 +1,5 @@
+// src/components/Dashboard/DashboardRouter.tsx
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
@@ -8,6 +10,7 @@ import AmenidadesPage from '../../pages/Dashboard/AmenidadesPage';
 import MuseosPage from '../../pages/Dashboard/MuseosPage';
 import MonumentosPage from '../../pages/Dashboard/MonumentosPage';
 import BuildingsPage from '../../pages/Dashboard/BuildingsPage';
+import ReservationsPage from '../../pages/Dashboard/ReservationsPage'; // Import our new page
 
 const DashboardRouter: React.FC = () => {
   return (
@@ -20,6 +23,7 @@ const DashboardRouter: React.FC = () => {
         <Route path="museos" element={<MuseosPage />} />
         <Route path="monumentos" element={<MonumentosPage />} />
         <Route path="edificios" element={<BuildingsPage />} />
+        <Route path="reservaciones" element={<ReservationsPage />} /> {/* Add new route */}
         <Route path="*" element={<Navigate replace to="/dashboard" />} />
       </Route>
     </Routes>
