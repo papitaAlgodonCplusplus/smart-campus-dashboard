@@ -11,6 +11,16 @@ export interface Space {
     currentOccupancy: number;
     lastUpdated: Date;
     position?: [number, number]; // Coordinates for map location
+
+    // Additional fields for 3D map view
+    info?: string;
+    openHours?: string;
+    peakHours?: string;
+    rules?: string;
+    services?: string[];
+    height?: number;
+    width?: number;
+    depth?: number;
 }
 
 // Categories definition
@@ -103,11 +113,16 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     // Function to categorize spaces
     const categorizeSpaces = () => {
         return {
-            facultades: spaces.filter(space => categories.facultades.some(cat => space.building.includes(cat))),
-            sodas: spaces.filter(space => categories.sodas.some(cat => space.building.includes(cat))),
-            amenidades: spaces.filter(space => categories.amenidades.some(cat => space.building.includes(cat))),
-            museos: spaces.filter(space => categories.museos.some(cat => space.building.includes(cat))),
-            monumentos: spaces.filter(space => categories.monumentos.some(cat => space.building.includes(cat)))
+            facultades: spaces.filter(space =>
+                space.building && categories.facultades.some(cat => space.building.includes(cat))),
+            sodas: spaces.filter(space =>
+                space.building && categories.sodas.some(cat => space.building.includes(cat))),
+            amenidades: spaces.filter(space =>
+                space.building && categories.amenidades.some(cat => space.building.includes(cat))),
+            museos: spaces.filter(space =>
+                space.building && categories.museos.some(cat => space.building.includes(cat))),
+            monumentos: spaces.filter(space =>
+                space.building && categories.monumentos.some(cat => space.building.includes(cat)))
         };
     };
 
@@ -166,7 +181,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
             try {
                 if (spaces.length > 0) {
                     const data = await fetchHourlyData();
-                    
+
                     if (data && data.length > 0) {
                         setHourlyData(data);
                     } else {

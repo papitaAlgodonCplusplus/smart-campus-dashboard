@@ -4,7 +4,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'rea
 import L from 'leaflet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchSpaces } from '../services/api';
-import { UCR_BUILDINGS } from '../data/ucrBuildings';
 import MapLegend from '../components/Map/Utils/MapLegend';
 import Campus3DMap from '../components/Map/Campus3DMap';
 import UserLocationTracker from '../components/Map/Utils/UserLocationTracker';
@@ -37,6 +36,23 @@ const mapContainerStyle = {
   width: '100%',
   borderRadius: '8px',
 };
+
+// Interface for the Building data structure
+interface Building {
+  _id: string;
+  name: string;
+  position: [number, number];
+  info: string;
+  capacity: number;
+  currentOccupancy: number;
+  openHours: string;
+  peakHours: string;
+  rules: string;
+  services: string[];
+  height?: number;
+  width?: number;
+  depth?: number;
+}
 
 const MapController: React.FC = () => {
   const location = useLocation();
@@ -72,25 +88,9 @@ const createMarkerIcon = (occupancyLevel: string): L.Icon => {
   });
 };
 
-interface Building {
-  id: number;
-  name: string;
-  position: [number, number];
-  info: string;
-  capacity: number;
-  currentOccupancy: number;
-  openHours: string;
-  peakHours: string;
-  rules: string;
-  services: string[];
-  height?: number;
-  width?: number;
-  depth?: number;
-}
-
 const MapPage: React.FC = () => {
   const navigate = useNavigate();
-  const [buildings, setBuildings] = useState<Building[]>(UCR_BUILDINGS);
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const [showLabels, setShowLabels] = useState<boolean>(true);
@@ -105,13 +105,39 @@ const MapPage: React.FC = () => {
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [followUser, setFollowUser] = useState<boolean>(false);
 
+  // Fetch buildings data
   useEffect(() => {
-    // Simulate loading delay for demo purposes
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    const loadBuildings = async () => {
+      try {
+        setIsLoading(true);
+        const spacesData = await fetchSpaces();
+        
+        // Convert spaces data to building format
+        const buildingsData = spacesData.map((space: any) => ({
+          _id: space._id,
+          name: space.name,
+          position: space.position,
+          info: space.info || `${space.name} - Sin información adicional`,
+          capacity: space.capacity,
+          currentOccupancy: space.currentOccupancy,
+          openHours: space.openHours || 'Horario no disponible',
+          peakHours: space.peakHours || 'Información no disponible',
+          rules: space.rules || 'No hay reglas específicas',
+          services: space.services || [],
+          height: space.height || 3,
+          width: space.width || 4,
+          depth: space.depth || 4
+        }));
+        
+        setBuildings(buildingsData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching buildings data:', error);
+        setIsLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    loadBuildings();
   }, []);
 
   const getOccupancyLevel = (building: Building) => {
@@ -183,7 +209,7 @@ const MapPage: React.FC = () => {
             size="small"
             fullWidth
             variant="outlined"
-            onClick={() => navigate(`/?building=${building.id}`)}
+            onClick={() => navigate(`/?building=${building._id}`)}
             sx={{
               mt: 2,
               color: 'var(--neon-primary)',
@@ -303,7 +329,7 @@ const MapPage: React.FC = () => {
 
                   return (
                     <Marker
-                      key={building.id}
+                      key={building._id}
                       position={building.position}
                       icon={createMarkerIcon(occupancyLevel)}
                       eventHandlers={{
