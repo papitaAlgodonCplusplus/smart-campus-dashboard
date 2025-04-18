@@ -10,7 +10,7 @@ dotenv.config();
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB Connected for importing buildings');
+    
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     process.exit(1);
@@ -762,7 +762,7 @@ const importBuildings = async () => {
   try {
     // Clear existing data
     await Space.deleteMany({});
-    console.log('Cleared existing space data');
+    
 
     // Get building data
     const buildings = createBuildingsData();
@@ -790,10 +790,10 @@ const importBuildings = async () => {
 
     // Insert data into database
     await Space.insertMany(spaceDocuments);
-    console.log(`${spaceDocuments.length} spaces have been added to the database`);
+    
 
     // Seed completed
-    console.log('Building import completed successfully');
+    
   } catch (error) {
     console.error('Error importing buildings:', error);
   }

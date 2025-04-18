@@ -56,7 +56,7 @@ const getReservation = async (req: Request, res: Response) => {
 // @access  Public (might be restricted in the future)
 const createReservation = async (req: Request, res: Response) => {
     try {
-        console.log('Creating reservation...');
+        
         const { spaces, date, startTime, endTime, isAnonymous, userName } = req.body;
 
         if (!spaces || spaces.length === 0) {

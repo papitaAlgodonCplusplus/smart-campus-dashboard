@@ -293,7 +293,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         try {
             // Create reservation via API for each selected space
             for (const spaceId of formData.spaces) {
-                console.log('Creating reservation for space:', spaceId, formData);
+                
                 await createReservation({
                     ...formData,
                     spaces: [spaceId] // API expects a single space ID

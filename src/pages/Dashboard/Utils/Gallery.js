@@ -387,7 +387,7 @@ function GalleryItem({ item, isSelected, onClick, ...props }) {
       // Zoom to camera when selected
       if (isSelected) {
         const currentRotation = groupRef.current.rotation.y;
-        console.log(currentRotation);
+        
         const z_index = Math.cos(currentRotation) * -2; // Adjusted Z position based on rotation
         const x_index = Math.sin(currentRotation) * -2; // Adjusted Y position based on rotation
 

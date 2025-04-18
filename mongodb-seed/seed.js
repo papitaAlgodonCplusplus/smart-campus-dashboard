@@ -29,7 +29,7 @@ const Space = mongoose.model('Space', spaceSchema);
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smartcampus');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
     return conn;
   } catch (error) {
     console.error(`Error: ${error.message}`);
@@ -498,15 +498,15 @@ const importData = async () => {
     
     // Clear existing data
     await Space.deleteMany();
-    console.log('All existing spaces have been deleted');
+    
     
     // Insert new data
     await Space.insertMany(spaces);
-    console.log(`${spaces.length} spaces have been inserted into the database`);
+    
     
     // Disconnect and exit
     await mongoose.disconnect();
-    console.log('MongoDB disconnected');
+    
     process.exit(0);
   } catch (error) {
     console.error(`Error: ${error.message}`);

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ReservationFormData } from '../types/ReservationTypes';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.MONGODB_URI;
 
 export const fetchSpaces = async () => {
   try {

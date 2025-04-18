@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
-  console.log('MongoDB connected...');
+  
   seedHourlyData();
 }).catch(err => {
   console.error('MongoDB connection error:', err);
@@ -38,7 +38,7 @@ async function seedHourlyData() {
   try {
     // First, clear existing hourly data
     await HourlyData.deleteMany({});
-    console.log('Cleared existing hourly data');
+    
 
     // Get all spaces from the database to use their IDs and names
     const Space = mongoose.model('Space', new mongoose.Schema({
@@ -48,7 +48,7 @@ async function seedHourlyData() {
     }));
     
     const spaces = await Space.find({});
-    console.log(`Found ${spaces.length} spaces`);
+    
 
     if (spaces.length === 0) {
       console.error('No spaces found in the database. Please seed spaces first.');
@@ -67,7 +67,7 @@ async function seedHourlyData() {
       date.setDate(today.getDate() - day);
       date.setHours(0, 0, 0, 0); // Set to beginning of day
 
-      console.log(`Generating data for ${date.toDateString()}`);
+      
 
       for (const hour of hours) {
         const hourNum = parseInt(hour.replace('AM', '').replace('PM', ''));
@@ -157,11 +157,11 @@ async function seedHourlyData() {
     
     // Insert all hourly data
     await HourlyData.insertMany(hourlyData);
-    console.log(`Successfully inserted ${hourlyData.length} hourly data records`);
+    
     
     // Disconnect from MongoDB
     mongoose.disconnect();
-    console.log('MongoDB disconnected');
+    
     
   } catch (error) {
     console.error('Error seeding hourly data:', error);

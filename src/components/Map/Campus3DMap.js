@@ -304,7 +304,7 @@ const Campus3DMap = ({
   // Start guided tour
   const handleTourStart = () => {
     // Implementation for tour functionality could go here
-    console.log("Starting campus tour");
+    
   };
 
   // Handle followUser toggle from UserAvatar3D
