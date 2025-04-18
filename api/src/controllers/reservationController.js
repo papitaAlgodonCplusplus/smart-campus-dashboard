@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import Reservation from '/opt/render/project/src/api/src/models/Reservation';
-import Space from '/opt/render/project/src/api/src/models/Space';
+import Reservation from '/opt/render/project/src/api/src/models/Reservation.js'
+import Space from '/opt/render/project/src/api/src/models/Space.js'
 
 // Helper function to check if a time slot is available
 const isTimeSlotAvailable = async (

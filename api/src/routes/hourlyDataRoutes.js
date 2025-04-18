@@ -1,5 +1,5 @@
 import express from 'express';
-import * as hourlyDataController from '/opt/render/project/src/api/src/controllers/hourlyDataController';
+import * as hourlyDataController from '/opt/render/project/src/api/src/controllers/hourlyDataController.js'
 
 const router = express.Router();
 

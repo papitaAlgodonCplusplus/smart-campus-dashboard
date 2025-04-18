@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import * as reservationController from  '/opt/render/project/src/api/src/controllers/reservationController';
+import * as reservationController from '/opt/render/project/src/api/src/controllers/reservationController.js'
 
 // Get all reservations and create a reservation
 router.route('/')
