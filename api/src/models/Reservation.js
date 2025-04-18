@@ -89,4 +89,4 @@ ReservationSchema.methods.conflictsWith = function (date, startTime, endTime) {
     );
 };
 
-module.exports = mongoose.model('Reservation', ReservationSchema);
+export default mongoose.model('Reservation', ReservationSchema);

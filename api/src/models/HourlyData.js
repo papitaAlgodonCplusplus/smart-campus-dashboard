@@ -9,6 +9,4 @@ const hourlyDataSchema = new mongoose.Schema({
 // Index for efficient querying
 hourlyDataSchema.index({ date: -1, hour: 1 });
 
-const HourlyData = mongoose.model('HourlyData', hourlyDataSchema);
-
-export default HourlyData;
+export default mongoose.model('HourlyData', hourlyDataSchema);

@@ -20,4 +20,4 @@ const spaceSchema = new mongoose.Schema({
   depth: { type: Number }
 });
 
-module.exports = mongoose.model('Space', spaceSchema);
+export default mongoose.model('Space', spaceSchema);
