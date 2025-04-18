@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const ReservationSchema = new mongoose.Schema({
     spaceId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Space',
         required: [true, 'Please provide a space ID']
     },
@@ -45,7 +45,7 @@ const ReservationSchema = new mongoose.Schema({
         default: false
     },
     userId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null
     },
