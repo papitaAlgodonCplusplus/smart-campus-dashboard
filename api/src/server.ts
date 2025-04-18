@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import spaceRoutes from './routes/spaceRoutes';
 import hourlyDataRoutes from './routes/hourlyDataRoutes';
+import reservationRoutes from './routes/reservationRoutes';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 // Routes
 app.use('/api/spaces', spaceRoutes);
 app.use('/api/hourly-data', hourlyDataRoutes);
+app.use('/api/reservations', reservationRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

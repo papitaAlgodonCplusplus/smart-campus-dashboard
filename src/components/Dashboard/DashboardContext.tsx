@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid'; // We'll need to add this package
-import { fetchSpaces, fetchHourlyData } from '../../services/api';
+import { fetchSpaces, fetchHourlyData, fetchReservations, createReservation, deleteReservation as apiDeleteReservation } from '../../services/api';
 import { Reservation, ReservationFormData } from '../../types/ReservationTypes';
 
 // Define space data interface
@@ -61,13 +60,14 @@ interface DashboardContextData {
     
     // Reservation methods
     reservations: Reservation[];
-    addReservation: (formData: ReservationFormData) => void;
-    deleteReservation: (id: string) => void;
+    addReservation: (formData: ReservationFormData) => Promise<void>;
+    deleteReservation: (id: string) => Promise<void>;
     getUserReservations: (userName: string) => Reservation[];
     getSpaceReservations: (spaceId: string) => Reservation[];
     getAvailableTimeSlots: (spaceId: string, date: string) => { start: string; end: string }[];
     getReservedTimeSlots: (spaceId: string, date: string) => { start: string; end: string }[];
     isTimeSlotAvailable: (spaceId: string, date: string, startTime: string, endTime: string) => boolean;
+    refreshReservations: () => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextData | undefined>(undefined);
@@ -131,27 +131,6 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     // Add reservations state
     const [reservations, setReservations] = useState<Reservation[]>([]);
 
-    // Load saved reservations from localStorage
-    useEffect(() => {
-        try {
-            const savedReservations = localStorage.getItem('campusDashboard_reservations');
-            if (savedReservations) {
-                setReservations(JSON.parse(savedReservations));
-            }
-        } catch (err) {
-            console.error('Failed to load saved reservations', err);
-        }
-    }, []);
-
-    // Save reservations to localStorage when changed
-    useEffect(() => {
-        try {
-            localStorage.setItem('campusDashboard_reservations', JSON.stringify(reservations));
-        } catch (err) {
-            console.error('Failed to save reservations', err);
-        }
-    }, [reservations]);
-
     // Function to categorize spaces
     const categorizeSpaces = () => {
         return {
@@ -189,6 +168,24 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
             setVisibleLines(initialVisibleLines);
         }
     }, [spaces, hourlyData]);
+
+    // Fetch reservations from API
+    const loadReservations = async () => {
+        try {
+            const data = await fetchReservations();
+            if (data && Array.isArray(data)) {
+                setReservations(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch reservations', err);
+            setError('Failed to fetch reservations: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        }
+    };
+
+    // Refresh reservations
+    const refreshReservations = async () => {
+        await loadReservations();
+    };
 
     // Toggle visibility of specific lines
     const toggleLineVisibility = (spaceKey: string) => {
@@ -243,6 +240,11 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         getHourlyData();
     }, [spaces]);
 
+    // Fetch reservations when component mounts
+    useEffect(() => {
+        loadReservations();
+    }, []);
+
     // Simulate loading delay for demo purposes
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -287,30 +289,35 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     }, []);
 
     // Reservation methods
-    const addReservation = (formData: ReservationFormData) => {
-        // Create a new reservation for each selected space
-        const newReservations = formData.spaces.map(spaceId => {
-            const space = spaces.find(s => s._id === spaceId);
+    const addReservation = async (formData: ReservationFormData) => {
+        try {
+            // Create reservation via API for each selected space
+            for (const spaceId of formData.spaces) {
+                console.log('Creating reservation for space:', spaceId, formData);
+                await createReservation({
+                    ...formData,
+                    spaces: [spaceId] // API expects a single space ID
+                });
+            }
             
-            return {
-                id: uuidv4(),
-                spaceId,
-                spaceName: space ? space.name : 'Unknown Space',
-                date: formData.date,
-                startTime: formData.startTime,
-                endTime: formData.endTime,
-                isAnonymous: formData.isAnonymous,
-                userId: formData.isAnonymous ? null : uuidv4(), // For future login integration
-                userName: formData.isAnonymous ? null : formData.userName,
-                createdAt: new Date().toISOString()
-            };
-        });
-
-        setReservations(prev => [...prev, ...newReservations]);
+            // Refresh reservations after adding
+            await loadReservations();
+        } catch (err) {
+            console.error('Failed to create reservation', err);
+            throw err; // Propagate error to form for handling
+        }
     };
 
-    const deleteReservation = (id: string) => {
-        setReservations(prev => prev.filter(reservation => reservation.id !== id));
+    const deleteReservation = async (id: string) => {
+        try {
+            await apiDeleteReservation(id);
+            
+            // Refresh reservations after deletion
+            await loadReservations();
+        } catch (err) {
+            console.error('Failed to delete reservation', err);
+            throw err; // Propagate error for handling
+        }
     };
 
     const getUserReservations = (userName: string) => {
@@ -400,7 +407,8 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 getSpaceReservations,
                 getAvailableTimeSlots,
                 getReservedTimeSlots,
-                isTimeSlotAvailable
+                isTimeSlotAvailable,
+                refreshReservations
             }}
         >
             {children}

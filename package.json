@@ -60,5 +60,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "ts-node": "^10.9.2"
   }
 }

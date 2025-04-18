@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ReservationFormData } from '../types/ReservationTypes';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -32,7 +33,7 @@ export const updateSpaceOccupancy = async (id: string, currentOccupancy: number)
   }
 };
 
-// New function to fetch the hourly data
+// Function to fetch hourly data
 export const fetchHourlyData = async () => {
   try {
     const response = await axios.get(`${API_URL}/hourly-data/latest`);
@@ -66,6 +67,92 @@ export const fetchHourlyDataRange = async (startDate: Date, endDate: Date) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching hourly data range:', error);
+    throw error;
+  }
+};
+
+// RESERVATIONS API FUNCTIONS
+
+// Fetch all reservations
+export const fetchReservations = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/reservations`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    throw error;
+  }
+};
+
+// Create a new reservation
+export const createReservation = async (formData: ReservationFormData) => {
+  try {
+    const response = await axios.post(`${API_URL}/reservations`, formData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating reservation:', error);
+    throw error;
+  }
+};
+
+// Delete a reservation
+export const deleteReservation = async (id: string) => {
+  try {
+    const response = await axios.delete(`${API_URL}/reservations/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting reservation:', error);
+    throw error;
+  }
+};
+
+// Get reservations by space ID
+export const fetchReservationsBySpace = async (spaceId: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/reservations/space/${spaceId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reservations by space:', error);
+    throw error;
+  }
+};
+
+// Get reservations by user name
+export const fetchReservationsByUser = async (userName: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/reservations/user/${userName}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reservations by user:', error);
+    throw error;
+  }
+};
+
+// Get reservations for a specific date
+export const fetchReservationsByDate = async (date: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/reservations/date/${date}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reservations by date:', error);
+    throw error;
+  }
+};
+
+// Check availability for a specific time slot
+export const checkTimeSlotAvailability = async (
+  spaceId: string,
+  date: string,
+  startTime: string,
+  endTime: string
+) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/reservations/availability?spaceId=${spaceId}&date=${date}&startTime=${startTime}&endTime=${endTime}`
+    );
+    return response.data.available;
+  } catch (error) {
+    console.error('Error checking time slot availability:', error);
     throw error;
   }
 };
