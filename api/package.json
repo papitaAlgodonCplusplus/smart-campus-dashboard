@@ -12,7 +12,8 @@
     "express-async-handler": "^1.2.0",
     "mongoose": "^7.0.0",
     "uuid": "^9.0.0",
-    "helmet": "^6.0.1"
+    "helmet": "^6.0.1",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
