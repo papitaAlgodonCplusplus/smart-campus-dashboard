@@ -1,7 +1,6 @@
-import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import Reservation from '../models/Reservation';
-import Space from '../models/Space';
+import Reservation from '/opt/render/project/src/api/src/models/Reservation';
+import Space from '/opt/render/project/src/api/src/models/Space';
 
 // Helper function to check if a time slot is available
 const isTimeSlotAvailable = async (

@@ -1,5 +1,4 @@
-import { Request, Response } from 'express';
-import Space from '../models/Space';
+import Space from '/opt/render/project/src/api/src/models/Space';
 
 // Get all spaces
 export const getSpaces = async (req, res) => {

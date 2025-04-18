@@ -1,5 +1,4 @@
-import { Request, Response } from 'express';
-import HourlyData from '../models/HourlyData';
+import HourlyData from '/opt/render/project/src/api/src/models/HourlyData';
 
 // Get hourly data for the current day (default)
 export const getHourlyData = async (req, res) => {

@@ -1,5 +1,5 @@
 import express from 'express';
-import * as spaceController from '../controllers/spaceController';
+import * as spaceController from '/opt/render/project/src/api/src/controllers/spaceController';
 
 const router = express.Router();
 
