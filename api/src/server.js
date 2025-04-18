@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import spaceRoutes from './routes/spaceRoutes';
-import hourlyDataRoutes from './routes/hourlyDataRoutes';
-import reservationRoutes from './routes/reservationRoutes';
+import spaceRoutes from '/opt/render/project/src/routes/spaceRoutes.js';
+import hourlyDataRoutes from '/opt/render/project/src/routes/hourlyDataRoutes.js';
+import reservationRoutes from '/opt/render/project/src/routes/reservationRoutes.js';
 import mongoose from 'mongoose';
 
 dotenv.config();
