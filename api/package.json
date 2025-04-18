@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node src/server.js",
     "build": "tsc",
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
  "dependencies": {
@@ -12,8 +12,7 @@
     "express-async-handler": "^1.2.0",
     "mongoose": "^7.0.0",
     "uuid": "^9.0.0",
-    "helmet": "^6.0.1",
-    "ts-node": "^10.9.1"
+    "helmet": "^6.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

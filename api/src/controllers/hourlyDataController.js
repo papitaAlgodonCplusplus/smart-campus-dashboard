@@ -2,14 +2,14 @@ import { Request, Response } from 'express';
 import HourlyData from '../models/HourlyData';
 
 // Get hourly data for the current day (default)
-export const getHourlyData = async (req: Request, res: Response): Promise<void> => {
+export const getHourlyData = async (req, res) => {
   try {
     const { date } = req.query;
-    let queryDate: Date;
+    let queryDate;
     
     if (date) {
       // If date is provided as query parameter, use it
-      queryDate = new Date(date as string);
+      queryDate = new Date(date);
     } else {
       // Otherwise use current date
       queryDate = new Date();
@@ -40,7 +40,7 @@ export const getHourlyData = async (req: Request, res: Response): Promise<void> 
 };
 
 // Get hourly data for a specific date range
-export const getHourlyDataRange = async (req: Request, res: Response): Promise<void> => {
+export const getHourlyDataRange = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     
@@ -49,8 +49,8 @@ export const getHourlyDataRange = async (req: Request, res: Response): Promise<v
       return;
     }
     
-    const start = new Date(startDate as string);
-    const end = new Date(endDate as string);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
     
     // Set to beginning and end of days
     start.setHours(0, 0, 0, 0);
@@ -74,7 +74,7 @@ export const getHourlyDataRange = async (req: Request, res: Response): Promise<v
 };
 
 // Get the latest hourly data for charts (similar to what generateHourlyData was doing)
-export const getLatestHourlyData = async (req: Request, res: Response): Promise<void> => {
+export const getLatestHourlyData = async (req, res) => {
   try {
     // Get the current date
     const today = new Date();
@@ -89,7 +89,7 @@ export const getLatestHourlyData = async (req: Request, res: Response): Promise<
     
     // Format data similar to generateHourlyData output
     const formattedData = hourlyData.map(record => {
-      const dataPoint: any = { hour: record.hour };
+      const dataPoint = { hour: record.hour };
       
       // Add each space's percentage to the data point
       record.spaceData.forEach((percentage, spaceKey) => {

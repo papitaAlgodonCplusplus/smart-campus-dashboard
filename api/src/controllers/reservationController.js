@@ -5,11 +5,11 @@ import Space from '../models/Space';
 
 // Helper function to check if a time slot is available
 const isTimeSlotAvailable = async (
-    spaceId: string,
-    date: string,
-    startTime: string,
-    endTime: string
-): Promise<boolean> => {
+    spaceId,
+    date,
+    startTime,
+    endTime
+) => {
     const reservations = await Reservation.find({ spaceId, date });
 
     for (const reservation of reservations) {
@@ -24,7 +24,7 @@ const isTimeSlotAvailable = async (
 // @desc    Get all reservations
 // @route   GET /api/reservations
 // @access  Public (might be restricted in the future)
-const getReservations = async (req: Request, res: Response) => {
+const getReservations = async (req, res) => {
     try {
         const reservations = await Reservation.find().sort('-date');
         res.json(reservations);
@@ -36,7 +36,7 @@ const getReservations = async (req: Request, res: Response) => {
 // @desc    Get a single reservation
 // @route   GET /api/reservations/:id
 // @access  Public (might be restricted in the future)
-const getReservation = async (req: Request, res: Response) => {
+const getReservation = async (req, res) => {
     try {
         const reservation = await Reservation.findById(req.params.id);
 
@@ -54,7 +54,7 @@ const getReservation = async (req: Request, res: Response) => {
 // @desc    Create a reservation
 // @route   POST /api/reservations
 // @access  Public (might be restricted in the future)
-const createReservation = async (req: Request, res: Response) => {
+const createReservation = async (req, res) => {
     try {
         
         const { spaces, date, startTime, endTime, isAnonymous, userName } = req.body;
@@ -104,7 +104,7 @@ const createReservation = async (req: Request, res: Response) => {
 // @desc    Delete a reservation
 // @route   DELETE /api/reservations/:id
 // @access  Public (might be restricted in the future)
-const deleteReservation = async (req: Request, res: Response) => {
+const deleteReservation = async (req, res) => {
     try {
         const reservation = await Reservation.findById(req.params.id);
 
@@ -124,7 +124,7 @@ const deleteReservation = async (req: Request, res: Response) => {
 // @desc    Get reservations by space
 // @route   GET /api/reservations/space/:spaceId
 // @access  Public
-const getReservationsBySpace = async (req: Request, res: Response) => {
+const getReservationsBySpace = async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.spaceId)) {
             res.status(400).json({ message: 'Invalid space ID' });
@@ -141,7 +141,7 @@ const getReservationsBySpace = async (req: Request, res: Response) => {
 // @desc    Get reservations by user
 // @route   GET /api/reservations/user/:userName
 // @access  Public (might be restricted in the future)
-const getReservationsByUser = async (req: Request, res: Response) => {
+const getReservationsByUser = async (req, res) => {
     try {
         const reservations = await Reservation.find({ userName: req.params.userName }).sort('date startTime');
         res.json(reservations);
@@ -153,7 +153,7 @@ const getReservationsByUser = async (req: Request, res: Response) => {
 // @desc    Get reservations by date
 // @route   GET /api/reservations/date/:date
 // @access  Public
-const getReservationsByDate = async (req: Request, res: Response) => {
+const getReservationsByDate = async (req, res) => {
     try {
         const { date } = req.params;
 
@@ -172,7 +172,7 @@ const getReservationsByDate = async (req: Request, res: Response) => {
 // @desc    Check time slot availability
 // @route   GET /api/reservations/availability
 // @access  Public
-const checkTimeSlotAvailability = async (req: Request, res: Response) => {
+const checkTimeSlotAvailability = async (req, res) => {
     try {
         const { spaceId, date, startTime, endTime } = req.query;
 
@@ -181,12 +181,12 @@ const checkTimeSlotAvailability = async (req: Request, res: Response) => {
             return;
         }
 
-        if (!mongoose.Types.ObjectId.isValid(spaceId as string)) {
+        if (!mongoose.Types.ObjectId.isValid(spaceId)) {
             res.status(400).json({ message: 'Invalid space ID' });
             return;
         }
 
-        const available = await isTimeSlotAvailable(spaceId as string, date as string, startTime as string, endTime as string);
+        const available = await isTimeSlotAvailable(spaceId, date, startTime, endTime);
         res.json({ available });
     } catch (error) {
         res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });

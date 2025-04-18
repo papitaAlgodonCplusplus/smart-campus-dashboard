@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Space from '../models/Space';
 
 // Get all spaces
-export const getSpaces = async (req: Request, res: Response): Promise<void> => {
+export const getSpaces = async (req, res) => {
   try {
     
     const spaces = await Space.find({});
@@ -14,7 +14,7 @@ export const getSpaces = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Get space by ID
-export const getSpaceById = async (req: Request, res: Response): Promise<void> => {
+export const getSpaceById = async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
     if (!space) {
@@ -28,7 +28,7 @@ export const getSpaceById = async (req: Request, res: Response): Promise<void> =
 };
 
 // Update space occupancy
-export const updateOccupancy = async (req: Request, res: Response): Promise<void> => {
+export const updateOccupancy = async (req, res) => {
   try {
     const { currentOccupancy } = req.body;
     

@@ -1,18 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-interface IReservation extends Document {
-    spaceId: Schema.Types.ObjectId;
-    spaceName: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    isAnonymous: boolean;
-    userId: Schema.Types.ObjectId | null;
-    userName: string | null;
-    conflictsWith(date: string, startTime: string, endTime: string): boolean;
-}
-
-const ReservationSchema = new Schema<IReservation>({
+const ReservationSchema = new mongoose.Schema({
     spaceId: {
         type: Schema.Types.ObjectId,
         ref: 'Space',
@@ -26,30 +14,30 @@ const ReservationSchema = new Schema<IReservation>({
         type: String,
         required: [true, 'Please provide a date'],
         validate: {
-            validator: function (v: string) {
+            validator: function (v) {
                 return /^\d{4}-\d{2}-\d{2}$/.test(v);
             },
-            message: (props: { value: string }) => `${props.value} is not a valid date! Format should be YYYY-MM-DD`
+            message: (props) => `${props.value} is not a valid date! Format should be YYYY-MM-DD`
         }
     },
     startTime: {
         type: String,
         required: [true, 'Please provide a start time'],
         validate: {
-            validator: function (v: string) {
+            validator: function (v) {
                 return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
             },
-            message: (props: { value: string }) => `${props.value} is not a valid time! Format should be HH:MM`
+            message: (props) => `${props.value} is not a valid time! Format should be HH:MM`
         }
     },
     endTime: {
         type: String,
         required: [true, 'Please provide an end time'],
         validate: {
-            validator: function (v: string) {
+            validator: function (v) {
                 return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
             },
-            message: (props: { value: string }) => `${props.value} is not a valid time! Format should be HH:MM`
+            message: (props) => `${props.value} is not a valid time! Format should be HH:MM`
         }
     },
     isAnonymous: {
@@ -72,12 +60,18 @@ const ReservationSchema = new Schema<IReservation>({
 // Index for efficient lookup of reservations by space and date
 ReservationSchema.index({ spaceId: 1, date: 1 });
 
-// Custom method to check if a time slot conflicts with this reservation
-ReservationSchema.methods.conflictsWith = function (date: string, startTime: string, endTime: string): boolean {
+/**
+ * Custom method to check if a time slot conflicts with this reservation
+ * @param {string} date
+ * @param {string} startTime
+ * @param {string} endTime
+ * @returns {boolean}
+ */
+ReservationSchema.methods.conflictsWith = function (date, startTime, endTime) {
     if (this.date !== date) return false;
 
     // Convert times to minutes for easier comparison
-    const convertToMinutes = (time: string): number => {
+    const convertToMinutes = (time) => {
         const [hours, minutes] = time.split(':').map(Number);
         return hours * 60 + minutes;
     };
@@ -95,4 +89,4 @@ ReservationSchema.methods.conflictsWith = function (date: string, startTime: str
     );
 };
 
-export default model<IReservation>('Reservation', ReservationSchema);
+module.exports = mongoose.model('Reservation', ReservationSchema);

@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-interface IHourlyData {
-  hour: string;
-  date: Date;
-  spaceData: Map<string, number>;
-}
-
 const hourlyDataSchema = new mongoose.Schema({
   hour: { type: String, required: true },
   date: { type: Date, default: Date.now },
@@ -15,6 +9,6 @@ const hourlyDataSchema = new mongoose.Schema({
 // Index for efficient querying
 hourlyDataSchema.index({ date: -1, hour: 1 });
 
-const HourlyData = mongoose.model<IHourlyData>('HourlyData', hourlyDataSchema);
+const HourlyData = mongoose.model('HourlyData', hourlyDataSchema);
 
 export default HourlyData;
