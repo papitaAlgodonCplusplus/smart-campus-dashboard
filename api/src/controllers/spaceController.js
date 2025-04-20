@@ -3,7 +3,7 @@ import Space from '/opt/render/project/src/api/src/models/Space.js'
 // Get all spaces
 export const getSpaces = async (req, res) => {
   try {
-    
+    console.log('Fetching all spaces...');
     const spaces = await Space.find({});
     
     res.status(200).json(spaces);
@@ -15,6 +15,7 @@ export const getSpaces = async (req, res) => {
 // Get space by ID
 export const getSpaceById = async (req, res) => {
   try {
+    console.log('Fetching space by ID...');
     const space = await Space.findById(req.params.id);
     if (!space) {
       res.status(404).json({ message: 'Space not found' });
@@ -29,6 +30,7 @@ export const getSpaceById = async (req, res) => {
 // Update space occupancy
 export const updateOccupancy = async (req, res) => {
   try {
+    console.log('Updating space occupancy...');
     const { currentOccupancy } = req.body;
     
     const space = await Space.findById(req.params.id);
