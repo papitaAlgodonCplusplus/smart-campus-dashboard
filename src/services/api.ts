@@ -5,6 +5,7 @@ const REACT_APP_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:500
 
 export const fetchSpaces = async () => {
   try {
+    console.log('Fetching spaces from API:', `${REACT_APP_API_URL}/spaces`);
     const response = await axios.get(`${REACT_APP_API_URL}/spaces`);
     return response.data;
   } catch (error) {
