@@ -1,4 +1,5 @@
 import Space from '/opt/render/project/src/api/src/models/Space.js'
+import mongoose from 'mongoose';
 
 // Get all spaces
 export const getSpaces = async (req, res) => {
