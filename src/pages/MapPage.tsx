@@ -96,6 +96,7 @@ const MapPage: React.FC = () => {
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
   const [viewMode, setViewMode] = useState<'2D' | '3D'>('2D');
+  const [isViewModeChanging, setIsViewModeChanging] = useState<boolean>(false);
   
   // User location state
   const [userLocation, setUserLocation] = useState<{
@@ -139,6 +140,20 @@ const MapPage: React.FC = () => {
 
     loadBuildings();
   }, []);
+
+  // Handle view mode change with loading state
+  const handleViewModeChange = (mode: '2D' | '3D') => {
+    if (mode === viewMode) return;
+    
+    setIsViewModeChanging(true);
+    setViewMode(mode);
+    
+    // Add a slight delay to simulate loading and ensure smooth transition
+    // This timing can be adjusted based on your 3D rendering performance
+    setTimeout(() => {
+      setIsViewModeChanging(false);
+    }, 1000);
+  };
 
   const getOccupancyLevel = (building: Building) => {
     const percentage = (building.currentOccupancy / building.capacity) * 100;
@@ -238,7 +253,7 @@ const MapPage: React.FC = () => {
         <Box>
           <ButtonGroup variant="outlined" sx={{ mr: 2 }}>
             <Button
-              onClick={() => setViewMode('2D')}
+              onClick={() => handleViewModeChange('2D')}
               sx={{
                 color: viewMode === '2D' ? 'var(--neon-primary)' : 'gray',
                 borderColor: viewMode === '2D' ? 'var(--neon-primary)' : 'gray',
@@ -252,7 +267,7 @@ const MapPage: React.FC = () => {
               Mapa 2D
             </Button>
             <Button
-              onClick={() => setViewMode('3D')}
+              onClick={() => handleViewModeChange('3D')}
               sx={{
                 color: viewMode === '3D' ? 'var(--neon-primary)' : 'gray',
                 borderColor: viewMode === '3D' ? 'var(--neon-primary)' : 'gray',
@@ -301,7 +316,41 @@ const MapPage: React.FC = () => {
           <div className="neon-loading"></div>
         </Box>
       ) : (
-        <Paper elevation={3} sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            overflow: 'hidden', 
+            borderRadius: 2, 
+            position: 'relative',
+            height: '600px'
+          }}
+        >
+          {/* Loading overlay for view mode transition */}
+          {isViewModeChanging && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(5, 5, 25, 0.8)',
+                zIndex: 1100,
+                backdropFilter: 'blur(5px)',
+                borderRadius: '8px',
+              }}
+            >
+              <div className="neon-loading"></div>
+              <Typography variant="h6" sx={{ mt: 2, color: 'var(--neon-primary)' }}>
+                Cargando vista {viewMode}...
+              </Typography>
+            </Box>
+          )}
+
           {viewMode === '2D' ? (
             <>
               <MapContainer
