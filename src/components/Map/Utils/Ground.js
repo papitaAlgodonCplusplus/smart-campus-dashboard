@@ -25,28 +25,28 @@ const Ground = () => {
       <mesh>
         {/* Tile Entrance */}
         <group>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -54,7 +54,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_00, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -66,28 +66,28 @@ const Ground = () => {
         {/* Tile 0 */}
         <group>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -95,7 +95,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_0, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -106,28 +106,28 @@ const Ground = () => {
 
         {/* Tile 1 */}
         <group>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -135,7 +135,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -146,28 +146,28 @@ const Ground = () => {
 
         {/* Tile 2 */}
         <group>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -175,7 +175,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_2, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -186,28 +186,28 @@ const Ground = () => {
 
         {/* Tile 3 */}
         <group>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -215,7 +215,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_3, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -226,28 +226,28 @@ const Ground = () => {
 
         {/* Tile 4 */}
         <group>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -40]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -40]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -80]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -80]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -120]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -120]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
               roughnessMap={textures.roughnessMap}
             />
           </Plane>
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -160]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -160]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -255,7 +255,7 @@ const Ground = () => {
             />
           </Plane>
 
-          <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -200]} receiveShadow>
+          <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_4, -1, -200]} receiveShadow>
             <meshStandardMaterial
               map={textures.map}
               displacementMap={textures.normalMap}
@@ -267,35 +267,35 @@ const Ground = () => {
 
       {/* Tile 5 */}
       <group>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -40]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -40]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -80]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -80]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -120]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -120]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -160]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -160]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -200]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_5, -1, -200]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
@@ -306,35 +306,35 @@ const Ground = () => {
 
       {/* Tile 6 */}
       <group>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -40]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -40]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -80]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -80]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -120]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -120]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -160]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -160]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
             roughnessMap={textures.roughnessMap}
           />
         </Plane>
-        <Plane args={[40, 40, 128, 128]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -200]} receiveShadow>
+        <Plane args={[40, 40, 32, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[x_6, -1, -200]} receiveShadow>
           <meshStandardMaterial
             map={textures.map}
             displacementMap={textures.normalMap}
