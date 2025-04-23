@@ -205,6 +205,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                     setSpaces(data);
                 }
                 setError(null);
+                setLoading(false);
             } catch (err) {
                 console.error('Failed to fetch spaces', err);
                 setError('Failed to fetch spaces data: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -243,14 +244,6 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     // Fetch reservations when component mounts
     useEffect(() => {
         loadReservations();
-    }, []);
-
-    // Simulate loading delay for demo purposes
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1500);
-        return () => clearTimeout(timer);
     }, []);
 
     // Create CSS styling for charts
