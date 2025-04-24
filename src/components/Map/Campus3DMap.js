@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Billboard, Sky, Cloud } from '@react-three/drei';
+import { OrbitControls, Text, Billboard, Sky, Cloud, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import MapControls from './Utils/MapControls';
 import Ground from './Utils/Ground';
 import UserAvatar3D from './Utils/UserAvatar3D';
-import LoadingMinigame from '../Dashboard/LoadingMinigame';
 
 // Import coordinate files
 import { treeCoordinates } from '../../data/treeCoordinates';
@@ -14,6 +13,234 @@ import { fountainCoordinates } from '../../data/fountainCoordinates';
 import { CAMPUS_CONSTANTS } from '../../data/campusConstants';
 
 import './Campus3DMap.css';
+
+import buildingTexture from '../../textures/concrete_wall_007_diff_4k.jpg';
+import buildingDisp from '../../textures/concrete_wall_007_disp_4k.png';
+import leavesTexture from '../../textures/aerial_grass_rock_diff_4k.jpg';
+import leavesDisp from '../../textures/aerial_grass_rock_disp_4k.png';
+import leavesRoughness from '../../textures/aerial_grass_rock_rough_4k.jpg';
+import trunkTexture from '../../textures/wood_table_worn_diff_4k.jpg'
+import trunkDisp from '../../textures/wood_table_worn_disp_4k.png';
+
+// Enhanced Building component with windows
+const Building = ({ building, onClick, isNightMode }) => {
+  const meshRef = useRef();
+  const windowsRef = useRef();
+  const [hovered, setHovered] = useState(false);
+
+  // Calculate building dimensions
+  const height = building.height || 2 + (building.capacity / 200);
+  const width = building.width || 3 + Math.random() * 2;
+  const depth = building.depth || 3 + Math.random() * 2;
+
+  // Calculate number of floors based on height
+  const floors = Math.max(1, Math.floor(height / 1.2));
+
+  // Calculate number of windows per floor
+  const windowsPerFloorWidth = Math.max(2, Math.floor(width / 1.5));
+  const windowsPerFloorDepth = Math.max(2, Math.floor(depth / 1.5));
+
+  // Calculate occupancy percentage
+  const occupancyPercentage = (building.currentOccupancy / building.capacity) * 100;
+
+  // Determine color based on occupancy
+  let color;
+  if (occupancyPercentage < 40) {
+    color = '#0f8'; // Low occupancy - green
+  } else if (occupancyPercentage < 70) {
+    color = '#f80'; // Medium occupancy - orange
+  } else {
+    color = '#f02222'; // High occupancy - red
+  }
+
+  // Base building color (various shades of blue/gray for different buildings)
+  const baseColors = ['#38bdf8', '#60a5fa', '#93c5fd', '#bfdbfe', '#a7f3d0', '#d9f99d', '#c4b5fd'];
+  const buildingBaseColor = baseColors[building.id % baseColors.length];
+
+  // Light effects for windows
+  const windowLightEffect = isNightMode ? (Math.random() > 0.3 ? '#ffd700' : '#f8fafc') : 'white';
+  const windowEmissive = isNightMode ? windowLightEffect : 'white';
+  const windowEmissiveIntensity = isNightMode ? 0.6 : 0;
+
+  // Animate on hover and windows lights
+  useFrame((state) => {
+    if (meshRef.current) {
+      if (hovered) {
+        meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, 1.1, 0.1);
+      } else {
+        meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, 1, 0.1);
+      }
+    }
+
+    // Flicker some windows randomly in night mode
+    if (windowsRef.current && isNightMode) {
+      const materials = windowsRef.current.material;
+      if (Array.isArray(materials)) {
+        materials.forEach((material, index) => {
+          // Randomly flicker some windows
+          if (Math.random() < 0.001) {
+            material.emissiveIntensity = Math.random() * 0.8;
+          }
+        });
+      }
+    }
+  });
+
+  // Scale position from Leaflet coordinates to 3D space
+  const scaledPosition = [
+    (building.position[1] - -84.05) * 40000, // X (longitude)
+    height / 2.5, // Y (height)
+    (building.position[0] - 9.94) * 40000 // Z (latitude)
+  ];
+
+
+  const textures = useTexture({
+    map: buildingTexture,
+    normalMap: buildingDisp,
+  });
+
+  return (
+    <group position={scaledPosition}>
+      {/* Building base */}
+      <mesh
+        ref={meshRef}
+        onClick={() => onClick(building.id)}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[width, height, depth]} />
+        <meshStandardMaterial
+          color={hovered ? '#00ffff' : buildingBaseColor}
+          emissive={hovered ? color : '#000'}
+          emissiveIntensity={hovered ? 0.5 : 0}
+          map={textures.map}
+          bumpMap={textures.normalMap}
+          metalness={0.4}
+          roughness={0.7}
+        />
+      </mesh>
+
+      {/* Windows - create a grid of window instances */}
+      <group ref={windowsRef}>
+        {Array.from({ length: floors }).map((_, floorIndex) => (
+          <React.Fragment key={`floor-${floorIndex}`}>
+            {/* Windows on width sides */}
+            {Array.from({ length: windowsPerFloorWidth }).map((_, windowIndex) => {
+              const windowPadding = 0.15;
+              const windowWidth = width / windowsPerFloorWidth - windowPadding;
+              const windowHeight = 0.7;
+              const windowDepth = 0.05;
+              const posX = -width / 2 + (windowIndex + 0.5) * (width / windowsPerFloorWidth);
+              const posY = height / 8 + (floorIndex * (height / floors)) - (height * 0.5);
+
+              // Create windows on front side
+              return (
+                <React.Fragment key={`window-width-${floorIndex}-${windowIndex}`}>
+                  <mesh
+                    position={[posX, posY, depth / 2 + 0.01]}
+                    castShadow
+                  >
+                    <boxGeometry args={[windowWidth, windowHeight, windowDepth]} />
+                    <meshStandardMaterial
+                      color={windowLightEffect}
+                      opacity={0.8}
+                      emissive={windowEmissive}
+                      emissiveIntensity={windowEmissiveIntensity}
+                      metalness={0.1}
+                      roughness={0.2}
+                    />
+                  </mesh>
+
+                  {/* Windows on back side */}
+                  <mesh
+                    position={[posX, posY, -depth / 2 - 0.01]}
+                    castShadow
+                  >
+                    <boxGeometry args={[windowWidth, windowHeight, windowDepth]} />
+                    <meshStandardMaterial
+                      color={windowLightEffect}
+                      opacity={0.8}
+                      emissive={windowEmissive}
+                      emissiveIntensity={windowEmissiveIntensity}
+                      metalness={0.1}
+                      roughness={0.2}
+                    />
+                  </mesh>
+                </React.Fragment>
+              );
+            })}
+
+            {/* Windows on depth sides */}
+            {Array.from({ length: windowsPerFloorDepth }).map((_, windowIndex) => {
+              const windowPadding = 0.15;
+              const windowHeight = 0.7;
+              const windowDepth = depth / windowsPerFloorDepth - windowPadding;
+              const posZ = -depth / 2 + (windowIndex + 0.5) * (depth / windowsPerFloorDepth);
+              const posY = height / 8 + (floorIndex * (height / floors)) - (height * 0.5);
+
+              return (
+                <React.Fragment key={`window-depth-${floorIndex}-${windowIndex}`}>
+                  {/* Windows on right side */}
+                  <mesh
+                    position={[width / 2 + 0.01, posY, posZ]}
+                    rotation={[0, Math.PI / 2, 0]}
+                    castShadow
+                  >
+                    <boxGeometry args={[windowDepth, windowHeight, 0.05]} />
+                    <meshStandardMaterial
+                      color={windowLightEffect}
+                      opacity={0.8}
+                      emissive={windowEmissive}
+                      emissiveIntensity={windowEmissiveIntensity}
+                      metalness={0.1}
+                      roughness={0.2}
+                    />
+                  </mesh>
+
+                  {/* Windows on left side */}
+                  <mesh
+                    position={[-width / 2 - 0.01, posY, posZ]}
+                    rotation={[0, Math.PI / 2, 0]}
+                    castShadow
+                  >
+                    <boxGeometry args={[windowDepth, windowHeight, 0.05]} />
+                    <meshStandardMaterial
+                      color={windowLightEffect}
+                      opacity={0.8}
+                      emissive={windowEmissive}
+                      emissiveIntensity={windowEmissiveIntensity}
+                      metalness={0.1}
+                      roughness={0.2}
+                    />
+                  </mesh>
+                </React.Fragment>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </group>
+
+      {/* Building label */}
+      <Billboard position={[0, height + 0.5, 0]} follow={true}>
+        <Text
+          color="#fff"
+          fontSize={0.5}
+          maxWidth={10}
+          lineHeight={1}
+          letterSpacing={0.02}
+          textAlign="center"
+          outlineWidth={0.05}
+          outlineColor="#000"
+        >
+          {building.name}
+        </Text>
+      </Billboard>
+    </group>
+  );
+};
+
 
 // Enhanced Campus3DMap
 const Campus3DMap = ({
@@ -50,7 +277,7 @@ const Campus3DMap = ({
         const total = Object.keys(assetsLoaded).length;
         const baseProgress = (loaded / total) * 80; // Base progress from assets
         const randomIncrement = Math.random() * 2; // Small random increment
-
+        
         // Cap at 95% until all assets are loaded
         return Math.min(95, prev + randomIncrement + (prev < baseProgress ? 5 : 0));
       });
@@ -73,25 +300,25 @@ const Campus3DMap = ({
   useEffect(() => {
     // Simulate buildings loading
     setTimeout(() => setAssetsLoaded(prev => ({ ...prev, buildings: true })), 1500);
-
+    
     // Simulate trees loading
     setTimeout(() => setAssetsLoaded(prev => ({ ...prev, trees: true })), 2500);
-
+    
     // Simulate benches loading
     setTimeout(() => setAssetsLoaded(prev => ({ ...prev, benches: true })), 3000);
-
+    
     // Simulate fountains loading
     setTimeout(() => setAssetsLoaded(prev => ({ ...prev, fountains: true })), 3500);
-
+    
     // Simulate ground loading
     setTimeout(() => setAssetsLoaded(prev => ({ ...prev, ground: true })), 4000);
-
+    
     // Complete loading after assets loaded
     const completeLoading = setTimeout(() => {
       setLoadingProgress(100);
       setTimeout(() => setIsLoading(false), 500);
     }, 5000);
-
+    
     return () => {
       clearTimeout(completeLoading);
     };
@@ -158,11 +385,11 @@ const Campus3DMap = ({
   // Display loading game if still loading
   if (isLoading) {
     return (
-      <div className="loading-container" style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
+      <div className="loading-container" style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
         height: '100%',
         backgroundColor: 'var(--dark-bg)',
         display: 'flex',
@@ -170,8 +397,8 @@ const Campus3DMap = ({
         alignItems: 'center',
         zIndex: 1000
       }}>
-        <LoadingMinigame
-          loadingProgress={loadingProgress}
+        <LoadingMinigame 
+          loadingProgress={loadingProgress} 
           onComplete={() => setIsLoading(false)}
         />
       </div>
