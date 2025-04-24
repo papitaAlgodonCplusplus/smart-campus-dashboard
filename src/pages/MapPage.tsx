@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Paper, Box, CircularProgress, FormControlLabel, Switch, Button, ButtonGroup } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
-import L from 'leaflet';
 import { useLocation, useNavigate } from 'react-router-dom';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
 import { fetchSpaces } from '../services/api';
 import MapLegend from '../components/Map/Utils/MapLegend';
 import Campus3DMap from '../components/Map/Campus3DMap';
 import UserLocationTracker from '../components/Map/Utils/UserLocationTracker';
 import UserLocationMarker from '../components/Map/Utils/UserLocationMarker';
+import LoadingMinigame from '../components/Dashboard/LoadingMinigame';
 
 import './Map.css';
 import './UserLocation.css';
@@ -21,7 +21,9 @@ let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
   iconSize: [25, 41],
-  iconAnchor: [12, 41]
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
@@ -92,11 +94,12 @@ const MapPage: React.FC = () => {
   const navigate = useNavigate();
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
   const [viewMode, setViewMode] = useState<'2D' | '3D'>('2D');
-  const [isViewModeChanging, setIsViewModeChanging] = useState<boolean>(false);
+  const [mapLoadingPhase, setMapLoadingPhase] = useState<string>('initializing');
   
   // User location state
   const [userLocation, setUserLocation] = useState<{
@@ -106,54 +109,90 @@ const MapPage: React.FC = () => {
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [followUser, setFollowUser] = useState<boolean>(false);
 
-  // Fetch buildings data
+  // Fetch buildings data with loading progress simulation
   useEffect(() => {
     const loadBuildings = async () => {
       try {
         setIsLoading(true);
-        const spacesData = await fetchSpaces();
+        setMapLoadingPhase('connecting');
         
-        // Convert spaces data to building format
-        const buildingsData = spacesData.map((space: any) => ({
-          _id: space._id,
-          name: space.name,
-          position: space.position,
-          info: space.info || `${space.name} - Sin información adicional`,
-          capacity: space.capacity,
-          currentOccupancy: space.currentOccupancy,
-          openHours: space.openHours || 'Horario no disponible',
-          peakHours: space.peakHours || 'Información no disponible',
-          rules: space.rules || 'No hay reglas específicas',
-          services: space.services || [],
-          height: space.height || 3,
-          width: space.width || 4,
-          depth: space.depth || 4
-        }));
+        // Simulate connection phase
+        const connectionTimer = setInterval(() => {
+          setLoadingProgress(prev => Math.min(prev + 1, 30));
+        }, 50);
         
-        setBuildings(buildingsData);
-        setIsLoading(false);
+        // After "connecting", start data fetching
+        setTimeout(() => {
+          clearInterval(connectionTimer);
+          setMapLoadingPhase('fetching data');
+          
+          const dataFetchTimer = setInterval(() => {
+            setLoadingProgress(prev => Math.min(prev + 0.5, 60));
+          }, 50);
+          
+          // Actually fetch the data
+          fetchSpaces()
+            .then(spacesData => {
+              clearInterval(dataFetchTimer);
+              setMapLoadingPhase('processing');
+              
+              // Processing phase
+              const processingTimer = setInterval(() => {
+                setLoadingProgress(prev => Math.min(prev + 1, 85));
+              }, 50);
+              
+              // Convert spaces data to building format
+              const buildingsData = spacesData.map((space: any) => ({
+                _id: space._id,
+                name: space.name,
+                position: space.position,
+                info: space.info || `${space.name} - Sin información adicional`,
+                capacity: space.capacity,
+                currentOccupancy: space.currentOccupancy,
+                openHours: space.openHours || 'Horario no disponible',
+                peakHours: space.peakHours || 'Información no disponible',
+                rules: space.rules || 'No hay reglas específicas',
+                services: space.services || [],
+                height: space.height || 3,
+                width: space.width || 4,
+                depth: space.depth || 4
+              }));
+              
+              // Set the buildings data
+              setBuildings(buildingsData);
+              
+              clearInterval(processingTimer);
+              setMapLoadingPhase('finalizing');
+              
+              // Final loading phase
+              const finalizingTimer = setInterval(() => {
+                setLoadingProgress(prev => {
+                  if (prev >= 99) {
+                    clearInterval(finalizingTimer);
+                    return 100;
+                  }
+                  return prev + 1;
+                });
+              }, 50);
+              
+              // Complete loading after a short delay
+              setTimeout(() => {
+                setIsLoading(false);
+              }, 1000);
+            })
+            .catch(error => {
+              console.error('Error fetching buildings data:', error);
+              setIsLoading(false);
+            });
+        }, 1500);
       } catch (error) {
-        console.error('Error fetching buildings data:', error);
+        console.error('Error in loading process:', error);
         setIsLoading(false);
       }
     };
 
     loadBuildings();
   }, []);
-
-  // Handle view mode change with loading state
-  const handleViewModeChange = (mode: '2D' | '3D') => {
-    if (mode === viewMode) return;
-    
-    setIsViewModeChanging(true);
-    setViewMode(mode);
-    
-    // Add a slight delay to simulate loading and ensure smooth transition
-    // This timing can be adjusted based on your 3D rendering performance
-    setTimeout(() => {
-      setIsViewModeChanging(false);
-    }, 1000);
-  };
 
   const getOccupancyLevel = (building: Building) => {
     const percentage = (building.currentOccupancy / building.capacity) * 100;
@@ -174,6 +213,29 @@ const MapPage: React.FC = () => {
       accuracy: position.coords.accuracy
     });
   };
+  
+  // If still loading, show the loading game
+  if (isLoading) {
+    return (
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'var(--dark-bg)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 9999
+      }}>
+        <LoadingMinigame 
+          loadingProgress={loadingProgress} 
+          onComplete={() => setIsLoading(false)}
+        />
+      </div>
+    );
+  }
 
   // Custom popup content with neon styling
   const renderCustomPopup = (building: Building) => {
@@ -220,143 +282,124 @@ const MapPage: React.FC = () => {
             <p>{building.peakHours}</p>
           </div>
 
-          <Button
-            size="small"
-            fullWidth
-            variant="outlined"
+          <button
             onClick={() => navigate(`/?building=${building._id}`)}
-            sx={{
-              mt: 2,
+            style={{
+              marginTop: '10px',
+              width: '100%',
+              padding: '6px 12px',
+              backgroundColor: 'transparent',
               color: 'var(--neon-primary)',
-              borderColor: 'var(--neon-primary)',
-              '&:hover': {
-                borderColor: 'var(--neon-blue)',
-                color: 'var(--neon-blue)',
-                boxShadow: '0 0 10px var(--neon-blue)'
-              }
+              border: '1px solid var(--neon-primary)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              fontSize: '14px'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.borderColor = 'var(--neon-blue)';
+              e.currentTarget.style.color = 'var(--neon-blue)';
+              e.currentTarget.style.boxShadow = '0 0 10px var(--neon-blue)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.borderColor = 'var(--neon-primary)';
+              e.currentTarget.style.color = 'var(--neon-primary)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             Ver Estadísticas
-          </Button>
+          </button>
         </div>
       </div>
     );
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom className="with-glow">
+    <div className="container mx-auto px-4 mt-8 mb-8" style={{ maxWidth: '1200px' }}>
+      <h1 className="text-3xl font-bold mb-6 with-glow">
         Mapa del Campus UCR
-      </Typography>
+      </h1>
 
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <ButtonGroup variant="outlined" sx={{ mr: 2 }}>
-            <Button
-              onClick={() => handleViewModeChange('2D')}
-              sx={{
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <div className="inline-flex rounded-md shadow-sm">
+            <button
+              onClick={() => setViewMode('2D')}
+              className="px-4 py-2 text-sm font-medium rounded-l-lg"
+              style={{
                 color: viewMode === '2D' ? 'var(--neon-primary)' : 'gray',
+                borderWidth: '1px',
+                borderStyle: 'solid',
                 borderColor: viewMode === '2D' ? 'var(--neon-primary)' : 'gray',
                 boxShadow: viewMode === '2D' ? '0 0 10px var(--neon-primary)' : 'none',
-                '&:hover': {
-                  borderColor: 'var(--neon-primary)',
-                  color: 'var(--neon-primary)'
+              }}
+              onMouseOver={(e) => {
+                if (viewMode !== '2D') {
+                  e.currentTarget.style.borderColor = 'var(--neon-primary)';
+                  e.currentTarget.style.color = 'var(--neon-primary)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (viewMode !== '2D') {
+                  e.currentTarget.style.borderColor = 'gray';
+                  e.currentTarget.style.color = 'gray';
                 }
               }}
             >
               Mapa 2D
-            </Button>
-            <Button
-              onClick={() => handleViewModeChange('3D')}
-              sx={{
+            </button>
+            <button
+              onClick={() => setViewMode('3D')}
+              className="px-4 py-2 text-sm font-medium rounded-r-lg"
+              style={{
                 color: viewMode === '3D' ? 'var(--neon-primary)' : 'gray',
+                borderWidth: '1px',
+                borderStyle: 'solid',
                 borderColor: viewMode === '3D' ? 'var(--neon-primary)' : 'gray',
                 boxShadow: viewMode === '3D' ? '0 0 10px var(--neon-primary)' : 'none',
-                '&:hover': {
-                  borderColor: 'var(--neon-primary)',
-                  color: 'var(--neon-primary)'
+              }}
+              onMouseOver={(e) => {
+                if (viewMode !== '3D') {
+                  e.currentTarget.style.borderColor = 'var(--neon-primary)';
+                  e.currentTarget.style.color = 'var(--neon-primary)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (viewMode !== '3D') {
+                  e.currentTarget.style.borderColor = 'gray';
+                  e.currentTarget.style.color = 'gray';
                 }
               }}
             >
               Vista 3D
-            </Button>
-          </ButtonGroup>
-        </Box>
+            </button>
+          </div>
+        </div>
 
-        <Box>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isNightMode}
-                onChange={() => setIsNightMode(!isNightMode)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: 'var(--neon-blue)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 140, 255, 0.08)',
-                    },
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: 'var(--neon-blue)',
-                  },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ color: isNightMode ? 'var(--neon-blue)' : '#f80' }}>
-                {isNightMode ? 'Modo Noche' : 'Modo Día'}
-              </Typography>
-            }
-          />
-        </Box>
-      </Box>
+        <div className="flex items-center">
+          <span style={{ color: isNightMode ? 'var(--neon-blue)' : '#f80', marginRight: '8px' }}>
+            {isNightMode ? 'Modo Noche' : 'Modo Día'}
+          </span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={isNightMode}
+              onChange={() => setIsNightMode(!isNightMode)}
+            />
+            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </label>
+        </div>
+      </div>
 
-      {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-          <div className="neon-loading"></div>
-        </Box>
-      ) : (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            overflow: 'hidden', 
-            borderRadius: 2, 
-            position: 'relative',
-            height: '600px'
-          }}
-        >
-          {/* Loading overlay for view mode transition */}
-          {isViewModeChanging && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(5, 5, 25, 0.8)',
-                zIndex: 1100,
-                backdropFilter: 'blur(5px)',
-                borderRadius: '8px',
-              }}
-            >
-              <div className="neon-loading"></div>
-              <Typography variant="h6" sx={{ mt: 2, color: 'var(--neon-primary)' }}>
-                Cargando vista {viewMode}...
-              </Typography>
-            </Box>
-          )}
-
-          {viewMode === '2D' ? (
-            <>
+      <div className="relative overflow-hidden rounded-lg">
+        {viewMode === '2D' ? (
+          <>
+            <div style={mapContainerStyle}>
               <MapContainer
                 center={UCR_CENTER}
                 zoom={DEFAULT_ZOOM}
-                style={mapContainerStyle}
+                style={{ height: '100%', width: '100%' }}
                 zoomControl={false}
                 className={isNightMode ? 'dark-mode' : ''}
               >
@@ -415,54 +458,52 @@ const MapPage: React.FC = () => {
 
               {/* Add the map legend */}
               <MapLegend isNightMode={isNightMode} />
-            </>
-          ) : (
-            // 3D Map View
-            <Box sx={{ height: '600px' }}>
-              <Campus3DMap
-                buildings={buildings}
-                onBuildingSelect={handleBuildingSelect}
-                userLocation={userLocation?.position}
-                isTracking={isTracking}
-                followUser={followUser}
-                setFollowUser={setFollowUser}
-              />
-              
-              {/* User location controls for 3D view */}
-              <UserLocationTracker 
-                onLocationUpdate={handleLocationUpdate}
-                isTracking={isTracking}
-                setIsTracking={setIsTracking}
-                followUser={followUser}
-                setFollowUser={setFollowUser}
-              />
-            </Box>
-          )}
-        </Paper>
-      )}
+            </div>
+          </>
+        ) : (
+          // 3D Map View
+          <div style={{ height: '600px' }}>
+            <Campus3DMap
+              buildings={buildings}
+              onBuildingSelect={handleBuildingSelect}
+              userLocation={userLocation?.position}
+              isTracking={isTracking}
+              followUser={followUser}
+              setFollowUser={setFollowUser}
+            />
+            
+            {/* User location controls for 3D view */}
+            <UserLocationTracker 
+              onLocationUpdate={handleLocationUpdate}
+              isTracking={isTracking}
+              setIsTracking={setIsTracking}
+              followUser={followUser}
+              setFollowUser={setFollowUser}
+            />
+          </div>
+        )}
+      </div>
 
-      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-        <Typography variant="body2" sx={{ color: 'var(--neon-primary)', fontFamily: 'Orbitron, sans-serif' }}>
+      <div className="mt-4 flex justify-center">
+        <p className="text-sm" style={{ color: 'var(--neon-primary)', fontFamily: 'Orbitron, sans-serif' }}>
           {viewMode === '2D' ? 'Mapa interactivo' : 'Vista tridimensional'} de las instalaciones del campus universitario
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Instructions for 3D view */}
       {viewMode === '3D' && (
-        <Box
-          sx={{
-            mt: 2,
-            p: 2,
+        <div 
+          className="mt-4 p-4 rounded-lg border"
+          style={{
             backgroundColor: 'rgba(5, 5, 25, 0.8)',
-            borderRadius: '8px',
             border: '1px solid var(--neon-primary)',
             boxShadow: '0 0 10px var(--neon-primary)',
           }}
         >
-          <Typography variant="subtitle2" sx={{ color: 'var(--neon-primary)', mb: 1 }}>
+          <h3 className="text-base font-semibold mb-2" style={{ color: 'var(--neon-primary)' }}>
             Controles para la Vista 3D:
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'white' }}>
+          </h3>
+          <p className="text-white">
             • <strong>Clic y arrastrar</strong>: Rotar la vista
             <br />
             • <strong>Rueda del mouse</strong>: Acercar/alejar
@@ -474,10 +515,10 @@ const MapPage: React.FC = () => {
             • <strong>Activar mi ubicación</strong>: Mostrar avatar en el mapa que representa tu posición
             <br />
             • <strong>Seguir mi ubicación</strong>: La cámara seguirá automáticamente tu movimiento
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
-    </Container>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { fetchSpaces, fetchHourlyData, fetchReservations, createReservation, deleteReservation as apiDeleteReservation } from '../../services/api';
 import { Reservation, ReservationFormData } from '../../types/ReservationTypes';
+import LoadingMinigame from './LoadingMinigame';
 
 // Define space data interface
 export interface Space {
@@ -45,6 +46,7 @@ interface DashboardContextData {
     error: string | null;
     hourlyData: any[];
     visibleLines: { [key: string]: boolean };
+    loadingProgress: number;
     // Categorized spaces
     categorizedSpaces: {
         facultades: Space[];
@@ -127,6 +129,8 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     const [error, setError] = useState<string | null>(null);
     const [hourlyData, setHourlyData] = useState<any[]>([]);
     const [visibleLines, setVisibleLines] = useState<{ [key: string]: boolean }>({});
+    const [loadingProgress, setLoadingProgress] = useState<number>(0); // Loading progress for game/progress bar
+    const [loadingComplete, setLoadingComplete] = useState<boolean>(false);
 
     // Add reservations state
     const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -169,6 +173,22 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         }
     }, [spaces, hourlyData]);
 
+    // Simulate loading progress
+    useEffect(() => {
+        if (loading && loadingProgress < 100) {
+            const interval = setInterval(() => {
+                setLoadingProgress(prev => {
+                    // Calculate new progress based on data loading state
+                    // When actual data loads, we'll jump to 100%
+                    const increment = (spaces.length > 0 ? 3 : 1) + (hourlyData.length > 0 ? 3 : 1);
+                    return Math.min(95, prev + increment); // Cap at 95% until data fully loads
+                });
+            }, 300);
+            
+            return () => clearInterval(interval);
+        }
+    }, [loading, loadingProgress, spaces.length, hourlyData.length]);
+
     // Fetch reservations from API
     const loadReservations = async () => {
         try {
@@ -203,12 +223,15 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 const data = await fetchSpaces();
                 if (data && data.length > 0) {
                     setSpaces(data);
+                    // Progress boost when spaces load
+                    setLoadingProgress(prev => Math.min(75, prev + 25));
                 }
                 setError(null);
-                setLoading(false);
             } catch (err) {
                 console.error('Failed to fetch spaces', err);
                 setError('Failed to fetch spaces data: ' + (err instanceof Error ? err.message : 'Unknown error'));
+                // Ensure some progress even on error
+                setLoadingProgress(prev => Math.min(80, prev + 20));
             }
         };
 
@@ -229,22 +252,40 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                         console.warn('No hourly data available from API, generating fallback data');
                         setHourlyData(generateHourlyData(spaces));
                     }
+                    
+                    // Progress boost when hourly data loads
+                    setLoadingProgress(prev => Math.min(90, prev + 20));
                 }
             } catch (err) {
                 console.error('Failed to fetch hourly data', err);
                 // Fall back to generated data on error
                 console.warn('Using generated hourly data as fallback');
                 setHourlyData(generateHourlyData(spaces));
+                // Ensure some progress even on error
+                setLoadingProgress(prev => Math.min(90, prev + 15));
             }
         };
 
-        getHourlyData();
+        if (spaces.length > 0) {
+            getHourlyData();
+        }
     }, [spaces]);
 
     // Fetch reservations when component mounts
     useEffect(() => {
-        loadReservations();
-    }, []);
+        const fetchAllData = async () => {
+            await loadReservations();
+            // Complete loading when all data is fetched
+            setLoadingProgress(100);
+            // Add small delay before completing loading
+            setTimeout(() => {
+                setLoading(false);
+                setLoadingComplete(true);
+            }, 500);
+        };
+        
+        fetchAllData();
+    }, [hourlyData.length]);
 
     // Create CSS styling for charts
     useEffect(() => {
@@ -380,6 +421,29 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         return availableSlots;
     };
 
+    // Render loading game if still loading
+    if (loading) {
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex', 
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'var(--dark-bg)',
+                zIndex: 9999
+            }}>
+                <LoadingMinigame 
+                    loadingProgress={loadingProgress} 
+                    onComplete={() => setLoading(false)}
+                />
+            </div>
+        );
+    }
+    
     return (
         <DashboardContext.Provider
             value={{
@@ -388,6 +452,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 error,
                 hourlyData,
                 visibleLines,
+                loadingProgress,
                 categorizedSpaces,
                 pieData,
                 toggleLineVisibility,
