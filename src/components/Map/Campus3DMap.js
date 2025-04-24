@@ -301,7 +301,27 @@ const Campus3DMap = ({
     if (Object.values(assetsLoaded).every(Boolean) && loadingProgress < 100) {
       setLoadingProgress(prev => Math.max(prev, 95)); // Push to at least 95% when all assets loaded
     }
-  }, [assetsLoaded, loadingProgress]);
+
+    if (buildings && buildings.length > 0) {
+      setAssetsLoaded(prev => ({ ...prev, buildings: true }));
+    }
+
+    // Force completion after components are mounted
+    const timer = setTimeout(() => {
+      setAssetsLoaded({
+        buildings: true,
+        trees: true,
+        benches: false,
+        fountains: true,
+        ground: true
+      });
+
+      setLoadingProgress(100);
+      setIsLoading(false);
+    }, 5000); // Force completion after 5 seconds at most
+
+    return () => clearTimeout(timer);
+  }, [assetsLoaded, loadingProgress, buildings]);
 
   // Handle building click
   const handleBuildingClick = (id) => {
@@ -380,29 +400,6 @@ const Campus3DMap = ({
       </div>
     );
   }
-  
-  // Add an effect to update loading progress when assets are loaded
-  useEffect(() => {
-    if (buildings && buildings.length > 0) {
-      setAssetsLoaded(prev => ({ ...prev, buildings: true }));
-    }
-
-    // Force completion after components are mounted
-    const timer = setTimeout(() => {
-      setAssetsLoaded({
-        buildings: true,
-        trees: true,
-        benches: false,
-        fountains: true,
-        ground: true
-      });
-
-      setLoadingProgress(100);
-      setIsLoading(false);
-    }, 5000); // Force completion after 5 seconds at most
-
-    return () => clearTimeout(timer);
-  }, [buildings]);
 
   return (
     <div className="campus-3d-map-container">
