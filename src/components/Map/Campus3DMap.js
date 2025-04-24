@@ -283,12 +283,6 @@ const Campus3DMap = ({
       });
     }, 100);
 
-    // If all assets loaded and visible for the user
-    if (loadingProgress >= 95) {
-      setLoadingProgress(100);
-      setTimeout(() => setIsLoading(false), 500);
-    }
-
     return () => {
       if (loadingTimer.current) {
         clearInterval(loadingTimer.current);
@@ -362,6 +356,10 @@ const Campus3DMap = ({
 
   // Display loading game if still loading
   if (isLoading) {
+    const loaded = Object.values(assetsLoaded).filter(Boolean).length;
+    const total = Object.keys(assetsLoaded).length;
+    const calculatedProgress = Math.min(95, (loaded / total) * 100);
+
     return (
       <div className="loading-container" style={{
         position: 'absolute',
@@ -376,12 +374,35 @@ const Campus3DMap = ({
         zIndex: 1000
       }}>
         <LoadingMinigame
-          loadingProgress={loadingProgress}
+          loadingProgress={Math.max(loadingProgress, calculatedProgress)}
           onComplete={() => setIsLoading(false)}
         />
       </div>
     );
   }
+  
+  // Add an effect to update loading progress when assets are loaded
+  useEffect(() => {
+    if (buildings && buildings.length > 0) {
+      setAssetsLoaded(prev => ({ ...prev, buildings: true }));
+    }
+
+    // Force completion after components are mounted
+    const timer = setTimeout(() => {
+      setAssetsLoaded({
+        buildings: true,
+        trees: true,
+        benches: false,
+        fountains: true,
+        ground: true
+      });
+
+      setLoadingProgress(100);
+      setIsLoading(false);
+    }, 5000); // Force completion after 5 seconds at most
+
+    return () => clearTimeout(timer);
+  }, [buildings]);
 
   return (
     <div className="campus-3d-map-container">
