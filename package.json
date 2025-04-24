@@ -35,6 +35,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "dev": "node dev_prod.js dev",
+    "prod": "node dev_prod.js prod",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

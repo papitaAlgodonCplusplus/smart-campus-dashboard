@@ -1,6 +1,6 @@
-import express from 'express';
-// import * as spaceController from '../controllers/spaceController.js';
 import * as spaceController from '/opt/render/project/src/api/src/controllers/spaceController.js'
+// import * as spaceController from '../controllers/spaceController.js';
+import express from 'express';
 const router = express.Router();
 
 router.get('/', spaceController.getSpaces);

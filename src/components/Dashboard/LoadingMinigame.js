@@ -139,11 +139,11 @@ const LoadingMinigame = ({ onComplete, loadingProgress = 0 }) => {
     
     setLastShot(now);
     
-    // Crear nueva bala
+    // Crear nueva bala - usando la posición exacta del jugador
     const newBullet = {
       id: `bullet-${Date.now()}-${Math.random()}`,
       x: playerPosition.x,
-      y: playerPosition.y - 2, // Empezar justo encima del jugador
+      y: playerPosition.y,
       speed: bulletSpeed
     };
     
@@ -441,7 +441,7 @@ const LoadingMinigame = ({ onComplete, loadingProgress = 0 }) => {
       )}
       
       <div className="loading-status">
-        Cargando datos... {loadingProgress}%
+        Cargando datos... {loadingProgress.toFixed(0)}%
       </div>
     </div>
   );

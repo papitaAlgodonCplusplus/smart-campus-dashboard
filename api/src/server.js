@@ -1,13 +1,13 @@
+import spaceRoutes from '/opt/render/project/src/api/src/routes/spaceRoutes.js';
+import hourlyDataRoutes from '/opt/render/project/src/api/src/routes/hourlyDataRoutes.js';
+import reservationRoutes from '/opt/render/project/src/api/src/routes/reservationRoutes.js';
+// import spaceRoutes from './routes/spaceRoutes.js';
+// import hourlyDataRoutes from './routes/hourlyDataRoutes.js';
+// import reservationRoutes from './routes/reservationRoutes.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-// import spaceRoutes from './routes/spaceRoutes.js';
-// import hourlyDataRoutes from './routes/hourlyDataRoutes.js';
-// import reservationRoutes from './routes/reservationRoutes.js';
-import spaceRoutes from '/opt/render/project/src/api/src/routes/spaceRoutes.js';
-import hourlyDataRoutes from '/opt/render/project/src/api/src/routes/hourlyDataRoutes.js';
-import reservationRoutes from '/opt/render/project/src/api/src/routes/reservationRoutes.js';
 import mongoose from 'mongoose';
 
 dotenv.config();

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Billboard, Sky, Cloud, useTexture } from '@react-three/drei';
+import { OrbitControls, Text, Billboard, Sky, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import MapControls from './Utils/MapControls';
 import Ground from './Utils/Ground';
@@ -59,7 +59,7 @@ const Building = ({ building, onClick, isNightMode }) => {
   const buildingBaseColor = baseColors[building.id % baseColors.length];
 
   // Light effects for windows
-  const windowLightEffect = isNightMode ? (Math.random() > 0.3 ? '#ffd700' : '#f8fafc') : 'white';
+  const windowLightEffect = isNightMode ? ('#ffd700') : 'white';
   const windowEmissive = isNightMode ? windowLightEffect : 'white';
   const windowEmissiveIntensity = isNightMode ? 0.6 : 0;
 
@@ -70,19 +70,6 @@ const Building = ({ building, onClick, isNightMode }) => {
         meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, 1.1, 0.1);
       } else {
         meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, 1, 0.1);
-      }
-    }
-
-    // Flicker some windows randomly in night mode
-    if (windowsRef.current && isNightMode) {
-      const materials = windowsRef.current.material;
-      if (Array.isArray(materials)) {
-        materials.forEach((material, index) => {
-          // Randomly flicker some windows
-          if (Math.random() < 0.001) {
-            material.emissiveIntensity = Math.random() * 0.8;
-          }
-        });
       }
     }
   });
@@ -275,19 +262,7 @@ const Campus3DMap = ({
     // Start loading progress simulation with faster progress
     loadingTimer.current = setInterval(() => {
       setLoadingProgress(prev => {
-        // More aggressive progress growth
-        const increment = 3 + Math.random() * 5;
-
-        // If we're below 20%, move faster to avoid getting stuck
-        if (prev < 20) {
-          return Math.min(30, prev + increment);
-        }
-
-        // If we're at 95% or higher, push to 100%
-        if (prev >= 95) {
-          return 100;
-        }
-
+        const increment = 0.6;
         return Math.min(95, prev + increment);
       });
     }, 200); // Run less frequently but with larger increments
@@ -957,7 +932,6 @@ const CampusPaths = ({ isNightMode }) => {
   );
 };
 
-// Sky component with clouds and day/night cycle
 const EnhancedSky = ({ timeOfDay, isNightMode }) => {
   // Convert time of day (0-100) to sun position
   // 0 = 6am, 25 = 12pm, 50 = 6pm, 75 = 12am, 100 = 6am
@@ -992,16 +966,6 @@ const EnhancedSky = ({ timeOfDay, isNightMode }) => {
         {...skyParams}
         sunPosition={sunPosition()}
       />
-
-      {/* Add clouds - more visible during day */}
-      {!isNightMode && (
-        <>
-          <Cloud position={[-40, 30, -60]} speed={0.2} opacity={0.7} />
-          <Cloud position={[40, 40, 40]} speed={0.1} opacity={0.6} />
-          <Cloud position={[-60, 35, 30]} speed={0.3} opacity={0.5} />
-          <Cloud position={[70, 45, -20]} speed={0.15} opacity={0.8} />
-        </>
-      )}
 
       {/* Night stars */}
       {isNightMode && (
