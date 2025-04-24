@@ -1,4 +1,5 @@
 import HourlyData from '/opt/render/project/src/api/src/models/HourlyData.js';
+// import HourlyData from '../models/HourlyData.js';
 
 // Get hourly data for the current day (default)
 export const getHourlyData = async (req, res) => {
