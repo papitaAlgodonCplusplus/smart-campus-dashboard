@@ -269,26 +269,35 @@ const Campus3DMap = ({
   });
   const loadingTimer = useRef(null);
 
+
+  // First useEffect - loading progress timer
   useEffect(() => {
-    // Start loading progress simulation
+    // Start loading progress simulation with faster progress
     loadingTimer.current = setInterval(() => {
       setLoadingProgress(prev => {
-        const loaded = Object.values(assetsLoaded).filter(Boolean).length;
-        const total = Object.keys(assetsLoaded).length;
-        const baseProgress = (loaded / total) * 80; // Base progress from assets
-        const randomIncrement = Math.random() * 2; // Small random increment
+        // More aggressive progress growth
+        const increment = 3 + Math.random() * 5;
 
-        // Cap at 95% until all assets are loaded
-        return Math.min(95, prev + randomIncrement + (prev < baseProgress ? 5 : 0));
+        // If we're below 20%, move faster to avoid getting stuck
+        if (prev < 20) {
+          return Math.min(30, prev + increment);
+        }
+
+        // If we're at 95% or higher, push to 100%
+        if (prev >= 95) {
+          return 100;
+        }
+
+        return Math.min(95, prev + increment);
       });
-    }, 100);
+    }, 200); // Run less frequently but with larger increments
 
     return () => {
       if (loadingTimer.current) {
         clearInterval(loadingTimer.current);
       }
     };
-  }, [assetsLoaded]);
+  }, []);
 
   // Auto set night mode based on time of day
   useEffect(() => {
@@ -297,31 +306,78 @@ const Campus3DMap = ({
   }, [timeOfDay]);
 
   // Check if all assets are loaded
+
   useEffect(() => {
-    if (Object.values(assetsLoaded).every(Boolean) && loadingProgress < 100) {
-      setLoadingProgress(prev => Math.max(prev, 95)); // Push to at least 95% when all assets loaded
+    // If progress reaches 100%, complete loading
+    if (loadingProgress >= 100) {
+      clearInterval(loadingTimer.current);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
 
+    // Force completion after a maximum time (8 seconds)
+    const forceCompleteTimer = setTimeout(() => {
+      if (isLoading) {
+        console.log('Forcing loading completion after timeout');
+        clearInterval(loadingTimer.current);
+        setLoadingProgress(100);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
+    }, 8000);
+
+    return () => clearTimeout(forceCompleteTimer);
+  }, [loadingProgress, isLoading]);
+
+
+
+  useEffect(() => {
     if (buildings && buildings.length > 0) {
       setAssetsLoaded(prev => ({ ...prev, buildings: true }));
+
+      // When buildings are available, boost progress to at least 50%
+      setLoadingProgress(prev => Math.max(prev, 50));
     }
 
-    // Force completion after components are mounted
-    const timer = setTimeout(() => {
-      setAssetsLoaded({
-        buildings: true,
-        trees: true,
-        benches: false,
-        fountains: true,
-        ground: true
-      });
+    // Set trees as loaded once we reach a certain progress threshold
+    if (loadingProgress > 60 && !assetsLoaded.trees) {
+      setAssetsLoaded(prev => ({ ...prev, trees: true }));
+    }
 
+    // Set remaining assets as loaded when we reach higher thresholds
+    if (loadingProgress > 75) {
+      setAssetsLoaded(prev => ({
+        ...prev,
+        benches: true,
+        fountains: true
+      }));
+    }
+
+    if (loadingProgress > 90) {
+      setAssetsLoaded(prev => ({ ...prev, ground: true }));
+    }
+
+    // Check if all assets are loaded to push progress to completion
+    if (Object.values(assetsLoaded).every(Boolean) && loadingProgress < 100) {
       setLoadingProgress(100);
-      setIsLoading(false);
-    }, 5000); // Force completion after 5 seconds at most
+    }
+  }, [buildings, loadingProgress, assetsLoaded]);
 
-    return () => clearTimeout(timer);
-  }, [assetsLoaded, loadingProgress, buildings]);
+  // Fourth useEffect - final safety timeout
+  useEffect(() => {
+    const absoluteTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.log('Forcing loading completion after absolute timeout');
+        clearInterval(loadingTimer.current);
+        setLoadingProgress(100);
+        setIsLoading(false);
+      }
+    }, 20000);
+
+    return () => clearTimeout(absoluteTimeout);
+  }, [isLoading]);
 
   // Handle building click
   const handleBuildingClick = (id) => {
