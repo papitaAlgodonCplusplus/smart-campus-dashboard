@@ -262,7 +262,7 @@ const Campus3DMap = ({
     // Start loading progress simulation with faster progress
     loadingTimer.current = setInterval(() => {
       setLoadingProgress(prev => {
-        const increment = 0.6;
+        const increment = 0.4;
         return Math.min(95, prev + increment);
       });
     }, 200); // Run less frequently but with larger increments
@@ -349,7 +349,7 @@ const Campus3DMap = ({
         setLoadingProgress(100);
         setIsLoading(false);
       }
-    }, 20000);
+    }, 40000);
 
     return () => clearTimeout(absoluteTimeout);
   }, [isLoading]);

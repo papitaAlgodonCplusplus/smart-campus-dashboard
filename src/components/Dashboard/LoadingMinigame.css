@@ -132,61 +132,83 @@
 .player-ship {
     position: absolute;
     background-color: var(--neon-primary);
-    border-radius: 50% 50% 10% 10%;
+    border-radius: 50%;
     box-shadow: 0 0 10px var(--neon-primary);
     transition: left 0.05s ease-out, top 0.05s ease-out;
     z-index: 10;
 }
 
+/* Player ship trail effect */
 .player-ship::before {
     content: '';
     position: absolute;
-    top: -6px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-bottom: 6px solid var(--neon-primary);
-}
-
-.player-bullet {
-    position: absolute;
-    background-color: var(--neon-blue);
+    width: 70%;
+    height: 70%;
+    transform: translate(-50%, -50%);
+    background-color: white;
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--neon-blue);
-    z-index: 5;
-}
-
-.enemy-bullet {
-    position: absolute;
-    background-color: var(--neon-red);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--neon-red);
-    z-index: 5;
+    opacity: 0.7;
 }
 
 .enemy {
     position: absolute;
-    border-radius: 5px;
     z-index: 8;
+    transition: transform 0.3s ease;
 }
 
+/* Special styles for different enemy types */
 .enemy-type-0 {
-    background-color: var(--neon-red);
-    box-shadow: 0 0 8px var(--neon-red);
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
 .enemy-type-1 {
-    background-color: var(--neon-orange);
-    box-shadow: 0 0 8px var(--neon-orange);
     clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
 }
 
 .enemy-type-2 {
-    background-color: var(--neon-secondary);
-    box-shadow: 0 0 8px var(--neon-secondary);
-    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%);
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+}
+
+.enemy-type-3 {
+    clip-path: polygon(50% 0%, 80% 40%, 100% 50%, 80% 60%, 50% 100%, 20% 60%, 0% 50%, 20% 40%);
+    animation: pulse-glow 1.5s infinite;
+}
+
+.enemy-type-4 {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    animation: grow-shrink 2s infinite;
+}
+
+.enemy-type-5 {
+    clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%);
+    animation: speed-blur 0.5s infinite;
+}
+
+/* Animations for enemy types */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.7; transform: scale(1); }
+}
+
+@keyframes grow-shrink {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes speed-blur {
+    0% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    100% { transform: translateX(-2px); }
 }
 
 .game-instructions {
