@@ -269,7 +269,6 @@ const Campus3DMap = ({
   });
   const loadingTimer = useRef(null);
 
-  // Simulate loading time with progress
   useEffect(() => {
     // Start loading progress simulation
     loadingTimer.current = setInterval(() => {
@@ -278,11 +277,17 @@ const Campus3DMap = ({
         const total = Object.keys(assetsLoaded).length;
         const baseProgress = (loaded / total) * 80; // Base progress from assets
         const randomIncrement = Math.random() * 2; // Small random increment
-        
+
         // Cap at 95% until all assets are loaded
         return Math.min(95, prev + randomIncrement + (prev < baseProgress ? 5 : 0));
       });
     }, 100);
+
+    // If all assets loaded and visible for the user
+    if (loadingProgress >= 95) {
+      setLoadingProgress(100);
+      setTimeout(() => setIsLoading(false), 500);
+    }
 
     return () => {
       if (loadingTimer.current) {
@@ -296,34 +301,6 @@ const Campus3DMap = ({
     // Night between 6PM and 6AM (timeOfDay between 50-100)
     setIsNightMode(timeOfDay >= 50 && timeOfDay < 100);
   }, [timeOfDay]);
-
-  // Simulate asset loading
-  useEffect(() => {
-    // Simulate buildings loading
-    setTimeout(() => setAssetsLoaded(prev => ({ ...prev, buildings: true })), 1500);
-    
-    // Simulate trees loading
-    setTimeout(() => setAssetsLoaded(prev => ({ ...prev, trees: true })), 2500);
-    
-    // Simulate benches loading
-    setTimeout(() => setAssetsLoaded(prev => ({ ...prev, benches: true })), 3000);
-    
-    // Simulate fountains loading
-    setTimeout(() => setAssetsLoaded(prev => ({ ...prev, fountains: true })), 3500);
-    
-    // Simulate ground loading
-    setTimeout(() => setAssetsLoaded(prev => ({ ...prev, ground: true })), 4000);
-    
-    // Complete loading after assets loaded
-    const completeLoading = setTimeout(() => {
-      setLoadingProgress(100);
-      setTimeout(() => setIsLoading(false), 500);
-    }, 5000);
-    
-    return () => {
-      clearTimeout(completeLoading);
-    };
-  }, []);
 
   // Check if all assets are loaded
   useEffect(() => {
@@ -386,11 +363,11 @@ const Campus3DMap = ({
   // Display loading game if still loading
   if (isLoading) {
     return (
-      <div className="loading-container" style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
+      <div className="loading-container" style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
         height: '100%',
         backgroundColor: 'var(--dark-bg)',
         display: 'flex',
@@ -398,8 +375,8 @@ const Campus3DMap = ({
         alignItems: 'center',
         zIndex: 1000
       }}>
-        <LoadingMinigame 
-          loadingProgress={loadingProgress} 
+        <LoadingMinigame
+          loadingProgress={loadingProgress}
           onComplete={() => setIsLoading(false)}
         />
       </div>
