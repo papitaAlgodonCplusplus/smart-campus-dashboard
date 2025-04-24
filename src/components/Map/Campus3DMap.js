@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import MapControls from './Utils/MapControls';
 import Ground from './Utils/Ground';
 import UserAvatar3D from './Utils/UserAvatar3D';
+import LoadingMinigame from '../Dashboard/LoadingMinigame';
 
 // Import coordinate files
 import { treeCoordinates } from '../../data/treeCoordinates';
