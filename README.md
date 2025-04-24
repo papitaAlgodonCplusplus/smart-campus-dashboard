@@ -1,7 +1,16 @@
-# TODO
+## Timeline
 
-[] Add images for the carousel
-[] Users can buck space in X place from 0:00 to 0:00
+| Task                                                             | Week 1 (✓ Apr 24–30) | Week 2 (✓ May 1–7) | Week 3 (✓ May 8–14) |
+|------------------------------------------------------------------|:--------------------:|:------------------:|:-------------------:|
+| Marketplace (users post services/products by location & time)    |         ●            |                    |                     |
+| Events (users post events & others vote "Interested")           |         ●            |                    |                     |
+| Feedback module (users suggest features/ideas)                   |         ●            |                    |                     |
+| Chat system or comment threads in marketplace/events             |                      |         ●          |                     |
+| Reward system for active users                                   |                      |         ●          |                     |
+| Add images for the carousel                                      |                      |                    |          ●          |
+| Loading screen for dashboard 3D view                             |                      |                    |          ●          |
+| Register / Login / Profile screens                               |                      |                    |          ●          |
+
 
 # Smart Campus Dashboard: End-to-End System Design
 

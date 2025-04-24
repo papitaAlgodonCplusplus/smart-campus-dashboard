@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Dashboard', path: '/', external: false },
     { name: 'Campus UCR', path: '/map', external: false },
-    { name: 'Eventos', path: 'https://www.ucr.ac.cr/actividades/', external: true }
+    { name: 'Eventos', path: '/dashboard/eventos', external: false }, // Updated to internal route
   ];
   
   // Close drawer when path changes
