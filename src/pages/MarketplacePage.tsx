@@ -33,7 +33,8 @@ import {
   Tooltip,
   Divider,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  SelectChangeEvent
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -50,6 +51,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PersonIcon from '@mui/icons-material/Person';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import MapIcon from '@mui/icons-material/Map';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -103,6 +105,7 @@ interface Listing {
   subcategory: string;
   condition: string;
   location: {
+    campus: string;
     type: 'campus' | 'express';
     position?: [number, number];
     locationName?: string;
@@ -131,8 +134,8 @@ interface Listing {
 
 // Product Categories
 const productCategories = [
-  { 
-    value: 'books', 
+  {
+    value: 'books',
     label: 'Libros y Material Académico',
     subcategories: [
       { value: 'textbooks', label: 'Libros de Texto' },
@@ -142,8 +145,8 @@ const productCategories = [
       { value: 'other_books', label: 'Otros' }
     ]
   },
-  { 
-    value: 'electronics', 
+  {
+    value: 'electronics',
     label: 'Electrónicos',
     subcategories: [
       { value: 'computers', label: 'Computadoras y Laptops' },
@@ -152,8 +155,8 @@ const productCategories = [
       { value: 'other_electronics', label: 'Otros' }
     ]
   },
-  { 
-    value: 'clothing', 
+  {
+    value: 'clothing',
     label: 'Ropa y Accesorios',
     subcategories: [
       { value: 'shirts', label: 'Camisetas y Tops' },
@@ -163,8 +166,8 @@ const productCategories = [
       { value: 'other_clothing', label: 'Otros' }
     ]
   },
-  { 
-    value: 'furniture', 
+  {
+    value: 'furniture',
     label: 'Muebles',
     subcategories: [
       { value: 'desks', label: 'Escritorios' },
@@ -174,8 +177,8 @@ const productCategories = [
       { value: 'other_furniture', label: 'Otros' }
     ]
   },
-  { 
-    value: 'services', 
+  {
+    value: 'services',
     label: 'Servicios',
     subcategories: [
       { value: 'tutoring', label: 'Tutoría/Clases' },
@@ -185,8 +188,8 @@ const productCategories = [
       { value: 'other_services', label: 'Otros' }
     ]
   },
-  { 
-    value: 'tickets', 
+  {
+    value: 'tickets',
     label: 'Entradas y Eventos',
     subcategories: [
       { value: 'concerts', label: 'Conciertos' },
@@ -195,8 +198,8 @@ const productCategories = [
       { value: 'other_tickets', label: 'Otros' }
     ]
   },
-  { 
-    value: 'housing', 
+  {
+    value: 'housing',
     label: 'Alojamiento',
     subcategories: [
       { value: 'room_rent', label: 'Alquiler de Habitación' },
@@ -205,8 +208,8 @@ const productCategories = [
       { value: 'other_housing', label: 'Otros' }
     ]
   },
-  { 
-    value: 'other', 
+  {
+    value: 'other',
     label: 'Otros',
     subcategories: [
       { value: 'general', label: 'General' }
@@ -224,6 +227,15 @@ const productConditions = [
   { value: 'not_applicable', label: 'No Aplica' }
 ];
 
+// Campus Locations
+const campusLocations = [
+  { value: 'engineering', label: 'Facultad de Ingeniería' },
+  { value: 'science', label: 'Facultad de Ciencias' },
+  { value: 'arts', label: 'Facultad de Artes' },
+  { value: 'law', label: 'Facultad de Derecho' },
+  { value: 'medicine', label: 'Facultad de Medicina' }
+];
+
 // Helper to create marker icons for listings
 const createMarkerIcon = (category: string): L.Icon => {
   const colorMap: Record<string, string> = {
@@ -236,9 +248,9 @@ const createMarkerIcon = (category: string): L.Icon => {
     housing: 'yellow',
     other: 'grey'
   };
-  
+
   const color = colorMap[category] || 'blue';
-  
+
   return new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -256,7 +268,7 @@ const LocationPicker: React.FC<{
 }> = ({ onLocationSelect, initialPosition }) => {
   const [position, setPosition] = useState<[number, number] | null>(initialPosition || null);
   const [locationName, setLocationName] = useState<string>('');
-  
+
   function LocationMarker() {
     const map = useMapEvents({
       click(e) {
@@ -277,10 +289,10 @@ const LocationPicker: React.FC<{
               onChange={(e) => setLocationName(e.target.value)}
               sx={{ mt: 1 }}
             />
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               size="small"
-              sx={{ 
+              sx={{
                 mt: 1,
                 backgroundColor: 'var(--neon-primary)',
                 '&:hover': {
@@ -326,7 +338,7 @@ const sampleUser = {
 // Generate sample listings
 const generateSampleListings = (): Listing[] => {
   const listings: Listing[] = [];
-  
+
   // Sample listings
   listings.push({
     id: uuidv4(),
@@ -337,6 +349,7 @@ const generateSampleListings = (): Listing[] => {
     subcategory: 'textbooks',
     condition: 'good',
     location: {
+      campus: 'Facultad de Ciencias',
       type: 'campus',
       position: [9.9376, -84.0510],
       locationName: 'Facultad de Ciencias'
@@ -361,7 +374,7 @@ const generateSampleListings = (): Listing[] => {
     isLiked: false,
     isSaved: true
   });
-  
+
   listings.push({
     id: uuidv4(),
     title: 'MacBook Pro 2019 - 13"',
@@ -371,6 +384,7 @@ const generateSampleListings = (): Listing[] => {
     subcategory: 'computers',
     condition: 'like_new',
     location: {
+      campus: 'Facultad de Ingeniería',
       type: 'campus',
       position: [9.9385, -84.0515],
       locationName: 'Biblioteca Carlos Monge'
@@ -394,7 +408,7 @@ const generateSampleListings = (): Listing[] => {
     isLiked: true,
     isSaved: false
   });
-  
+
   listings.push({
     id: uuidv4(),
     title: 'Clases particulares de Programación',
@@ -404,6 +418,7 @@ const generateSampleListings = (): Listing[] => {
     subcategory: 'tutoring',
     condition: 'not_applicable',
     location: {
+      campus: 'Facultad de Ingeniería',
       type: 'express',
       locationName: 'Virtual / A domicilio'
     },
@@ -427,7 +442,7 @@ const generateSampleListings = (): Listing[] => {
     isLiked: false,
     isSaved: false
   });
-  
+
   listings.push({
     id: uuidv4(),
     title: 'Mesa de estudio',
@@ -437,6 +452,7 @@ const generateSampleListings = (): Listing[] => {
     subcategory: 'desks',
     condition: 'good',
     location: {
+      campus: 'Facultad de Arquitectura',
       type: 'campus',
       position: [9.9365, -84.0530],
       locationName: 'Residencias Estudiantiles'
@@ -459,7 +475,7 @@ const generateSampleListings = (): Listing[] => {
     isLiked: false,
     isSaved: false
   });
-  
+
   // Add more listings with different categories, conditions, and locations
   listings.push({
     id: uuidv4(),
@@ -470,6 +486,7 @@ const generateSampleListings = (): Listing[] => {
     subcategory: 'room_rent',
     condition: 'not_applicable',
     location: {
+      campus: 'San Pedro',
       type: 'express',
       locationName: 'San Pedro, 500m oeste de la UCR'
     },
@@ -513,7 +530,7 @@ const MarketplacePage: React.FC = () => {
   const [filterLocation, setFilterLocation] = useState<string>('all');
   const [filterPriceRange, setFilterPriceRange] = useState<[number, number | null]>([0, null]);
   const [savedOnly, setSavedOnly] = useState(false);
-  
+
   // New listing form state
   const [newListing, setNewListing] = useState<Partial<Listing>>({
     title: '',
@@ -523,7 +540,8 @@ const MarketplacePage: React.FC = () => {
     subcategory: '',
     condition: '',
     location: {
-      type: 'campus'
+      type: 'campus',
+      campus: ''
     },
     photos: [],
     contactInfo: {},
@@ -531,56 +549,56 @@ const MarketplacePage: React.FC = () => {
     startDate: new Date(),
     createdBy: sampleUser
   });
-  
+
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  
+
   // Snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success' as 'success' | 'error' | 'warning' | 'info'
   });
-  
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  
+
   // Filter and sort listings based on current criteria
   useEffect(() => {
     let filtered = [...listings];
-    
+
     // Apply search term filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        listing => 
-          listing.title.toLowerCase().includes(searchLower) || 
+        listing =>
+          listing.title.toLowerCase().includes(searchLower) ||
           listing.description.toLowerCase().includes(searchLower)
       );
     }
-    
+
     // Apply category filter
     if (filterCategory !== 'all') {
       filtered = filtered.filter(listing => listing.category === filterCategory);
-      
+
       // Apply subcategory filter if category is selected
       if (filterSubcategory !== 'all') {
         filtered = filtered.filter(listing => listing.subcategory === filterSubcategory);
       }
     }
-    
+
     // Apply condition filter
     if (filterCondition !== 'all') {
       filtered = filtered.filter(listing => listing.condition === filterCondition);
     }
-    
+
     // Apply location filter
     if (filterLocation !== 'all') {
       filtered = filtered.filter(listing => listing.location.type === filterLocation);
     }
-    
+
     // Apply price range filter
     filtered = filtered.filter(listing => {
       if (filterPriceRange[0] > 0 && listing.price < filterPriceRange[0]) {
@@ -591,12 +609,12 @@ const MarketplacePage: React.FC = () => {
       }
       return true;
     });
-    
+
     // Apply saved only filter
     if (savedOnly) {
       filtered = filtered.filter(listing => listing.isSaved);
     }
-    
+
     // Sort listings
     switch (sortOption) {
       case 'newest':
@@ -617,11 +635,11 @@ const MarketplacePage: React.FC = () => {
       default:
         filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
-    
+
     setFilteredListings(filtered);
   }, [
-    listings, 
-    searchTerm, 
+    listings,
+    searchTerm,
     filterCategory,
     filterSubcategory,
     filterCondition,
@@ -630,12 +648,12 @@ const MarketplacePage: React.FC = () => {
     sortOption,
     savedOnly
   ]);
-  
+
   // Handle search term change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
-  
+
   // Reset filters
   const resetFilters = () => {
     setFilterCategory('all');
@@ -647,10 +665,10 @@ const MarketplacePage: React.FC = () => {
     setSearchTerm('');
     setSortOption('newest');
   };
-  
+
   // Toggle like on a listing
   const toggleLike = (id: string) => {
-    setListings(prev => 
+    setListings(prev =>
       prev.map(listing => {
         if (listing.id === id) {
           const newIsLiked = !listing.isLiked;
@@ -664,10 +682,10 @@ const MarketplacePage: React.FC = () => {
       })
     );
   };
-  
+
   // Toggle save on a listing
   const toggleSave = (id: string) => {
-    setListings(prev => 
+    setListings(prev =>
       prev.map(listing => {
         if (listing.id === id) {
           return {
@@ -679,11 +697,11 @@ const MarketplacePage: React.FC = () => {
       })
     );
   };
-  
+
   // Handle selecting a listing to view
   const handleViewListing = (listing: Listing) => {
     // Increment views count
-    setListings(prev => 
+    setListings(prev =>
       prev.map(item => {
         if (item.id === listing.id) {
           return {
@@ -694,28 +712,30 @@ const MarketplacePage: React.FC = () => {
         return item;
       })
     );
-    
+
     setSelectedListing(listing);
   };
-  
+
   // Handle closing the selected listing view
   const handleCloseListing = () => {
     setSelectedListing(null);
   };
-  
+
   // Handle new listing form input changes
   const handleNewListingChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
     const { name, value } = e.target;
-    
+
     // Handle nested properties
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setNewListing(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(typeof prev[parent as keyof typeof prev] === 'object' && prev[parent as keyof typeof prev] !== null && !Array.isArray(prev[parent as keyof typeof prev])
+            ? (prev[parent as keyof typeof prev] as Record<string, unknown>)
+            : {}),
           [child]: value
         }
       }));
@@ -724,7 +744,7 @@ const MarketplacePage: React.FC = () => {
         ...prev,
         [name]: value
       }));
-      
+
       // Clear validation error when field is updated
       if (validationErrors[name]) {
         setValidationErrors(prev => ({
@@ -732,7 +752,7 @@ const MarketplacePage: React.FC = () => {
           [name]: ''
         }));
       }
-      
+
       // If category changes, reset subcategory
       if (name === 'category') {
         setNewListing(prev => ({
@@ -742,28 +762,29 @@ const MarketplacePage: React.FC = () => {
       }
     }
   };
-  
+
   // Get subcategories for the selected category
   const getSubcategories = () => {
     const category = productCategories.find(cat => cat.value === newListing.category);
     return category ? category.subcategories : [];
   };
-  
+
   // Handle location type change
   const handleLocationTypeChange = (type: 'campus' | 'express') => {
     setNewListing(prev => ({
       ...prev,
       location: {
         type,
+        campus: type === 'campus' ? (prev.location?.campus || '') : '',
         ...(type === 'express' ? { locationName: '' } : {})
       }
     }));
-    
+
     if (type === 'express') {
       setSelectedLocation(null);
     }
   };
-  
+
   // Handle location selection
   const handleLocationSelect = (position: [number, number], name: string) => {
     setSelectedLocation(position);
@@ -771,17 +792,18 @@ const MarketplacePage: React.FC = () => {
       ...prev,
       location: {
         type: 'campus',
+        campus: prev.location?.campus || '',
         position,
         locationName: name
       }
     }));
-    
+
     setSnackbar({
       open: true,
       message: 'Ubicación seleccionada: ' + name,
       severity: 'success'
     });
-    
+
     // Clear validation error
     if (validationErrors['location']) {
       setValidationErrors(prev => ({
@@ -790,7 +812,7 @@ const MarketplacePage: React.FC = () => {
       }));
     }
   };
-  
+
   // Handle checkbox changes
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
@@ -799,7 +821,7 @@ const MarketplacePage: React.FC = () => {
       [name]: checked
     }));
   };
-  
+
   // Handle date changes
   const handleDateChange = (date: Date | null, field: 'startDate' | 'endDate') => {
     if (date) {
@@ -809,57 +831,57 @@ const MarketplacePage: React.FC = () => {
       }));
     }
   };
-  
+
   // Validate new listing form
   const validateNewListing = () => {
     const errors: Record<string, string> = {};
-    
+
     if (!newListing.title?.trim()) {
       errors.title = 'El título es requerido';
     }
-    
+
     if (!newListing.description?.trim()) {
       errors.description = 'La descripción es requerida';
     }
-    
+
     if (!newListing.price || newListing.price <= 0) {
       errors.price = 'El precio debe ser mayor a 0';
     }
-    
+
     if (!newListing.category) {
       errors.category = 'La categoría es requerida';
     }
-    
+
     if (!newListing.subcategory && newListing.category !== 'other') {
       errors.subcategory = 'La subcategoría es requerida';
     }
-    
+
     if (!newListing.condition) {
       errors.condition = 'La condición es requerida';
     }
-    
+
     // Validate location
     if (newListing.location?.type === 'campus' && !newListing.location.position) {
       errors.location = 'Debe seleccionar una ubicación en el mapa';
     }
-    
+
     if (newListing.location?.type === 'express' && !newListing.location.locationName) {
       errors.location = 'Debe proporcionar un nombre de ubicación';
     }
-    
+
     // Validate contact info - at least one contact method is required
-    const hasContactInfo = newListing.contactInfo?.phone || 
-                          newListing.contactInfo?.email || 
-                          newListing.contactInfo?.whatsapp;
-                          
+    const hasContactInfo = newListing.contactInfo?.phone ||
+      newListing.contactInfo?.email ||
+      newListing.contactInfo?.whatsapp;
+
     if (!hasContactInfo) {
       errors.contactInfo = 'Debe proporcionar al menos un método de contacto';
     }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   // Create new listing
   const handleCreateListing = () => {
     if (!validateNewListing()) {
@@ -870,7 +892,7 @@ const MarketplacePage: React.FC = () => {
       });
       return;
     }
-    
+
     // Create new listing object
     const newListingObj: Listing = {
       id: uuidv4(),
@@ -898,10 +920,10 @@ const MarketplacePage: React.FC = () => {
       isLiked: false,
       isSaved: false
     };
-    
+
     // Add new listing to the list
     setListings(prev => [newListingObj, ...prev]);
-    
+
     // Close dialog and show success message
     setCreateDialogOpen(false);
     setSnackbar({
@@ -909,7 +931,7 @@ const MarketplacePage: React.FC = () => {
       message: 'Anuncio creado exitosamente',
       severity: 'success'
     });
-    
+
     // Reset form
     setNewListing({
       title: '',
@@ -919,6 +941,7 @@ const MarketplacePage: React.FC = () => {
       subcategory: '',
       condition: '',
       location: {
+        campus: '',
         type: 'campus'
       },
       photos: [],
@@ -929,53 +952,53 @@ const MarketplacePage: React.FC = () => {
     });
     setSelectedLocation(null);
   };
-  
+
   // Handle deleting a listing
   const handleDeleteListing = (id: string) => {
     setListings(prev => prev.filter(listing => listing.id !== id));
-    
+
     if (selectedListing?.id === id) {
       setSelectedListing(null);
     }
-    
+
     setSnackbar({
       open: true,
       message: 'Anuncio eliminado exitosamente',
       severity: 'success'
     });
   };
-  
+
   // Format date string
   const formatDate = (date: Date) => {
     return format(date, 'dd/MM/yyyy');
   };
-  
+
   // Format relative time (e.g., "2 days ago")
   const formatRelativeTime = (date: Date) => {
     return formatDistanceToNow(date, { addSuffix: true });
   };
-  
+
   // Get category label from value
   const getCategoryLabel = (categoryValue: string) => {
     const category = productCategories.find(cat => cat.value === categoryValue);
     return category ? category.label : categoryValue;
   };
-  
+
   // Get subcategory label from values
   const getSubcategoryLabel = (categoryValue: string, subcategoryValue: string) => {
     const category = productCategories.find(cat => cat.value === categoryValue);
     if (!category) return subcategoryValue;
-    
+
     const subcategory = category.subcategories.find(sub => sub.value === subcategoryValue);
     return subcategory ? subcategory.label : subcategoryValue;
   };
-  
+
   // Get condition label from value
   const getConditionLabel = (conditionValue: string) => {
     const condition = productConditions.find(cond => cond.value === conditionValue);
     return condition ? condition.label : conditionValue;
   };
-  
+
   // Render listing cards for grid view
   const renderListingCards = () => {
     if (filteredListings.length === 0) {
@@ -984,10 +1007,10 @@ const MarketplacePage: React.FC = () => {
           <Typography variant="h6" color="text.secondary">
             No se encontraron anuncios con los criterios seleccionados
           </Typography>
-          <Button 
+          <Button
             variant="outlined"
             onClick={resetFilters}
-            sx={{ 
+            sx={{
               mt: 2,
               color: 'var(--neon-primary)',
               borderColor: 'var(--neon-primary)',
@@ -1003,19 +1026,19 @@ const MarketplacePage: React.FC = () => {
         </Box>
       );
     }
-    
+
     return (
       <Grid container spacing={2}>
         {filteredListings.map(listing => (
-          <Grid item xs={12} sm={6} md={4} key={listing.id}>
-            <Card 
-              sx={{ 
+          <Grid container key={listing.id}>
+            <Card
+              sx={{
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                boxShadow: listing.isSaved 
-                  ? '0 0 10px var(--neon-primary)' 
+                boxShadow: listing.isSaved
+                  ? '0 0 10px var(--neon-primary)'
                   : '0 0 5px rgba(255, 255, 255, 0.1)',
                 transition: 'transform 0.3s, box-shadow 0.3s',
                 '&:hover': {
@@ -1027,35 +1050,35 @@ const MarketplacePage: React.FC = () => {
               }}
             >
               {/* Top indicators */}
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 10, 
-                  right: 10, 
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
                   zIndex: 1,
                   display: 'flex',
-                  gap: 1 
+                  gap: 1
                 }}
               >
                 {listing.isAnonymous && (
-                  <Chip 
-                    size="small" 
-                    label="Anónimo" 
-                    sx={{ 
+                  <Chip
+                    size="small"
+                    label="Anónimo"
+                    sx={{
                       bgcolor: 'rgba(255, 128, 0, 0.7)',
                       color: 'black',
                       fontWeight: 'bold',
                       fontSize: '0.7rem'
-                    }} 
+                    }}
                   />
                 )}
-                
+
                 {listing.location.type === 'express' && (
-                  <Chip 
-                    size="small" 
+                  <Chip
+                    size="small"
                     icon={<LocalShippingIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label="Express" 
-                    sx={{ 
+                    label="Express"
+                    sx={{
                       bgcolor: 'rgba(0, 255, 255, 0.7)',
                       color: 'black',
                       fontWeight: 'bold',
@@ -1063,15 +1086,15 @@ const MarketplacePage: React.FC = () => {
                       '& .MuiChip-icon': {
                         color: 'black'
                       }
-                    }} 
+                    }}
                   />
                 )}
               </Box>
-              
+
               {/* Image */}
-              <Box 
+              <Box
                 onClick={() => handleViewListing(listing)}
-                sx={{ 
+                sx={{
                   cursor: 'pointer',
                   height: 140,
                   overflow: 'hidden',
@@ -1089,8 +1112,8 @@ const MarketplacePage: React.FC = () => {
                   alt={listing.title}
                   sx={{ objectFit: 'cover' }}
                 />
-                <Box 
-                  sx={{ 
+                <Box
+                  sx={{
                     position: 'absolute',
                     bottom: 0,
                     left: 0,
@@ -1114,14 +1137,14 @@ const MarketplacePage: React.FC = () => {
                   </Box>
                 </Box>
               </Box>
-              
+
               <CardContent sx={{ flexGrow: 1, pb: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Typography 
-                    gutterBottom 
-                    variant="h6" 
-                    component="div" 
-                    sx={{ 
+                  <Typography
+                    gutterBottom
+                    variant="h6"
+                    component="div"
+                    sx={{
                       fontWeight: 'bold',
                       fontSize: '1rem',
                       mb: 0.5,
@@ -1135,11 +1158,11 @@ const MarketplacePage: React.FC = () => {
                   >
                     {listing.title}
                   </Typography>
-                  
-                  <Typography 
-                    variant="h6" 
-                    color="var(--neon-green)" 
-                    sx={{ 
+
+                  <Typography
+                    variant="h6"
+                    color="var(--neon-green)"
+                    sx={{
                       fontSize: '1.1rem',
                       fontWeight: 'bold',
                       textShadow: '0 0 5px var(--neon-green)',
@@ -1149,16 +1172,16 @@ const MarketplacePage: React.FC = () => {
                     ₡{listing.price.toLocaleString()}
                   </Typography>
                 </Box>
-                
-                <Box 
-                  sx={{ 
-                    mt: 1, 
+
+                <Box
+                  sx={{
+                    mt: 1,
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: 0.5
                   }}
                 >
-                  <Chip 
+                  <Chip
                     size="small"
                     label={getCategoryLabel(listing.category)}
                     sx={{
@@ -1168,8 +1191,8 @@ const MarketplacePage: React.FC = () => {
                       fontSize: '0.7rem'
                     }}
                   />
-                  
-                  <Chip 
+
+                  <Chip
                     size="small"
                     label={getConditionLabel(listing.condition)}
                     sx={{
@@ -1178,13 +1201,12 @@ const MarketplacePage: React.FC = () => {
                         : listing.condition === 'poor'
                           ? 'rgba(255, 0, 128, 0.2)'
                           : 'rgba(255, 136, 0, 0.2)',
-                      border: `1px solid ${
-                        listing.condition === 'new' || listing.condition === 'like_new'
+                      border: `1px solid ${listing.condition === 'new' || listing.condition === 'like_new'
                           ? 'var(--neon-green)'
                           : listing.condition === 'poor'
                             ? 'var(--neon-red)'
                             : 'var(--neon-orange)'
-                      }`,
+                        }`,
                       color: listing.condition === 'new' || listing.condition === 'like_new'
                         ? 'var(--neon-green)'
                         : listing.condition === 'poor'
@@ -1194,11 +1216,11 @@ const MarketplacePage: React.FC = () => {
                     }}
                   />
                 </Box>
-                
+
                 <Box sx={{ mt: 1.5, mb: 1 }}>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
                     sx={{
                       height: '3rem',
                       overflow: 'hidden',
@@ -1211,19 +1233,19 @@ const MarketplacePage: React.FC = () => {
                     {listing.description}
                   </Typography>
                 </Box>
-                
+
                 {/* Location info */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
                   mt: 1,
                   color: 'var(--neon-primary)',
                   fontSize: '0.8rem'
                 }}>
                   <LocationOnIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -1234,11 +1256,11 @@ const MarketplacePage: React.FC = () => {
                   </Typography>
                 </Box>
               </CardContent>
-              
+
               <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
                 <Box>
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={() => toggleLike(listing.id)}
                     sx={{ color: listing.isLiked ? 'var(--neon-red)' : 'white' }}
                   >
@@ -1248,18 +1270,18 @@ const MarketplacePage: React.FC = () => {
                     {listing.likes}
                   </Typography>
                 </Box>
-                
+
                 <Box>
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={() => toggleSave(listing.id)}
                     sx={{ color: listing.isSaved ? 'var(--neon-primary)' : 'white' }}
                   >
                     {listing.isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                   </IconButton>
-                  
-                  <IconButton 
-                    size="small" 
+
+                  <IconButton
+                    size="small"
                     onClick={() => handleViewListing(listing)}
                     sx={{ color: 'white' }}
                   >
@@ -1273,19 +1295,19 @@ const MarketplacePage: React.FC = () => {
       </Grid>
     );
   };
-  
+
   // Render map view with listings
   const renderMapView = () => {
     // Filter for campus listings only
     const campusListings = filteredListings.filter(
       listing => listing.location.type === 'campus' && listing.location.position
     );
-    
+
     // Render express listings separately below the map
     const expressListings = filteredListings.filter(
       listing => listing.location.type === 'express'
     );
-    
+
     return (
       <Box>
         <Box sx={{ height: 500, width: '100%', borderRadius: 2, overflow: 'hidden', mb: 3 }}>
@@ -1298,11 +1320,11 @@ const MarketplacePage: React.FC = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            
+
             {campusListings.map(listing => (
               listing.location.position && (
-                <Marker 
-                  key={listing.id} 
+                <Marker
+                  key={listing.id}
                   position={listing.location.position}
                   icon={createMarkerIcon(listing.category)}
                 >
@@ -1311,18 +1333,18 @@ const MarketplacePage: React.FC = () => {
                       <Typography variant="subtitle2" fontWeight="bold">
                         {listing.title}
                       </Typography>
-                      
+
                       <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
                         ₡{listing.price.toLocaleString()}
                       </Typography>
-                      
+
                       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
                         <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
                         {listing.location.locationName}
                       </Box>
-                      
+
                       <Box sx={{ mt: 1 }}>
-                        <Chip 
+                        <Chip
                           size="small"
                           label={getCategoryLabel(listing.category)}
                           sx={{
@@ -1333,12 +1355,12 @@ const MarketplacePage: React.FC = () => {
                           }}
                         />
                       </Box>
-                      
-                      <Button 
+
+                      <Button
                         fullWidth
-                        size="small" 
+                        size="small"
                         onClick={() => handleViewListing(listing)}
-                        sx={{ 
+                        sx={{
                           mt: 1.5,
                           color: 'var(--neon-primary)',
                           borderColor: 'var(--neon-primary)',
@@ -1358,7 +1380,7 @@ const MarketplacePage: React.FC = () => {
             ))}
           </MapContainer>
         </Box>
-        
+
         {/* Express listings section */}
         {expressListings.length > 0 && (
           <Box>
@@ -1366,12 +1388,12 @@ const MarketplacePage: React.FC = () => {
               <LocalShippingIcon sx={{ mr: 1, color: 'var(--neon-primary)' }} />
               Anuncios con Entrega Express
             </Typography>
-            
+
             <Grid container spacing={2}>
               {expressListings.map(listing => (
-                <Grid item xs={12} sm={6} md={3} key={listing.id}>
-                  <Card 
-                    sx={{ 
+                <Grid container key={listing.id}>
+                  <Card
+                    sx={{
                       height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1390,18 +1412,18 @@ const MarketplacePage: React.FC = () => {
                       <Typography variant="subtitle2" fontWeight="bold">
                         {listing.title}
                       </Typography>
-                      
+
                       <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
                         ₡{listing.price.toLocaleString()}
                       </Typography>
-                      
+
                       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
                         <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
                         {listing.location.locationName || 'Entrega Express'}
                       </Box>
-                      
+
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Chip 
+                        <Chip
                           size="small"
                           label={getCategoryLabel(listing.category)}
                           sx={{
@@ -1411,7 +1433,7 @@ const MarketplacePage: React.FC = () => {
                             fontSize: '0.7rem'
                           }}
                         />
-                        
+
                         <Typography variant="caption" color="text.secondary">
                           {formatRelativeTime(listing.createdAt)}
                         </Typography>
@@ -1426,13 +1448,13 @@ const MarketplacePage: React.FC = () => {
       </Box>
     );
   };
-  
+
   return (
     <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom className="with-glow">
         Marketplace UCR
       </Typography>
-      
+
       {/* Search and Filter Row */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2 }}>
@@ -1465,7 +1487,7 @@ const MarketplacePage: React.FC = () => {
               },
             }}
           />
-          
+
           <Button
             variant="outlined"
             startIcon={<FilterListIcon />}
@@ -1482,7 +1504,7 @@ const MarketplacePage: React.FC = () => {
           >
             Filtros
           </Button>
-          
+
           <FormControl sx={{ minWidth: 120 }} size="small">
             <InputLabel id="sort-select-label" sx={{ color: 'var(--neon-primary)' }}>Ordenar</InputLabel>
             <Select
@@ -1511,7 +1533,7 @@ const MarketplacePage: React.FC = () => {
             </Select>
           </FormControl>
         </Box>
-        
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -1528,109 +1550,109 @@ const MarketplacePage: React.FC = () => {
           Publicar Anuncio
         </Button>
       </Box>
-      
+
       {/* Applied filters chips */}
-      {(filterCategory !== 'all' || 
-        filterSubcategory !== 'all' || 
-        filterCondition !== 'all' || 
-        filterLocation !== 'all' || 
-        filterPriceRange[0] > 0 || 
+      {(filterCategory !== 'all' ||
+        filterSubcategory !== 'all' ||
+        filterCondition !== 'all' ||
+        filterLocation !== 'all' ||
+        filterPriceRange[0] > 0 ||
         filterPriceRange[1] !== null ||
         savedOnly) && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-          {filterCategory !== 'all' && (
-            <Chip 
-              label={`Categoría: ${getCategoryLabel(filterCategory)}`}
-              onDelete={() => setFilterCategory('all')}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            {filterCategory !== 'all' && (
+              <Chip
+                label={`Categoría: ${getCategoryLabel(filterCategory)}`}
+                onDelete={() => setFilterCategory('all')}
+                sx={{
+                  backgroundColor: 'rgba(0, 140, 255, 0.2)',
+                  color: 'var(--neon-blue)',
+                  borderColor: 'var(--neon-blue)'
+                }}
+              />
+            )}
+
+            {filterSubcategory !== 'all' && (
+              <Chip
+                label={`Subcategoría: ${getSubcategoryLabel(filterCategory, filterSubcategory)}`}
+                onDelete={() => setFilterSubcategory('all')}
+                sx={{
+                  backgroundColor: 'rgba(0, 140, 255, 0.2)',
+                  color: 'var(--neon-blue)',
+                  borderColor: 'var(--neon-blue)'
+                }}
+              />
+            )}
+
+            {filterCondition !== 'all' && (
+              <Chip
+                label={`Condición: ${getConditionLabel(filterCondition)}`}
+                onDelete={() => setFilterCondition('all')}
+                sx={{
+                  backgroundColor: 'rgba(0, 255, 128, 0.2)',
+                  color: 'var(--neon-green)',
+                  borderColor: 'var(--neon-green)'
+                }}
+              />
+            )}
+
+            {filterLocation !== 'all' && (
+              <Chip
+                label={`Ubicación: ${filterLocation === 'campus' ? 'Campus' : 'Express'}`}
+                onDelete={() => setFilterLocation('all')}
+                sx={{
+                  backgroundColor: 'rgba(255, 0, 255, 0.2)',
+                  color: 'var(--neon-secondary)',
+                  borderColor: 'var(--neon-secondary)'
+                }}
+              />
+            )}
+
+            {(filterPriceRange[0] > 0 || filterPriceRange[1] !== null) && (
+              <Chip
+                label={`Precio: ${filterPriceRange[0]} - ${filterPriceRange[1] ? filterPriceRange[1] : 'Max'}`}
+                onDelete={() => setFilterPriceRange([0, null])}
+                sx={{
+                  backgroundColor: 'rgba(0, 255, 255, 0.2)',
+                  color: 'var(--neon-primary)',
+                  borderColor: 'var(--neon-primary)'
+                }}
+              />
+            )}
+
+            {savedOnly && (
+              <Chip
+                label="Solo guardados"
+                onDelete={() => setSavedOnly(false)}
+                sx={{
+                  backgroundColor: 'rgba(0, 255, 255, 0.2)',
+                  color: 'var(--neon-primary)',
+                  borderColor: 'var(--neon-primary)'
+                }}
+              />
+            )}
+
+            <Button
+              size="small"
+              onClick={resetFilters}
               sx={{
-                backgroundColor: 'rgba(0, 140, 255, 0.2)',
-                color: 'var(--neon-blue)',
-                borderColor: 'var(--neon-blue)'
+                ml: 1,
+                color: 'var(--neon-red)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 0, 128, 0.1)'
+                }
               }}
-            />
-          )}
-          
-          {filterSubcategory !== 'all' && (
-            <Chip 
-              label={`Subcategoría: ${getSubcategoryLabel(filterCategory, filterSubcategory)}`}
-              onDelete={() => setFilterSubcategory('all')}
-              sx={{
-                backgroundColor: 'rgba(0, 140, 255, 0.2)',
-                color: 'var(--neon-blue)',
-                borderColor: 'var(--neon-blue)'
-              }}
-            />
-          )}
-          
-          {filterCondition !== 'all' && (
-            <Chip 
-              label={`Condición: ${getConditionLabel(filterCondition)}`}
-              onDelete={() => setFilterCondition('all')}
-              sx={{
-                backgroundColor: 'rgba(0, 255, 128, 0.2)',
-                color: 'var(--neon-green)',
-                borderColor: 'var(--neon-green)'
-              }}
-            />
-          )}
-          
-          {filterLocation !== 'all' && (
-            <Chip 
-              label={`Ubicación: ${filterLocation === 'campus' ? 'Campus' : 'Express'}`}
-              onDelete={() => setFilterLocation('all')}
-              sx={{
-                backgroundColor: 'rgba(255, 0, 255, 0.2)',
-                color: 'var(--neon-secondary)',
-                borderColor: 'var(--neon-secondary)'
-              }}
-            />
-          )}
-          
-          {(filterPriceRange[0] > 0 || filterPriceRange[1] !== null) && (
-            <Chip 
-              label={`Precio: ${filterPriceRange[0]} - ${filterPriceRange[1] ? filterPriceRange[1] : 'Max'}`}
-              onDelete={() => setFilterPriceRange([0, null])}
-              sx={{
-                backgroundColor: 'rgba(0, 255, 255, 0.2)',
-                color: 'var(--neon-primary)',
-                borderColor: 'var(--neon-primary)'
-              }}
-            />
-          )}
-          
-          {savedOnly && (
-            <Chip 
-              label="Solo guardados"
-              onDelete={() => setSavedOnly(false)}
-              sx={{
-                backgroundColor: 'rgba(0, 255, 255, 0.2)',
-                color: 'var(--neon-primary)',
-                borderColor: 'var(--neon-primary)'
-              }}
-            />
-          )}
-          
-          <Button 
-            size="small" 
-            onClick={resetFilters}
-            sx={{ 
-              ml: 1,
-              color: 'var(--neon-red)',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 0, 128, 0.1)'
-              }
-            }}
-          >
-            Limpiar filtros
-          </Button>
-        </Box>
-      )}
-      
+            >
+              Limpiar filtros
+            </Button>
+          </Box>
+        )}
+
       {/* Stats bar */}
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           mb: 2,
           backgroundColor: 'rgba(0, 0, 0, 0.4)',
           borderRadius: 1,
@@ -1640,7 +1662,7 @@ const MarketplacePage: React.FC = () => {
         <Typography variant="body2" color="text.secondary">
           Mostrando {filteredListings.length} de {listings.length} anuncios
         </Typography>
-        
+
         <Box>
           <Button
             size="small"
@@ -1654,3 +1676,1038 @@ const MarketplacePage: React.FC = () => {
             }}
           >
             {savedOnly ? 'Todos los anuncios' : 'Solo guardados'}
+          </Button>
+        </Box>
+      </Box>
+
+      {/* View Mode Tabs */}
+      <Box sx={{ mb: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            '& .MuiTab-root': {
+              color: 'white',
+              '&.Mui-selected': {
+                color: 'var(--neon-primary)',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: 'var(--neon-primary)',
+            },
+          }}
+        >
+          <Tab icon={<StoreIcon />} label="Cuadrícula" />
+          <Tab icon={<MapIcon />} label="Mapa" />
+        </Tabs>
+      </Box>
+
+      {/* Main Content Based on Tab Value */}
+      {tabValue === 0 ? renderListingCards() : renderMapView()}
+
+      {/* Selected Listing Details Dialog */}
+      <Dialog
+        open={selectedListing !== null}
+        onClose={handleCloseListing}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(5, 5, 25, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '8px',
+            border: '1px solid var(--neon-primary)',
+            boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+          }
+        }}
+      >
+        {selectedListing && (
+          <>
+            <Box sx={{ position: 'relative', height: 300 }}>
+              <img
+                src={selectedListing.photos[0] || '/images/default.jpg'}
+                alt={selectedListing.title}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+
+              {/* Back button */}
+              <IconButton
+                onClick={handleCloseListing}
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  }
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+
+              {/* Category chip */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 10,
+                  left: 10,
+                  display: 'flex',
+                  gap: 1
+                }}
+              >
+                <Chip
+                  label={getCategoryLabel(selectedListing.category)}
+                  sx={{
+                    backgroundColor: 'rgba(0, 140, 255, 0.6)',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                  icon={<CategoryIcon sx={{ color: 'white !important' }} />}
+                />
+
+                <Chip
+                  label={getConditionLabel(selectedListing.condition)}
+                  sx={{
+                    backgroundColor: selectedListing.condition === 'new' || selectedListing.condition === 'like_new'
+                      ? 'rgba(0, 255, 128, 0.6)'
+                      : selectedListing.condition === 'poor'
+                        ? 'rgba(255, 0, 128, 0.6)'
+                        : 'rgba(255, 136, 0, 0.6)',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                  icon={<LocalOfferIcon sx={{ color: 'white !important' }} />}
+                />
+              </Box>
+
+              {/* Action buttons */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 10,
+                  right: 10,
+                  display: 'flex',
+                  gap: 1
+                }}
+              >
+                <IconButton
+                  onClick={() => toggleLike(selectedListing.id)}
+                  sx={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: selectedListing.isLiked ? 'var(--neon-red)' : 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    }
+                  }}
+                >
+                  {selectedListing.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => toggleSave(selectedListing.id)}
+                  sx={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: selectedListing.isSaved ? 'var(--neon-primary)' : 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    }
+                  }}
+                >
+                  {selectedListing.isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => {
+                    navigator.share({
+                      title: selectedListing.title,
+                      text: selectedListing.description,
+                      url: window.location.href
+                    }).catch(() => {
+                      setSnackbar({
+                        open: true,
+                        message: 'Compartir no está disponible en este navegador',
+                        severity: 'warning'
+                      });
+                    });
+                  }}
+                  sx={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    }
+                  }}
+                >
+                  <ShareIcon />
+                </IconButton>
+              </Box>
+            </Box>
+
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                {selectedListing.title}
+              </Typography>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: 'var(--neon-green)',
+                    fontWeight: 'bold',
+                    textShadow: '0 0 5px var(--neon-green)'
+                  }}
+                >
+                  ₡{selectedListing.price.toLocaleString()}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  Publicado {formatRelativeTime(selectedListing.createdAt)}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ mb: 3, borderColor: 'rgba(0, 255, 255, 0.2)' }} />
+
+              <Grid container spacing={3}>
+                <Grid container>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'var(--neon-primary)' }}>
+                      Descripción
+                    </Typography>
+                    <Typography variant="body1">
+                      {selectedListing.description}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid >
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'var(--neon-primary)' }}>
+                      Detalles
+                    </Typography>
+
+                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center' }}>
+                      <LocalOfferIcon sx={{ mr: 1, color: 'var(--neon-orange)' }} />
+                      <Typography variant="body2">
+                        <strong>Categoría:</strong> {getCategoryLabel(selectedListing.category)} - {getSubcategoryLabel(selectedListing.category, selectedListing.subcategory)}
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ mb: 0.5, display: 'flex', alignItems: 'center' }}>
+                      <AccessTimeIcon sx={{ mr: 1, color: 'var(--neon-blue)' }} />
+                      <Typography variant="body2">
+                        <strong>Disponible desde:</strong> {formatDate(selectedListing.startDate)}
+                        {selectedListing.endDate && <> hasta {formatDate(selectedListing.endDate)}</>}
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                      <VisibilityIcon sx={{ mr: 1, color: 'var(--neon-green)' }} />
+                      <Typography variant="body2">
+                        <strong>Vistas:</strong> {selectedListing.views} | <strong>Me gusta:</strong> {selectedListing.likes}
+                      </Typography>
+                    </Box>
+
+                    {selectedListing.location.position && (
+                      <Box sx={{ mt: 2, height: 200, borderRadius: '8px', overflow: 'hidden' }}>
+                        <MapContainer
+                          center={selectedListing.location.position}
+                          zoom={16}
+                          style={{ height: '100%', width: '100%' }}
+                          scrollWheelZoom={false}
+                        >
+                          <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          />
+                          <Marker position={selectedListing.location.position}>
+                            <Popup>{selectedListing.location.locationName}</Popup>
+                          </Marker>
+                        </MapContainer>
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+
+                <Grid >
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'var(--neon-primary)' }}>
+                      Vendedor
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: selectedListing.isAnonymous ? 'var(--neon-orange)' : 'var(--neon-blue)',
+                          color: 'black',
+                          width: 40,
+                          height: 40,
+                          mr: 2
+                        }}
+                      >
+                        {selectedListing.isAnonymous ? 'A' : selectedListing.createdBy.name[0]}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body1" fontWeight="bold">
+                          {selectedListing.isAnonymous ? 'Anónimo' : selectedListing.createdBy.name}
+                        </Typography>
+                        {!selectedListing.isAnonymous && (
+                          <Typography variant="body2" color="text.secondary">
+                            {selectedListing.createdBy.faculty}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+
+                    <Typography variant="h6" sx={{ mb: 1, mt: 3, color: 'var(--neon-primary)' }}>
+                      Contacto
+                    </Typography>
+
+                    {selectedListing.contactInfo.phone && (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<PhoneIcon />}
+                        sx={{
+                          mb: 1,
+                          justifyContent: 'flex-start',
+                          color: 'var(--neon-green)',
+                          borderColor: 'var(--neon-green)',
+                          '&:hover': {
+                            borderColor: 'var(--neon-green)',
+                            color: 'var(--neon-green)',
+                            boxShadow: '0 0 10px var(--neon-green)'
+                          }
+                        }}
+                        onClick={() => window.open(`tel:${selectedListing.contactInfo.phone}`)}
+                      >
+                        {selectedListing.contactInfo.phone}
+                      </Button>
+                    )}
+
+                    {selectedListing.contactInfo.whatsapp && (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<WhatsAppIcon />}
+                        sx={{
+                          mb: 1,
+                          justifyContent: 'flex-start',
+                          color: 'var(--neon-green)',
+                          borderColor: 'var(--neon-green)',
+                          '&:hover': {
+                            borderColor: 'var(--neon-green)',
+                            color: 'var(--neon-green)',
+                            boxShadow: '0 0 10px var(--neon-green)'
+                          }
+                        }}
+                        onClick={() => window.open(`https://wa.me/${(selectedListing.contactInfo.whatsapp ?? '').replace(/[^\d]/g, '')}`)}
+                      >
+                        WhatsApp
+                      </Button>
+                    )}
+
+                    {selectedListing.contactInfo.email && (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<EmailIcon />}
+                        sx={{
+                          mb: 1,
+                          justifyContent: 'flex-start',
+                          color: 'var(--neon-blue)',
+                          borderColor: 'var(--neon-blue)',
+                          '&:hover': {
+                            borderColor: 'var(--neon-blue)',
+                            color: 'var(--neon-blue)',
+                            boxShadow: '0 0 10px var(--neon-blue)'
+                          }
+                        }}
+                        onClick={() => window.open(`mailto:${selectedListing.contactInfo.email}`)}
+                      >
+                        {selectedListing.contactInfo.email}
+                      </Button>
+                    )}
+
+                    <Box sx={{ mt: 4, textAlign: 'center' }}>
+                      <IconButton
+                        color="error"
+                        aria-label="report listing"
+                        onClick={() => {
+                          setSnackbar({
+                            open: true,
+                            message: 'Reporte enviado. Gracias por mantener segura nuestra comunidad.',
+                            severity: 'info'
+                          });
+                        }}
+                        sx={{ color: 'var(--neon-red)', mr: 2 }}
+                      >
+                        <ReportIcon />
+                      </IconButton>
+
+                      {selectedListing.createdBy.id === sampleUser.id && (
+                        <IconButton
+                          color="error"
+                          aria-label="delete listing"
+                          onClick={() => {
+                            handleDeleteListing(selectedListing.id);
+                            handleCloseListing();
+                          }}
+                          sx={{ color: 'var(--neon-red)' }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </>
+        )}
+      </Dialog>
+
+      {/* Create Listing Dialog */}
+      <Dialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(5, 5, 25, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '8px',
+            border: '1px solid var(--neon-primary)',
+            boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+          }
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ color: 'var(--neon-primary)' }}>
+            Publicar Nuevo Anuncio
+          </Typography>
+
+          <Grid container spacing={3}>
+            {/* Basic Info */}
+            <Grid container>
+              <TextField
+                fullWidth
+                label="Título del anuncio"
+                name="title"
+                value={newListing.title || ''}
+                onChange={handleNewListingChange}
+                required
+                error={!!validationErrors.title}
+                helperText={validationErrors.title}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid container>
+              <TextField
+                fullWidth
+                label="Descripción"
+                name="description"
+                value={newListing.description || ''}
+                onChange={handleNewListingChange}
+                required
+                multiline
+                rows={4}
+                error={!!validationErrors.description}
+                helperText={validationErrors.description}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid >
+              <TextField
+                fullWidth
+                label="Precio (colones)"
+                name="price"
+                type="number"
+                value={newListing.price || ''}
+                onChange={handleNewListingChange}
+                required
+                error={!!validationErrors.price}
+                helperText={validationErrors.price}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AttachMoneyIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={newListing.isAnonymous || false}
+                    onChange={handleCheckboxChange}
+                    name="isAnonymous"
+                    sx={{
+                      color: 'var(--neon-primary)',
+                      '&.Mui-checked': {
+                        color: 'var(--neon-primary)',
+                      },
+                    }}
+                  />
+                }
+                label="Publicar anónimamente"
+              />
+            </Grid>
+
+            <Grid >
+              <FormControl
+                fullWidth
+                required
+                error={!!validationErrors.category}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              >
+                <InputLabel id="category-label">Categoría</InputLabel>
+                <Select
+                  labelId="category-label"
+                  id="category"
+                  name="category"
+                  value={newListing.category || ''}
+                  label="Categoría"
+                  onChange={handleNewListingChange}
+                >
+                  {productCategories.map((category) => (
+                    <MenuItem key={category.value} value={category.value}>
+                      {category.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {validationErrors.category && (
+                  <Typography variant="caption" color="error">
+                    {validationErrors.category}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+
+            <Grid >
+              <FormControl
+                fullWidth
+                required
+                disabled={!newListing.category}
+                error={!!validationErrors.subcategory}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              >
+                <InputLabel id="subcategory-label">Subcategoría</InputLabel>
+                <Select
+                  labelId="subcategory-label"
+                  id="subcategory"
+                  name="subcategory"
+                  value={newListing.subcategory || ''}
+                  label="Subcategoría"
+                  onChange={handleNewListingChange}
+                >
+                  {getSubcategories().map((subcategory) => (
+                    <MenuItem key={subcategory.value} value={subcategory.value}>
+                      {subcategory.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {validationErrors.subcategory && (
+                  <Typography variant="caption" color="error">
+                    {validationErrors.subcategory}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+
+            <Grid >
+              <FormControl
+                fullWidth
+                required
+                error={!!validationErrors.condition}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              >
+                <InputLabel id="condition-label">Condición</InputLabel>
+                <Select
+                  labelId="condition-label"
+                  id="condition"
+                  name="condition"
+                  value={newListing.condition || ''}
+                  label="Condición"
+                  onChange={handleNewListingChange}
+                >
+                  {productConditions.map((condition) => (
+                    <MenuItem key={condition.value} value={condition.value}>
+                      {condition.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {validationErrors.condition && (
+                  <Typography variant="caption" color="error">
+                    {validationErrors.condition}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+
+            <Grid >
+              <Box sx={{ width: '100%' }}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Disponible hasta (opcional)"
+                    value={newListing.endDate || null}
+                    onChange={(date) => handleDateChange(date, 'endDate')}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        sx: {
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'var(--neon-primary)',
+                          },
+                        }
+                      }
+                    }}
+                  />
+                </LocalizationProvider>
+              </Box>
+            </Grid>
+
+            {/* Contact info */}
+            <Grid container>
+              <Typography variant="h6" sx={{ mb: 1, mt: 2, color: 'var(--neon-primary)' }}>
+                Información de Contacto
+              </Typography>
+              {validationErrors.contactInfo && (
+                <Typography variant="caption" color="error" sx={{ ml: 2, mb: 1 }}>
+                  {validationErrors.contactInfo}
+                </Typography>
+              )}
+            </Grid>
+
+            <Grid >
+              <TextField
+                fullWidth
+                label="Teléfono (opcional)"
+                name="contactInfo.phone"
+                value={newListing.contactInfo?.phone || ''}
+                onChange={handleNewListingChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid >
+              <TextField
+                fullWidth
+                label="WhatsApp (opcional)"
+                name="contactInfo.whatsapp"
+                value={newListing.contactInfo?.whatsapp || ''}
+                onChange={handleNewListingChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <WhatsAppIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid >
+              <TextField
+                fullWidth
+                label="Email (opcional)"
+                name="contactInfo.email"
+                type="email"
+                value={newListing.contactInfo?.email || ''}
+                onChange={handleNewListingChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--neon-primary)',
+                  },
+                }}
+              />
+            </Grid>
+
+            {/* Location */}
+            <Grid container>
+              <Typography variant="h6" sx={{ mb: 1, mt: 2, color: 'var(--neon-primary)' }}>
+                Ubicación
+              </Typography>
+              {validationErrors.location && (
+                <Typography variant="caption" color="error" sx={{ ml: 2, mb: 1 }}>
+                  {validationErrors.location}
+                </Typography>
+              )}
+            </Grid>
+
+            <Grid container>
+              <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+                <Button
+                  variant={newListing.location?.type === 'campus' ? 'contained' : 'outlined'}
+                  onClick={() => handleLocationTypeChange('campus')}
+                  startIcon={<LocationOnIcon />}
+                  sx={{
+                    backgroundColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'transparent',
+                    color: newListing.location?.type === 'campus' ? 'black' : 'var(--neon-primary)',
+                    borderColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    '&:hover': {
+                      backgroundColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'rgba(0, 140, 255, 0.1)',
+                      color: newListing.location?.type === 'campus' ? 'black' : 'var(--neon-primary)',
+                      borderColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    },
+                    '&.MuiButton-outlined': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.MuiButton-contained': {
+                      backgroundColor: 'var(--neon-primary)',
+                      color: 'black',
+                    },
+                  }}
+                >
+                  Campus
+                </Button>
+
+                <Button
+                  variant={newListing.location?.type === 'express' ? 'contained' : 'outlined'}
+                  onClick={() => handleLocationTypeChange('express')}
+                  startIcon={<MapIcon />}
+                  sx={{
+                    backgroundColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'transparent',
+                    color: newListing.location?.type === 'express' ? 'black' : 'var(--neon-primary)',
+                    borderColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    '&:hover': {
+                      backgroundColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'rgba(0, 140, 255, 0.1)',
+                      color: newListing.location?.type === 'express' ? 'black' : 'var(--neon-primary)',
+                      borderColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    },
+                    '&.MuiButton-outlined': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                    '&.MuiButton-contained': {
+                      backgroundColor: 'var(--neon-primary)',
+                      color: 'black',
+                    },
+                  }}
+
+                >
+                  Personalizada
+
+                </Button>
+              </Box>
+
+              {newListing.location?.type === 'campus' && (
+                <FormControl
+                  fullWidth
+                  required
+                  error={!!validationErrors.location}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'var(--neon-primary)',
+                    },
+                  }}
+                >
+                  <InputLabel id="location-label">Ubicación</InputLabel>
+                  <Select
+                    labelId="location-label"
+                    id="location"
+                    name="location"
+                    value={newListing.location?.campus || ''}
+                    label="Ubicación"
+                    onChange={handleNewListingChange}
+                  >
+                    {campusLocations.map((location) => (
+                      <MenuItem key={location.value} value={location.value}>
+                        {location.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {validationErrors.location && (
+                    <Typography variant="caption" color="error">
+                      {validationErrors.location}
+                    </Typography>
+                  )}
+                </FormControl>
+              )}
+
+              {newListing.location?.type === 'express' && (
+                <TextField
+                  fullWidth
+                  label="Nombre de la ubicación"
+                  name="location.locationName"
+                  value={newListing.location?.locationName || ''}
+                  onChange={handleNewListingChange}
+                  required
+                  error={!!validationErrors.location}
+                  helperText={validationErrors.location}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'var(--neon-primary)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'var(--neon-primary)',
+                    },
+                  }}
+                />
+              )}
+
+              {newListing.location?.type === 'express' && (
+                <Box sx={{ mt: 2, height: 200, borderRadius: '8px', overflow: 'hidden' }}>
+                  <MapContainer
+                    center={newListing.location?.position || [9.9281, -84.0907]} // Default to Costa Rica coordinates
+                    zoom={16}
+                    style={{ height: '100%', width: '100%' }}
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {newListing.location?.position && (
+                      <Marker position={newListing.location.position}>
+                        <Popup>{newListing.location.locationName}</Popup>
+                      </Marker>
+                    )}
+                  </MapContainer>
+                </Box>
+              )}
+
+            </Grid>
+
+            <Grid container sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleCreateListing}
+                sx={{
+                  backgroundColor: 'var(--neon-primary)',
+                  color: 'black',
+                  '&:hover': {
+                    backgroundColor: 'var(--neon-primary)',
+                    boxShadow: '0 0 10px var(--neon-primary)',
+                  },
+                }}
+              >
+                Publicar Anuncio
+              </Button>
+
+            </Grid>
+
+          </Grid>
+
+        </Box>
+      </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ zIndex: 10000 }}
+        message={snackbar.message}
+        action={
+          <IconButton size="small" aria-label="close" color="inherit" onClick={() => setSnackbar({ ...snackbar, open: false })}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+        ContentProps={{
+          sx: {
+            backgroundColor: snackbar.severity === 'error' ? 'var(--neon-red)' : 'var(--neon-green)',
+            color: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
+          },
+        }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+}
+
+export default MarketplacePage;
