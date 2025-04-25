@@ -4,6 +4,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
 import DashboardProviderWrapper from './components/Dashboard/DashboardProviderWrapper';
 import MapPage from './pages/MapPage';
+import { AuthProvider, RequireAuth, LoginPage, RegisterPage, ProfilePage, ResetPasswordPage } from './contexts/AuthContext';
 import './main.css';
 
 // Create a theme that complements the 3D visualization
@@ -129,25 +130,52 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Routes>
-          {/* Dashboard Routes */}
-          <Route path="/dashboard/*" element={<DashboardProviderWrapper />} />
-          
-          {/* Map Route with Navbar */}
-          <Route
-            path="/map"
-            element={
-              <>
-                <Navbar />
-                <MapPage />
-              </>
-            }
-          />
-          
-          {/* Default redirect to dashboard */}
-          <Route path="/" element={<Navigate replace to="/dashboard" />} />
-          <Route path="*" element={<Navigate replace to="/dashboard" />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/profile" element={
+              <RequireAuth>
+                <>
+                  <Navbar />
+                  <ProfilePage />
+                </>
+              </RequireAuth>
+            } />
+            
+            {/* Dashboard Routes - Protected */}
+            <Route path="/dashboard/*" element={
+              <RequireAuth>
+                <DashboardProviderWrapper />
+              </RequireAuth>
+            } />
+            
+            {/* Map Route with Navbar - Protected */}
+            <Route
+              path="/map"
+              element={
+                <RequireAuth>
+                  <>
+                    <Navbar />
+                    <MapPage />
+                  </>
+                </RequireAuth>
+              }
+            />
+            
+            {/* Default redirect to login if not authenticated, dashboard if authenticated */}
+            <Route path="/" element={
+              localStorage.getItem('auth_token') ? 
+                <Navigate replace to="/dashboard" /> : 
+                <Navigate replace to="/login" />
+            } />
+            
+            {/* Catch all routes */}
+            <Route path="*" element={<Navigate replace to="/" />} />
+          </Routes>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   );
