@@ -11,7 +11,8 @@ import MuseosPage from '../../pages/Dashboard/MuseosPage';
 import MonumentosPage from '../../pages/Dashboard/MonumentosPage';
 import BuildingsPage from '../../pages/Dashboard/BuildingsPage';
 import ReservationsPage from '../../pages/Dashboard/ReservationsPage'; 
-import EventosPage from '../../pages/EventosPage'; 
+import EventosPage from '../../pages/EventosPage';
+import MarketplacePage from '../../pages/MarketplacePage';
 
 const DashboardRouter: React.FC = () => {
   return (
@@ -25,7 +26,8 @@ const DashboardRouter: React.FC = () => {
         <Route path="monumentos" element={<MonumentosPage />} />
         <Route path="edificios" element={<BuildingsPage />} />
         <Route path="reservaciones" element={<ReservationsPage />} />
-        <Route path="eventos" element={<EventosPage />} /> {/* Add new route */}
+        <Route path="eventos" element={<EventosPage />} />
+        <Route path="marketplace" element={<MarketplacePage />} />
         <Route path="*" element={<Navigate replace to="/dashboard" />} />
       </Route>
     </Routes>

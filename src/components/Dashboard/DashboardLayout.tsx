@@ -26,6 +26,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import MapIcon from '@mui/icons-material/Map';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import CakeIcon from '@mui/icons-material/Cake';
+import StoreIcon from '@mui/icons-material/Store';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 260;
@@ -50,6 +51,7 @@ const DashboardLayout: React.FC = () => {
     { text: 'Monumentos', icon: <LandscapeIcon />, path: '/dashboard/monumentos' },
     { text: 'Edificios', icon: <ApartmentIcon />, path: '/dashboard/edificios' },
     { text: 'Reservaciones', icon: <EventNoteIcon />, path: '/dashboard/reservaciones' },
+    { text: 'Marketplace', icon: <StoreIcon />, path: '/dashboard/marketplace' },
     { text: 'Eventos', icon: <CakeIcon />, path: '/dashboard/eventos' },
     { text: 'Mapa', icon: <MapIcon />, path: '/map' },
   ];
