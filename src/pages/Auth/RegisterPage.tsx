@@ -23,7 +23,8 @@ import {
   Snackbar,
   Alert,
   Grid,
-  Link
+  Link,
+  SelectChangeEvent
 } from '@mui/material';
 import {
   Visibility,
@@ -58,12 +59,12 @@ const facultyOptions = [
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
-  
+
   const [activeStep, setActiveStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [accepted, setAccepted] = useState(false);
-  
+
   // Form data
   const [formData, setFormData] = useState({
     firstName: '',
@@ -74,7 +75,7 @@ const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
-  
+
   // Form validation errors
   const [errors, setErrors] = useState({
     firstName: '',
@@ -85,7 +86,7 @@ const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
-  
+
   // Snackbar state
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -96,10 +97,28 @@ const RegisterPage: React.FC = () => {
     message: '',
     severity: 'info',
   });
-  
+
   // Steps definition
   const steps = ['Información Personal', 'Información Académica', 'Credenciales de Acceso'];
-  
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    if (name) {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+
+      // Clear error when field is modified
+      if (errors[name as keyof typeof errors]) {
+        setErrors({
+          ...errors,
+          [name]: '',
+        });
+      }
+    }
+  }
+
   // Handle form input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
@@ -108,7 +127,7 @@ const RegisterPage: React.FC = () => {
         ...formData,
         [name]: value,
       });
-      
+
       // Clear error when field is modified
       if (errors[name as keyof typeof errors]) {
         setErrors({
@@ -118,7 +137,7 @@ const RegisterPage: React.FC = () => {
       }
     }
   };
-  
+
   // Toggle password visibility
   const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
     if (field === 'password') {
@@ -127,31 +146,31 @@ const RegisterPage: React.FC = () => {
       setShowConfirmPassword(!showConfirmPassword);
     }
   };
-  
+
   // Validate step 1
   const validateStep1 = () => {
     const newErrors = { ...errors };
     let isValid = true;
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'El nombre es requerido';
       isValid = false;
     }
-    
+
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'El apellido es requerido';
       isValid = false;
     }
-    
+
     setErrors(newErrors);
     return isValid;
   };
-  
+
   // Validate step 2
   const validateStep2 = () => {
     const newErrors = { ...errors };
     let isValid = true;
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'El correo electrónico es requerido';
       isValid = false;
@@ -159,29 +178,29 @@ const RegisterPage: React.FC = () => {
       newErrors.email = 'Debe utilizar un correo institucional (@ucr.ac.cr)';
       isValid = false;
     }
-    
+
     if (!formData.studentId.trim()) {
       newErrors.studentId = 'El carné estudiantil es requerido';
       isValid = false;
-    } else if (!/^[A-B][0-9]{7}$/.test(formData.studentId)) {
-      newErrors.studentId = 'Formato inválido. Debe ser letra (A-B) seguida de 7 dígitos';
+    } else if (!/^[A-B-C-D][0-9]{5}$/.test(formData.studentId)) {
+      newErrors.studentId = 'Formato inválido. Debe ser letra (A-B-C-D) seguida de 5 dígitos';
       isValid = false;
     }
-    
+
     if (!formData.faculty) {
       newErrors.faculty = 'La facultad es requerida';
       isValid = false;
     }
-    
+
     setErrors(newErrors);
     return isValid;
   };
-  
+
   // Validate step 3
   const validateStep3 = () => {
     const newErrors = { ...errors };
     let isValid = true;
-    
+
     if (!formData.password) {
       newErrors.password = 'La contraseña es requerida';
       isValid = false;
@@ -189,7 +208,7 @@ const RegisterPage: React.FC = () => {
       newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
       isValid = false;
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Debe confirmar la contraseña';
       isValid = false;
@@ -197,7 +216,7 @@ const RegisterPage: React.FC = () => {
       newErrors.confirmPassword = 'Las contraseñas no coinciden';
       isValid = false;
     }
-    
+
     if (!accepted) {
       setSnackbar({
         open: true,
@@ -206,15 +225,15 @@ const RegisterPage: React.FC = () => {
       });
       isValid = false;
     }
-    
+
     setErrors(newErrors);
     return isValid;
   };
-  
+
   // Handle next step
   const handleNext = () => {
     let isValid = false;
-    
+
     switch (activeStep) {
       case 0:
         isValid = validateStep1();
@@ -232,21 +251,21 @@ const RegisterPage: React.FC = () => {
       default:
         isValid = true;
     }
-    
+
     if (isValid) {
       setActiveStep((prevStep) => prevStep + 1);
     }
   };
-  
+
   // Handle back step
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
-  
+
   // Handle form submission
   const handleSubmit = async () => {
     clearError();
-    
+
     try {
       const success = await register({
         firstName: formData.firstName,
@@ -256,14 +275,14 @@ const RegisterPage: React.FC = () => {
         faculty: formData.faculty,
         password: formData.password,
       });
-      
+
       if (success) {
         setSnackbar({
           open: true,
           message: 'Registro exitoso',
           severity: 'success',
         });
-        
+
         // Redirect to login after successful registration
         setTimeout(() => {
           navigate('/login');
@@ -283,12 +302,12 @@ const RegisterPage: React.FC = () => {
       });
     }
   };
-  
+
   // Close snackbar
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-  
+
   // Render current step
   const renderStep = () => {
     switch (activeStep) {
@@ -298,7 +317,7 @@ const RegisterPage: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 2, color: 'var(--neon-primary)' }}>
               Información Personal
             </Typography>
-            
+
             <TextField
               margin="normal"
               required
@@ -334,7 +353,7 @@ const RegisterPage: React.FC = () => {
                 },
               }}
             />
-            
+
             <TextField
               margin="normal"
               required
@@ -372,14 +391,14 @@ const RegisterPage: React.FC = () => {
             />
           </Box>
         );
-      
+
       case 1:
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 2, color: 'var(--neon-primary)' }}>
               Información Académica
             </Typography>
-            
+
             <TextField
               margin="normal"
               required
@@ -416,7 +435,7 @@ const RegisterPage: React.FC = () => {
                 },
               }}
             />
-            
+
             <TextField
               margin="normal"
               required
@@ -452,10 +471,10 @@ const RegisterPage: React.FC = () => {
                 },
               }}
             />
-            
-            <FormControl 
-              fullWidth 
-              required 
+
+            <FormControl
+              fullWidth
+              required
               margin="normal"
               error={!!errors.faculty}
               sx={{
@@ -482,7 +501,7 @@ const RegisterPage: React.FC = () => {
                 name="faculty"
                 value={formData.faculty}
                 label="Facultad"
-                onChange={(e) => handleSelectChange(e)}
+                onChange={handleSelectChange}
                 startAdornment={
                   <InputAdornment position="start">
                     <SchoolIcon sx={{ color: 'var(--neon-primary)' }} />
@@ -499,14 +518,14 @@ const RegisterPage: React.FC = () => {
             </FormControl>
           </Box>
         );
-        
+
       case 2:
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 2, color: 'var(--neon-primary)' }}>
               Credenciales de Acceso
             </Typography>
-            
+
             <TextField
               margin="normal"
               required
@@ -555,7 +574,7 @@ const RegisterPage: React.FC = () => {
                 },
               }}
             />
-            
+
             <TextField
               margin="normal"
               required
@@ -604,7 +623,7 @@ const RegisterPage: React.FC = () => {
                 },
               }}
             />
-            
+
             <FormControlLabel
               control={
                 <Checkbox
@@ -670,12 +689,12 @@ const RegisterPage: React.FC = () => {
             />
           </Box>
         );
-      
+
       default:
         return null;
     }
   };
-  
+
   return (
     <Container maxWidth="md" sx={{ mt: 10, mb: 4 }}>
       <Paper
@@ -724,9 +743,9 @@ const RegisterPage: React.FC = () => {
             Crea tu cuenta para Campus UCR
           </Typography>
         </Box>
-        
-        <Stepper 
-          activeStep={activeStep} 
+
+        <Stepper
+          activeStep={activeStep}
           alternativeLabel
           sx={{
             mb: 4,
@@ -747,10 +766,10 @@ const RegisterPage: React.FC = () => {
             </Step>
           ))}
         </Stepper>
-        
+
         <Box component="form" sx={{ mt: 1 }}>
           {renderStep()}
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
             <Button
               disabled={activeStep === 0}
@@ -767,7 +786,7 @@ const RegisterPage: React.FC = () => {
             >
               Atrás
             </Button>
-            
+
             <Button
               variant="contained"
               onClick={handleNext}
@@ -793,7 +812,7 @@ const RegisterPage: React.FC = () => {
             </Button>
           </Box>
         </Box>
-        
+
         <Divider
           sx={{
             my: 3,
@@ -809,7 +828,7 @@ const RegisterPage: React.FC = () => {
             ¿Ya tienes una cuenta?
           </Typography>
         </Divider>
-        
+
         <Grid container justifyContent="center">
           <Button
             component={RouterLink}
@@ -829,7 +848,7 @@ const RegisterPage: React.FC = () => {
           </Button>
         </Grid>
       </Paper>
-      
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

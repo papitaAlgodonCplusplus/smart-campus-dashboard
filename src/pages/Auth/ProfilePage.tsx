@@ -105,7 +105,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout, loading: authLoading } = useAuth();
-  
+
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -133,19 +133,19 @@ const ProfilePage: React.FC = () => {
     severity: 'info' as 'success' | 'error' | 'warning' | 'info'
   });
   const [logoutDialog, setLogoutDialog] = useState(false);
-  
+
   // Set temp profile data when user data is loaded
   useEffect(() => {
     if (user) {
       setTempProfileData({ ...user });
     }
   }, [user]);
-  
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  
+
   // Toggle edit mode
   const toggleEditMode = () => {
     if (editMode) {
@@ -154,7 +154,7 @@ const ProfilePage: React.FC = () => {
     }
     setEditMode(!editMode);
   };
-  
+
   // Handle profile data change
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
       [name]: value
     });
   };
-  
+
   // Handle notifications toggle
   const handleNotificationToggle = (type: keyof typeof notifications) => {
     setNotifications({
@@ -171,12 +171,12 @@ const ProfilePage: React.FC = () => {
       [type]: !notifications[type]
     });
   };
-  
+
   // Handle save profile changes
   const handleSaveProfile = () => {
     // Mock API call to save profile
     setLoading(true);
-    
+
     setTimeout(() => {
       // In a real implementation, you would update the user in the auth context here
       setEditMode(false);
@@ -188,7 +188,7 @@ const ProfilePage: React.FC = () => {
       });
     }, 1000);
   };
-  
+
   // Handle password change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -197,7 +197,7 @@ const ProfilePage: React.FC = () => {
       [name]: value
     });
   };
-  
+
   // Toggle password visibility
   const togglePasswordVisibility = (field: keyof typeof showPassword) => {
     setShowPassword({
@@ -205,7 +205,7 @@ const ProfilePage: React.FC = () => {
       [field]: !showPassword[field]
     });
   };
-  
+
   // Submit password change
   const handlePasswordSubmit = () => {
     // Simple validation
@@ -217,7 +217,7 @@ const ProfilePage: React.FC = () => {
       });
       return;
     }
-    
+
     if (passwordData.newPassword.length < 8) {
       setSnackbar({
         open: true,
@@ -226,10 +226,10 @@ const ProfilePage: React.FC = () => {
       });
       return;
     }
-    
+
     // Mock API call
     setLoading(true);
-    
+
     setTimeout(() => {
       setLoading(false);
       setShowChangePassword(false);
@@ -245,13 +245,13 @@ const ProfilePage: React.FC = () => {
       });
     }, 1000);
   };
-  
+
   // Handle logout
   const handleLogout = () => {
     logout();
     // Navigate handled by the auth context
   };
-  
+
   // Format date string
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -260,13 +260,13 @@ const ProfilePage: React.FC = () => {
       day: 'numeric'
     });
   };
-  
+
   // Format recent activity date
   const formatActivityDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
       return 'Hoy';
     } else if (diffDays === 1) {
@@ -280,7 +280,7 @@ const ProfilePage: React.FC = () => {
       });
     }
   };
-  
+
   // If loading and no user data, show loading indicator
   if (authLoading || !user) {
     return (
@@ -297,7 +297,7 @@ const ProfilePage: React.FC = () => {
       </Box>
     );
   }
-  
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Grid container spacing={4}>
@@ -333,7 +333,7 @@ const ProfilePage: React.FC = () => {
                 >
                   {user.firstName?.[0]}{user.lastName?.[0]}
                 </Avatar>
-                
+
                 {/* Profile Info */}
                 <Box>
                   {editMode ? (
@@ -405,14 +405,14 @@ const ProfilePage: React.FC = () => {
                   )}
                 </Box>
               </Box>
-              
+
               {/* Edit/Save Button */}
               {editMode ? (
                 <Box>
-                  <IconButton 
+                  <IconButton
                     onClick={handleSaveProfile}
                     disabled={loading}
-                    sx={{ 
+                    sx={{
                       color: 'var(--neon-green)',
                       '&:hover': {
                         backgroundColor: 'rgba(0, 255, 128, 0.1)',
@@ -421,9 +421,9 @@ const ProfilePage: React.FC = () => {
                   >
                     <SaveIcon />
                   </IconButton>
-                  <IconButton 
+                  <IconButton
                     onClick={toggleEditMode}
-                    sx={{ 
+                    sx={{
                       color: 'var(--neon-red)',
                       '&:hover': {
                         backgroundColor: 'rgba(255, 0, 128, 0.1)',
@@ -434,9 +434,9 @@ const ProfilePage: React.FC = () => {
                   </IconButton>
                 </Box>
               ) : (
-                <IconButton 
+                <IconButton
                   onClick={toggleEditMode}
-                  sx={{ 
+                  sx={{
                     color: 'var(--neon-primary)',
                     '&:hover': {
                       backgroundColor: 'rgba(0, 255, 255, 0.1)',
@@ -447,7 +447,7 @@ const ProfilePage: React.FC = () => {
                 </IconButton>
               )}
             </Box>
-            
+
             {/* Admin badge if user is admin */}
             {user.role === 'admin' && (
               <Box sx={{ mt: 2 }}>
@@ -468,9 +468,9 @@ const ProfilePage: React.FC = () => {
                 </Typography>
               </Box>
             )}
-            
+
             <Divider sx={{ mt: 3, mb: 2, borderColor: 'rgba(0, 255, 255, 0.2)' }} />
-            
+
             {/* Last Login Info */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
@@ -482,7 +482,7 @@ const ProfilePage: React.FC = () => {
             </Box>
           </Paper>
         </Grid>
-        
+
         {/* Tabs Section */}
         <Grid container>
           <Paper
@@ -514,38 +514,38 @@ const ProfilePage: React.FC = () => {
                   },
                 }}
               >
-                <Tab 
-                  label="Actividad Reciente" 
-                  icon={<EventIcon />} 
+                <Tab
+                  label="Actividad Reciente"
+                  icon={<EventIcon />}
                   iconPosition="start"
                 />
-                <Tab 
-                  label="Información Académica" 
-                  icon={<SchoolIcon />} 
+                <Tab
+                  label="Información Académica"
+                  icon={<SchoolIcon />}
                   iconPosition="start"
                 />
-                <Tab 
-                  label="Preferencias" 
-                  icon={<SettingsIcon />} 
+                <Tab
+                  label="Preferencias"
+                  icon={<SettingsIcon />}
                   iconPosition="start"
                 />
-                <Tab 
-                  label="Seguridad" 
-                  icon={<SecurityIcon />} 
+                <Tab
+                  label="Seguridad"
+                  icon={<SecurityIcon />}
                   iconPosition="start"
                 />
               </Tabs>
             </Box>
-            
+
             {/* Recent Activity Tab */}
             <TabPanel value={tabValue} index={0}>
               <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
                 Actividad Reciente
               </Typography>
-              
+
               <List>
                 {mockRecentActivities.map((activity) => (
-                  <ListItem 
+                  <ListItem
                     key={activity.id}
                     sx={{
                       mb: 1,
@@ -566,7 +566,7 @@ const ProfilePage: React.FC = () => {
                   </ListItem>
                 ))}
               </List>
-              
+
               <Box sx={{ textAlign: 'center', mt: 3 }}>
                 <Button
                   variant="outlined"
@@ -584,287 +584,75 @@ const ProfilePage: React.FC = () => {
                 </Button>
               </Box>
             </TabPanel>
-            
-            {/* Academic Info Tab */}
-            <TabPanel value={tabValue} index={1}>
-              <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
-                Información Académica
-              </Typography>
-              
-              <Grid container spacing={3}>
-                <Grid container xs={12} md={6}>
-                  <Box sx={{ width: '100%' }}>
-                    <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
-                      Datos Personales
-                    </Typography>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Nombre:
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.firstName} {user.lastName}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Carné Estudiantil:
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.studentId}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Correo Institucional:
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.email}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                
-                <Grid container xs={12} md={6}>
-                  <Box sx={{ width: '100%' }}>
-                    <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
-                      Datos Académicos
-                    </Typography>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Facultad:
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.faculty}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Estado:
-                      </Typography>
-                      <Typography variant="body1">
-                        Activo
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Tipo de Usuario:
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.role === 'admin' ? 'Administrador' : 'Estudiante'}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-              </Grid>
-              
-              <Divider sx={{ my: 3, borderColor: 'rgba(0, 255, 255, 0.2)' }} />
-              
-              <Box sx={{ textAlign: 'center' }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<ContactsIcon />}
-                  sx={{
-                    color: 'var(--neon-primary)',
-                    borderColor: 'var(--neon-primary)',
-                    '&:hover': {
-                      borderColor: 'var(--neon-blue)',
-                      color: 'var(--neon-blue)',
-                      boxShadow: '0 0 10px var(--neon-blue)',
-                    },
-                  }}
-                >
-                  Completar Perfil Académico
-                </Button>
-              </Box>
-            </TabPanel>
-            
-            {/* Preferences Tab */}
-            <TabPanel value={tabValue} index={2}>
-              <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
-                Preferencias
-              </Typography>
-              
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
-                  Idioma
-                </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LanguageIcon sx={{ color: 'var(--neon-primary)', mr: 1 }} />
-                  <Typography variant="body1" sx={{ mr: 2 }}>
-                    Idioma preferido:
-                  </Typography>
-                  <Box
-                    component="select"
-                    defaultValue="Español"
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                      color: 'white',
-                      border: '1px solid var(--neon-primary)',
-                      borderRadius: '4px',
-                      padding: '8px',
-                      '&:focus': {
-                        outline: 'none',
-                        boxShadow: '0 0 5px var(--neon-primary)',
-                      },
-                    }}
-                  >
-                    <option value="Español">Español</option>
-                    <option value="English">English</option>
-                  </Box>
-                </Box>
-              </Box>
-              
-              <Divider sx={{ my: 3, borderColor: 'rgba(0, 255, 255, 0.2)' }} />
-              
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
-                  Notificaciones
-                </Typography>
-                
-                <List sx={{ width: '100%' }}>
-                  <ListItem
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: '4px',
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemIcon>
-                      <NotificationsIcon sx={{ color: 'var(--neon-primary)' }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Notificaciones por correo" />
-                    <Button
-                      onClick={() => handleNotificationToggle('email')}
-                      variant={notifications.email ? 'contained' : 'outlined'}
-                      size="small"
-                      sx={{
-                        backgroundColor: notifications.email ? 'var(--neon-green)' : 'transparent',
-                        color: notifications.email ? 'black' : 'var(--neon-green)',
-                        borderColor: 'var(--neon-green)',
-                        '&:hover': {
-                          backgroundColor: notifications.email ? 'var(--neon-green)' : 'rgba(0, 255, 128, 0.1)',
-                          opacity: 0.9,
-                        },
-                      }}
-                    >
-                      {notifications.email ? 'Activado' : 'Desactivado'}
-                    </Button>
-                  </ListItem>
-                  
-                  <ListItem
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: '4px',
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemIcon>
-                      <NotificationsIcon sx={{ color: 'var(--neon-primary)' }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Notificaciones en la aplicación" />
-                    <Button
-                      onClick={() => handleNotificationToggle('app')}
-                      variant={notifications.app ? 'contained' : 'outlined'}
-                      size="small"
-                      sx={{
-                        backgroundColor: notifications.app ? 'var(--neon-green)' : 'transparent',
-                        color: notifications.app ? 'black' : 'var(--neon-green)',
-                        borderColor: 'var(--neon-green)',
-                        '&:hover': {
-                          backgroundColor: notifications.app ? 'var(--neon-green)' : 'rgba(0, 255, 128, 0.1)',
-                          opacity: 0.9,
-                        },
-                      }}
-                    >
-                      {notifications.app ? 'Activado' : 'Desactivado'}
-                    </Button>
-                  </ListItem>
-                  
-                  <ListItem
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: '4px',
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemIcon>
-                      <EventIcon sx={{ color: 'var(--neon-primary)' }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Recordatorios de eventos" />
-                    <Button
-                      onClick={() => handleNotificationToggle('events')}
-                      variant={notifications.events ? 'contained' : 'outlined'}
-                      size="small"
-                      sx={{
-                        backgroundColor: notifications.events ? 'var(--neon-green)' : 'transparent',
-                        color: notifications.events ? 'black' : 'var(--neon-green)',
-                        borderColor: 'var(--neon-green)',
-                        '&:hover': {
-                          backgroundColor: notifications.events ? 'var(--neon-green)' : 'rgba(0, 255, 128, 0.1)',
-                          opacity: 0.9,
-                        },
-                      }}
-                    >
-                      {notifications.events ? 'Activado' : 'Desactivado'}
-                    </Button>
-                  </ListItem>
-                  
-                  <ListItem
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: '4px',
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemIcon>
-                      <RoomIcon sx={{ color: 'var(--neon-primary)' }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Recordatorios de reservaciones" />
-                    <Button
-                      onClick={() => handleNotificationToggle('reservations')}
-                      variant={notifications.reservations ? 'contained' : 'outlined'}
-                      size="small"
-                      sx={{
-                        backgroundColor: notifications.reservations ? 'var(--neon-green)' : 'transparent',
-                        color: notifications.reservations ? 'black' : 'var(--neon-green)',
-                        borderColor: 'var(--neon-green)',
-                        '&:hover': {
-                          backgroundColor: notifications.reservations ? 'var(--neon-green)' : 'rgba(0, 255, 128, 0.1)',
-                          opacity: 0.9,
-                        },
-                      }}
-                    >
-                      {notifications.reservations ? 'Activado' : 'Desactivado'}
-                    </Button>
-                  </ListItem>
-                </List>
-              </Box>
-              
-              <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: 'var(--neon-primary)',
-                    color: 'black',
-                    fontWeight: 'bold',
-                    boxShadow: '0 0 10px var(--neon-primary)',
-                    '&:hover': {
-                      backgroundColor: 'var(--neon-blue)',
-                      boxShadow: '0 0 15px var(--neon-blue)',
-                    }
-                  }}
-                >
-                  Guardar Preferencias
-                </Button>
-              </Box>
-            </TabPanel>
-            
-            {/* Security Tab */}
-            <TabPanel value={tabValue} inde
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutDialog}
+        onClose={() => setLogoutDialog(false)}
+        aria-labelledby="logout-dialog-title"
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(5, 5, 25, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '8px',
+            border: '1px solid var(--neon-primary)',
+            boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+          }
+        }}
+      >
+        <DialogTitle id="logout-dialog-title" sx={{ color: 'var(--neon-primary)' }}>
+          Cerrar Sesión
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'white' }}>
+            ¿Estás seguro de que deseas cerrar tu sesión?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setLogoutDialog(false)}
+            sx={{ color: 'white' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="contained"
+            sx={{
+              backgroundColor: 'var(--neon-red)',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'var(--neon-red)',
+                opacity: 0.9,
+                boxShadow: '0 0 10px var(--neon-red)',
+              }
+            }}
+          >
+            Cerrar Sesión
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+};
+
+export default ProfilePage;
