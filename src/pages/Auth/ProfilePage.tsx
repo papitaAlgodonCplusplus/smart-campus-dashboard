@@ -474,10 +474,10 @@ const ProfilePage: React.FC = () => {
             {/* Last Login Info */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Último acceso: {formatDate(user.lastLogin || '')}
+                Último acceso: {formatDate(user.lastLogin || '')} {'<'}{'- '}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Miembro desde: {formatDate(user.createdAt || '')}
+              {'>'} Miembro desde: {formatDate(user.createdAt || '')} 
               </Typography>
             </Box>
           </Paper>
