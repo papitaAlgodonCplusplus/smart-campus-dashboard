@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // Auth components
 import LoginPage from '../pages/Auth/LoginPage';
@@ -60,208 +59,183 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Auth provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    token: localStorage.getItem('auth_token'),
-    isAuthenticated: !!localStorage.getItem('auth_token'),
-    loading: false,
-    error: null
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
 
-  // Check if user is authenticated on mount
+  // Check for existing auth on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      fetchUserProfile();
-    }
+    const checkAuth = () => {
+      const token = localStorage.getItem('auth_token');
+      const userEmail = localStorage.getItem('user_email');
+      const userRole = localStorage.getItem('user_role');
+
+      if (token && userEmail) {
+        // Mock user data based on stored email and role
+        const mockUserData: User = {
+          firstName: 'Usuario',
+          lastName: 'UCR',
+          email: userEmail,
+          role: userRole === 'student' || userRole === 'admin' ? userRole : 'student',
+          lastLogin: new Date().toISOString(),
+          createdAt: '2023-01-01T00:00:00Z',
+          id: '',
+          studentId: '',
+          faculty: '',
+          profilePicture: null
+        };
+
+        // If it's the admin account, set admin data
+        if (userEmail === 'admin@ucr.ac.cr') {
+          mockUserData.firstName = 'Admin';
+          mockUserData.lastName = 'UCR';
+          mockUserData.faculty = 'Administración';
+          mockUserData.studentId = 'A00000';
+        } else {
+          // Regular student
+          mockUserData.firstName = 'Estudiante';
+          mockUserData.lastName = 'UCR';
+          mockUserData.faculty = 'Ingeniería';
+          mockUserData.studentId = 'B12345';
+        }
+
+        setUser(mockUserData);
+      }
+
+      setLoading(false);
+      setInitialAuthCheckDone(true);
+    };
+
+    checkAuth();
   }, []);
-  
-  // Mock fetch user profile function
-  const fetchUserProfile = async () => {
-    setAuthState(prev => ({ ...prev, loading: true }));
-    
+
+  // Login function
+  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+    const { email, password } = credentials;
+    setLoading(true);
+    setError(null);
+
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Get user email from localStorage
-      const email = localStorage.getItem('user_email') || '';
-      const role = localStorage.getItem('user_role') as 'student' | 'admin' || 'student';
-      
-      // Get registered user data if available
-      let userData: Partial<User> = {
-        firstName: 'Carlos',
-        lastName: 'Rodríguez',
-        email,
-        studentId: 'B12345678',
-        faculty: 'Facultad de Ingeniería',
-        role,
-        profilePicture: null,
-        createdAt: '2023-09-15T10:30:00Z',
-        lastLogin: new Date().toISOString()
-      };
-      
-      const registeredUser = localStorage.getItem('registered_user');
-      if (registeredUser) {
-        const parsedUser = JSON.parse(registeredUser);
-        userData = {
-          ...userData,
-          ...parsedUser,
-          role
+
+      // Mock login validation
+      if (email === 'student@ucr.ac.cr' && password === 'password123') {
+        const mockUserData: User = {
+          firstName: 'Estudiante',
+          lastName: 'UCR',
+          email: email,
+          studentId: 'B12345',
+          faculty: 'Ingeniería',
+          role: 'student',
+          lastLogin: new Date().toISOString(),
+          createdAt: '2023-01-01T00:00:00Z',
+          id: '',
+          profilePicture: null
         };
-      }
-      
-      setAuthState({
-        user: {
-          id: '1',
-          ...userData
-        } as User,
-        token: localStorage.getItem('auth_token'),
-        isAuthenticated: true,
-        loading: false,
-        error: null
-      });
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Error al cargar datos del usuario',
-        isAuthenticated: false,
-        user: null
-      }));
-      localStorage.removeItem('auth_token');
-    }
-  };
-  
-  // Login function
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    
-    try {
-      // Simple validation
-      if (!credentials.email || !credentials.password) {
-        setAuthState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Todos los campos son requeridos'
-        }));
-        return false;
-      }
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Validate mock credentials
-      if (
-        (credentials.email === 'student@ucr.ac.cr' && credentials.password === 'password123') ||
-        (credentials.email === 'admin@ucr.ac.cr' && credentials.password === 'admin123')
-      ) {
-        const isAdmin = credentials.email === 'admin@ucr.ac.cr';
-        
-        // Set token and user data
+
+        // Store auth data
         localStorage.setItem('auth_token', 'mock_jwt_token');
-        localStorage.setItem('user_email', credentials.email);
-        localStorage.setItem('user_role', isAdmin ? 'admin' : 'student');
-        
-        // Fetch user profile
-        await fetchUserProfile();
-        
+        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_role', 'student');
+
+        setUser(mockUserData);
+        setLoading(false);
         return true;
-      } else {
-        setAuthState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Credenciales inválidas'
-        }));
-        return false;
       }
+
+      // Mock admin login
+      if (email === 'admin@ucr.ac.cr' && password === 'admin123') {
+        const mockUserData: User = {
+          firstName: 'Admin',
+          lastName: 'UCR',
+          email: email,
+          studentId: 'A00000',
+          faculty: 'Administración',
+          role: 'admin',
+          lastLogin: new Date().toISOString(),
+          createdAt: '2022-01-01T00:00:00Z',
+          id: '',
+          profilePicture: null
+        };
+
+        // Store auth data
+        localStorage.setItem('auth_token', 'mock_admin_jwt_token');
+        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_role', 'admin');
+
+        setUser(mockUserData);
+        setLoading(false);
+        return true;
+      }
+
+      // Login failed
+      setError('Credenciales inválidas');
+      setLoading(false);
+      return false;
     } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Error al iniciar sesión'
-      }));
+      setError('Error de conexión. Intente nuevamente.');
+      setLoading(false);
       return false;
     }
   };
-  
+
   // Register function
   const register = async (data: RegistrationData): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setLoading(true);
+    setError(null);
+
     try {
-      // Simple validation
-      if (!data.email.endsWith('@ucr.ac.cr')) {
-        setAuthState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Debe utilizar un correo institucional (@ucr.ac.cr)'
-        }));
-        return false;
-      }
-      
-      if (data.password.length < 8) {
-        setAuthState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'La contraseña debe tener al menos 8 caracteres'
-        }));
-        return false;
-      }
-      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Store user data (this would normally go to a database)
-      localStorage.setItem('registered_user', JSON.stringify(data));
-      
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: null
-      }));
-      
+
+      // Check if email is already registered (mock validation)
+      if (data.email === 'student@ucr.ac.cr' || data.email === 'admin@ucr.ac.cr') {
+        setError('Este correo electrónico ya está registrado');
+        setLoading(false);
+        return false;
+      }
+
+      // Mock successful registration
+      setLoading(false);
       return true;
     } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Error durante el registro'
-      }));
+      setError('Error durante el registro. Intente nuevamente.');
+      setLoading(false);
       return false;
     }
   };
-  
+
   // Logout function
   const logout = () => {
-    // Clear local storage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_role');
-    
-    // Reset auth state
-    setAuthState({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      loading: false,
-      error: null
-    });
-    
-    // Redirect to login
-    navigate('/login');
+    setUser(null);
+    // Note: Navigation to login page will be handled by the RequireAuth component
   };
-  
+
   // Clear error
   const clearError = () => {
-    setAuthState(prev => ({ ...prev, error: null }));
+    setError(null);
   };
-  
+
+  // Compute isAuthenticated
+  const isAuthenticated = !!user;
+
+  // Retrieve token from localStorage
+  const token = localStorage.getItem('auth_token');
+
+  // Provide the context
   return (
     <AuthContext.Provider
       value={{
-        ...authState,
+        user,
+        token,
+        isAuthenticated,
+        loading: loading && !initialAuthCheckDone,
+        error,
         login,
         register,
         logout,
@@ -285,31 +259,37 @@ export const useAuth = () => {
 // Auth guard component to protect routes
 export const RequireAuth: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, loading, navigate]);
-  
+  const location = useLocation();
+
   if (loading) {
+    // Show loading indicator if still checking auth
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          backgroundColor: 'var(--dark-bg)'
-        }}
-      >
-        <CircularProgress sx={{ color: 'var(--neon-primary)' }} />
-      </Box>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: 'var(--dark-bg)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          border: '3px solid rgba(0, 0, 0, 0.1)',
+          borderTop: '3px solid var(--neon-primary)',
+          animation: 'spin 1s linear infinite'
+        }} />
+      </div>
     );
   }
-  
-  return isAuthenticated ? <>{children}</> : null;
+
+  if (!isAuthenticated) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Render children if authenticated
+  return <>{children}</>;
 };
 
 // Export all auth components

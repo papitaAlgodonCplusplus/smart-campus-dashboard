@@ -4,7 +4,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Navbar from './components/Navigation/Navbar';
 import DashboardProviderWrapper from './components/Dashboard/DashboardProviderWrapper';
 import MapPage from './pages/MapPage';
-import { AuthProvider, RequireAuth, LoginPage, RegisterPage, ProfilePage, ResetPasswordPage } from './contexts/AuthContext';
+import { AuthProvider, RequireAuth, LoginPage, RegisterPage, ProfilePage, ResetPasswordPage, useAuth } from './contexts/AuthContext';
 import './main.css';
 
 // Create a theme that complements the 3D visualization
@@ -108,6 +108,38 @@ const loadFonts = () => {
   document.head.appendChild(linkRajdhani);
 };
 
+// Component to handle conditional redirect based on auth state
+const HomeRedirect = () => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: 'var(--dark-bg)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          border: '3px solid rgba(0, 0, 0, 0.1)',
+          borderTop: '3px solid var(--neon-primary)',
+          animation: 'spin 1s linear infinite'
+        }} />
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? (
+    <Navigate replace to="/dashboard" />
+  ) : (
+    <Navigate replace to="/login" />
+  );
+};
+
 function App() {
   // Load fonts when the app initializes
   useEffect(() => {
@@ -165,12 +197,8 @@ function App() {
               }
             />
             
-            {/* Default redirect to login if not authenticated, dashboard if authenticated */}
-            <Route path="/" element={
-              localStorage.getItem('auth_token') ? 
-                <Navigate replace to="/dashboard" /> : 
-                <Navigate replace to="/login" />
-            } />
+            {/* Root path redirects based on auth state */}
+            <Route path="/" element={<HomeRedirect />} />
             
             {/* Catch all routes */}
             <Route path="*" element={<Navigate replace to="/" />} />

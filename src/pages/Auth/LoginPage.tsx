@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -21,38 +21,14 @@ import {
   Email as EmailIcon,
   Lock as LockIcon
 } from '@mui/icons-material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-
-// Mock authentication function (to be replaced with actual API calls)
-const mockLogin = async (
-  email: string,
-  password: string
-): Promise<{ success: boolean; message: string }> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Simple validation
-  if (email === 'student@ucr.ac.cr' && password === 'password123') {
-    // Store token in localStorage (replace with proper token handling)
-    localStorage.setItem('auth_token', 'mock_jwt_token');
-    localStorage.setItem('user_email', email);
-    localStorage.setItem('user_role', 'student');
-    return { success: true, message: 'Login successful' };
-  }
-
-  // Mock admin login
-  if (email === 'admin@ucr.ac.cr' && password === 'admin123') {
-    localStorage.setItem('auth_token', 'mock_admin_jwt_token');
-    localStorage.setItem('user_email', email);
-    localStorage.setItem('user_role', 'admin');
-    return { success: true, message: 'Admin login successful' };
-  }
-
-  return { success: false, message: 'Invalid email or password' };
-};
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, error: authError, isAuthenticated } = useAuth();
+  
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -66,6 +42,14 @@ const LoginPage: React.FC = () => {
     message: '',
     severity: 'success',
   });
+
+  // Check if user is already authenticated and redirect if necessary
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,23 +65,20 @@ const LoginPage: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const result = await mockLogin(email, password);
+      const success = await login({ email, password });
 
-      if (result.success) {
+      if (success) {
         setSnackbar({
           open: true,
-          message: result.message,
+          message: 'Inicio de sesión exitoso',
           severity: 'success',
         });
         
-        // Redirect after successful login
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+        // Redirection will be handled by the useEffect above
       } else {
         setSnackbar({
           open: true,
-          message: result.message,
+          message: authError || 'Credenciales inválidas',
           severity: 'error',
         });
       }
