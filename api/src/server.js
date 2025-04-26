@@ -2,10 +2,12 @@ import spaceRoutes from '/opt/render/project/src/api/src/routes/spaceRoutes.js';
 import hourlyDataRoutes from '/opt/render/project/src/api/src/routes/hourlyDataRoutes.js';
 import reservationRoutes from '/opt/render/project/src/api/src/routes/reservationRoutes.js';
 import authRoutes from '/opt/render/project/src/api/src/routes/authRoutes.js';
+import marketplaceRoutes from '/opt/render/project/src/api/src/routes/marketplaceRoutes.js';
 // import spaceRoutes from './routes/spaceRoutes.js';
 // import hourlyDataRoutes from './routes/hourlyDataRoutes.js';
 // import reservationRoutes from './routes/reservationRoutes.js';
 // import authRoutes from './routes/authRoutes.js';
+// import marketplaceRoutes from './routes/marketplaceRoutes.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -32,6 +34,7 @@ app.use('/api/spaces', spaceRoutes);
 app.use('/api/hourly-data', hourlyDataRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

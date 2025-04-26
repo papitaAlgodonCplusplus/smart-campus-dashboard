@@ -1,10 +1,6 @@
+import { registerUser, loginUser, getUserProfile, updateUserProfile } from '/opt/render/project/src/api/src/controllers/authController.js';
+// import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../controllers/authController.js';
 import express from 'express';
-// import {
-  registerUser,
-  loginUser,
-  getUserProfile,
-  updateUserProfile
-} from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();

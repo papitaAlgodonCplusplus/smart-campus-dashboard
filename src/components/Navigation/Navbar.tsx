@@ -1,4 +1,3 @@
-// src/components/Navigation/Navbar.tsx with auth links
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, Drawer, List, ListItem, ListItemText, useMediaQuery, useTheme, Avatar, Menu, MenuItem, Divider } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -53,6 +52,7 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Dashboard', path: '/', external: false },
     { name: 'Campus UCR', path: '/map', external: false },
+    { name: 'Marketplace', path: '/marketplace', external: false },
     { name: 'Eventos', path: '/dashboard/eventos', external: false },
   ];
   
@@ -371,13 +371,16 @@ const Navbar: React.FC = () => {
             width: 240,
             backgroundColor: 'var(--darker-bg)',
             boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)'
-          },
+          }, 
+          '& .MuiBackdrop-root': {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)'
+          }
         }}
       >
         {drawer}
       </Drawer>
     </>
   );
-};
+}
 
 export default Navbar;

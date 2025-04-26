@@ -43,6 +43,8 @@ import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaf
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+import { ListingCategory, ListingCondition } from '../types/MarketplaceTypes';
+
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
@@ -75,8 +77,21 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 import { format, formatDistanceToNow } from 'date-fns';
-import { v4 as uuidv4 } from 'uuid';
 import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+// API Services
+import * as marketplaceApi from '../services/marketplaceApi';
+
+// Types
+import {
+  Listing,
+  ListingFormData,
+  ListingFilters,
+  productCategories,
+  productConditions,
+  campusLocations
+} from '../types/MarketplaceTypes';
 
 // Fix for Leaflet icon issues
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -94,147 +109,6 @@ let DefaultIcon = L.icon({
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
-
-// Interface for Listing data
-interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  subcategory: string;
-  condition: string;
-  location: {
-    campus: string;
-    type: 'campus' | 'express';
-    position?: [number, number];
-    locationName?: string;
-  };
-  photos: string[];
-  contactInfo: {
-    phone?: string;
-    email?: string;
-    whatsapp?: string;
-  };
-  isAnonymous: boolean;
-  startDate: Date;
-  endDate?: Date;
-  createdBy: {
-    id: string;
-    name: string;
-    faculty: string;
-  };
-  createdAt: Date;
-  status: 'active' | 'sold' | 'reserved' | 'expired';
-  views: number;
-  likes: number;
-  isLiked: boolean;
-  isSaved: boolean;
-}
-
-// Product Categories
-const productCategories = [
-  {
-    value: 'books',
-    label: 'Libros y Material Académico',
-    subcategories: [
-      { value: 'textbooks', label: 'Libros de Texto' },
-      { value: 'notes', label: 'Apuntes y Guías' },
-      { value: 'materials', label: 'Materiales de Estudio' },
-      { value: 'equipment', label: 'Equipo de Laboratorio' },
-      { value: 'other_books', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'electronics',
-    label: 'Electrónicos',
-    subcategories: [
-      { value: 'computers', label: 'Computadoras y Laptops' },
-      { value: 'phones', label: 'Teléfonos y Tablets' },
-      { value: 'accessories', label: 'Accesorios' },
-      { value: 'other_electronics', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'clothing',
-    label: 'Ropa y Accesorios',
-    subcategories: [
-      { value: 'shirts', label: 'Camisetas y Tops' },
-      { value: 'pants', label: 'Pantalones' },
-      { value: 'shoes', label: 'Zapatos' },
-      { value: 'accessories_clothing', label: 'Accesorios' },
-      { value: 'other_clothing', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'furniture',
-    label: 'Muebles',
-    subcategories: [
-      { value: 'desks', label: 'Escritorios' },
-      { value: 'chairs', label: 'Sillas' },
-      { value: 'beds', label: 'Camas' },
-      { value: 'storage', label: 'Almacenamiento' },
-      { value: 'other_furniture', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'services',
-    label: 'Servicios',
-    subcategories: [
-      { value: 'tutoring', label: 'Tutoría/Clases' },
-      { value: 'transportation', label: 'Transporte' },
-      { value: 'tech_support', label: 'Soporte Técnico' },
-      { value: 'design', label: 'Diseño Gráfico' },
-      { value: 'other_services', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'tickets',
-    label: 'Entradas y Eventos',
-    subcategories: [
-      { value: 'concerts', label: 'Conciertos' },
-      { value: 'sports', label: 'Deportes' },
-      { value: 'workshops', label: 'Talleres' },
-      { value: 'other_tickets', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'housing',
-    label: 'Alojamiento',
-    subcategories: [
-      { value: 'room_rent', label: 'Alquiler de Habitación' },
-      { value: 'apartment_rent', label: 'Alquiler de Apartamento' },
-      { value: 'roommates', label: 'Búsqueda de Compañeros' },
-      { value: 'other_housing', label: 'Otros' }
-    ]
-  },
-  {
-    value: 'other',
-    label: 'Otros',
-    subcategories: [
-      { value: 'general', label: 'General' }
-    ]
-  }
-];
-
-// Product Conditions
-const productConditions = [
-  { value: 'new', label: 'Nuevo' },
-  { value: 'like_new', label: 'Como Nuevo' },
-  { value: 'good', label: 'Buen Estado' },
-  { value: 'fair', label: 'Estado Regular' },
-  { value: 'poor', label: 'Necesita Reparación' },
-  { value: 'not_applicable', label: 'No Aplica' }
-];
-
-// Campus Locations
-const campusLocations = [
-  { value: 'engineering', label: 'Facultad de Ingeniería' },
-  { value: 'science', label: 'Facultad de Ciencias' },
-  { value: 'arts', label: 'Facultad de Artes' },
-  { value: 'law', label: 'Facultad de Derecho' },
-  { value: 'medicine', label: 'Facultad de Medicina' }
-];
 
 // Helper to create marker icons for listings
 const createMarkerIcon = (category: string): L.Icon => {
@@ -328,217 +202,39 @@ const LocationPicker: React.FC<{
   );
 };
 
-// Generate sample user
-const sampleUser = {
-  id: '1',
-  name: 'Usuario Actual',
-  faculty: 'Facultad de Ingeniería'
-};
-
-// Generate sample listings
-const generateSampleListings = (): Listing[] => {
-  const listings: Listing[] = [];
-
-  // Sample listings
-  listings.push({
-    id: uuidv4(),
-    title: 'Libro Cálculo I - Stewart 8va Edición',
-    description: 'Libro en excelente estado, usado solo un semestre. Incluye solucionario y acceso a material en línea.',
-    price: 20000,
-    category: 'books',
-    subcategory: 'textbooks',
-    condition: 'good',
-    location: {
-      campus: 'Facultad de Ciencias',
-      type: 'campus',
-      position: [9.9376, -84.0510],
-      locationName: 'Facultad de Ciencias'
-    },
-    photos: ['/images/default.jpg'],
-    contactInfo: {
-      email: 'usuario@ucr.ac.cr',
-      whatsapp: '70001234'
-    },
-    isAnonymous: false,
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    createdBy: {
-      id: '1',
-      name: 'Carlos Rodríguez',
-      faculty: 'Facultad de Ciencias'
-    },
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    status: 'active',
-    views: 45,
-    likes: 5,
-    isLiked: false,
-    isSaved: true
-  });
-
-  listings.push({
-    id: uuidv4(),
-    title: 'MacBook Pro 2019 - 13"',
-    description: 'MacBook Pro en excelente estado. 8GB RAM, 256GB SSD, procesador i5. Incluye cargador original y funda protectora.',
-    price: 350000,
-    category: 'electronics',
-    subcategory: 'computers',
-    condition: 'like_new',
-    location: {
-      campus: 'Facultad de Ingeniería',
-      type: 'campus',
-      position: [9.9385, -84.0515],
-      locationName: 'Biblioteca Carlos Monge'
-    },
-    photos: ['/images/default.jpg'],
-    contactInfo: {
-      phone: '2222-3333',
-      email: 'maria@ucr.ac.cr'
-    },
-    isAnonymous: false,
-    startDate: new Date(),
-    createdBy: {
-      id: '2',
-      name: 'María González',
-      faculty: 'Facultad de Ingeniería'
-    },
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    status: 'active',
-    views: 120,
-    likes: 12,
-    isLiked: true,
-    isSaved: false
-  });
-
-  listings.push({
-    id: uuidv4(),
-    title: 'Clases particulares de Programación',
-    description: 'Ofrezco clases de programación en Java, Python, y C++. Experiencia como asistente del curso. Horarios flexibles.',
-    price: 7000,
-    category: 'services',
-    subcategory: 'tutoring',
-    condition: 'not_applicable',
-    location: {
-      campus: 'Facultad de Ingeniería',
-      type: 'express',
-      locationName: 'Virtual / A domicilio'
-    },
-    photos: ['/images/default.jpg'],
-    contactInfo: {
-      whatsapp: '8888-9999',
-      email: 'tutor@ucr.ac.cr'
-    },
-    isAnonymous: true,
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-    createdBy: {
-      id: '3',
-      name: 'Anónimo',
-      faculty: 'Facultad de Ingeniería'
-    },
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-    status: 'active',
-    views: 78,
-    likes: 8,
-    isLiked: false,
-    isSaved: false
-  });
-
-  listings.push({
-    id: uuidv4(),
-    title: 'Mesa de estudio',
-    description: 'Mesa de estudio en buen estado. Dimensiones: 120x60cm. Color madera clara. Se entrega desarmada.',
-    price: 15000,
-    category: 'furniture',
-    subcategory: 'desks',
-    condition: 'good',
-    location: {
-      campus: 'Facultad de Arquitectura',
-      type: 'campus',
-      position: [9.9365, -84.0530],
-      locationName: 'Residencias Estudiantiles'
-    },
-    photos: ['/images/default.jpg'],
-    contactInfo: {
-      phone: '7777-8888'
-    },
-    isAnonymous: false,
-    startDate: new Date(),
-    createdBy: {
-      id: '4',
-      name: 'Pedro Mora',
-      faculty: 'Facultad de Arquitectura'
-    },
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    status: 'active',
-    views: 32,
-    likes: 3,
-    isLiked: false,
-    isSaved: false
-  });
-
-  // Add more listings with different categories, conditions, and locations
-  listings.push({
-    id: uuidv4(),
-    title: 'Habitación para estudiante cerca del campus',
-    description: 'Ofrezco habitación amueblada con baño privado, internet y servicios incluidos. A 5 minutos caminando de la universidad.',
-    price: 120000,
-    category: 'housing',
-    subcategory: 'room_rent',
-    condition: 'not_applicable',
-    location: {
-      campus: 'San Pedro',
-      type: 'express',
-      locationName: 'San Pedro, 500m oeste de la UCR'
-    },
-    photos: ['/images/default.jpg'],
-    contactInfo: {
-      phone: '6666-7777',
-      whatsapp: '6666-7777'
-    },
-    isAnonymous: false,
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
-    createdBy: {
-      id: '5',
-      name: 'Ana Jiménez',
-      faculty: 'Administración'
-    },
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    status: 'active',
-    views: 89,
-    likes: 15,
-    isLiked: true,
-    isSaved: true
-  });
-
-  return listings;
-};
-
 // Main MarketplacePage Component
 const MarketplacePage: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
-  const [listings, setListings] = useState<Listing[]>(generateSampleListings());
-  const [filteredListings, setFilteredListings] = useState<Listing[]>(listings);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [sortOption, setSortOption] = useState<string>('newest');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterSubcategory, setFilterSubcategory] = useState<string>('all');
-  const [filterCondition, setFilterCondition] = useState<string>('all');
-  const [filterLocation, setFilterLocation] = useState<string>('all');
-  const [filterPriceRange, setFilterPriceRange] = useState<[number, number | null]>([0, null]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Filters state
+  const [filters, setFilters] = useState<ListingFilters>({
+    sortBy: 'newest',
+    search: '',
+    category: 'all',
+    subcategory: 'all',
+    condition: 'all',
+    locationType: 'all',
+    priceMin: 0,
+    priceMax: null
+  });
+
   const [savedOnly, setSavedOnly] = useState(false);
 
   // New listing form state
-  const [newListing, setNewListing] = useState<Partial<Listing>>({
+  const [newListing, setNewListing] = useState<Partial<ListingFormData>>({
     title: '',
     description: '',
     price: 0,
-    category: '',
+    category: '' as ListingCategory,
     subcategory: '',
-    condition: '',
+    condition: '' as ListingCondition,
     location: {
       type: 'campus',
       campus: ''
@@ -546,8 +242,7 @@ const MarketplacePage: React.FC = () => {
     photos: [],
     contactInfo: {},
     isAnonymous: false,
-    startDate: new Date(),
-    createdBy: sampleUser
+    startDate: new Date()
   });
 
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
@@ -560,160 +255,238 @@ const MarketplacePage: React.FC = () => {
     severity: 'success' as 'success' | 'error' | 'warning' | 'info'
   });
 
+  // Fetch listings on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await marketplaceApi.fetchListings();
+        setListings(data);
+        setFilteredListings(data);
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+        setSnackbar({
+          open: true,
+          message: 'Error al cargar los anuncios',
+          severity: 'error'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Apply filters when they change
+  useEffect(() => {
+    if (savedOnly) {
+      const fetchSaved = async () => {
+        try {
+          setIsLoading(true);
+          const data = await marketplaceApi.fetchSavedListings();
+          setFilteredListings(data);
+        } catch (error) {
+          console.error('Error fetching saved listings:', error);
+          setSnackbar({
+            open: true,
+            message: 'Error al cargar los anuncios guardados',
+            severity: 'error'
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      if (isAuthenticated) {
+        fetchSaved();
+      } else {
+        setFilteredListings([]);
+      }
+    } else {
+      const fetchFilteredListings = async () => {
+        try {
+          setIsLoading(true);
+          const data = await marketplaceApi.fetchListings(filters);
+          setFilteredListings(data);
+        } catch (error) {
+          console.error('Error fetching filtered listings:', error);
+          setSnackbar({
+            open: true,
+            message: 'Error al aplicar los filtros',
+            severity: 'error'
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchFilteredListings();
+    }
+  }, [filters, savedOnly, isAuthenticated]);
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  // Filter and sort listings based on current criteria
-  useEffect(() => {
-    let filtered = [...listings];
-
-    // Apply search term filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        listing =>
-          listing.title.toLowerCase().includes(searchLower) ||
-          listing.description.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply category filter
-    if (filterCategory !== 'all') {
-      filtered = filtered.filter(listing => listing.category === filterCategory);
-
-      // Apply subcategory filter if category is selected
-      if (filterSubcategory !== 'all') {
-        filtered = filtered.filter(listing => listing.subcategory === filterSubcategory);
-      }
-    }
-
-    // Apply condition filter
-    if (filterCondition !== 'all') {
-      filtered = filtered.filter(listing => listing.condition === filterCondition);
-    }
-
-    // Apply location filter
-    if (filterLocation !== 'all') {
-      filtered = filtered.filter(listing => listing.location.type === filterLocation);
-    }
-
-    // Apply price range filter
-    filtered = filtered.filter(listing => {
-      if (filterPriceRange[0] > 0 && listing.price < filterPriceRange[0]) {
-        return false;
-      }
-      if (filterPriceRange[1] !== null && listing.price > filterPriceRange[1]) {
-        return false;
-      }
-      return true;
-    });
-
-    // Apply saved only filter
-    if (savedOnly) {
-      filtered = filtered.filter(listing => listing.isSaved);
-    }
-
-    // Sort listings
-    switch (sortOption) {
-      case 'newest':
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        break;
-      case 'oldest':
-        filtered.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-        break;
-      case 'price_low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'popular':
-        filtered.sort((a, b) => b.views - a.views);
-        break;
-      default:
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    }
-
-    setFilteredListings(filtered);
-  }, [
-    listings,
-    searchTerm,
-    filterCategory,
-    filterSubcategory,
-    filterCondition,
-    filterLocation,
-    filterPriceRange,
-    sortOption,
-    savedOnly
-  ]);
-
   // Handle search term change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    setFilters(prev => ({ ...prev, search: e.target.value }));
   };
 
   // Reset filters
   const resetFilters = () => {
-    setFilterCategory('all');
-    setFilterSubcategory('all');
-    setFilterCondition('all');
-    setFilterLocation('all');
-    setFilterPriceRange([0, null]);
+    setFilters({
+      sortBy: 'newest',
+      search: '',
+      category: 'all',
+      subcategory: 'all',
+      condition: 'all',
+      locationType: 'all',
+      priceMin: 0,
+      priceMax: null
+    });
     setSavedOnly(false);
-    setSearchTerm('');
-    setSortOption('newest');
   };
 
   // Toggle like on a listing
-  const toggleLike = (id: string) => {
-    setListings(prev =>
-      prev.map(listing => {
-        if (listing.id === id) {
-          const newIsLiked = !listing.isLiked;
-          return {
-            ...listing,
-            isLiked: newIsLiked,
-            likes: newIsLiked ? listing.likes + 1 : listing.likes - 1
-          };
-        }
-        return listing;
-      })
-    );
+  const toggleLike = async (id: string) => {
+    if (!isAuthenticated) {
+      setSnackbar({
+        open: true,
+        message: 'Debes iniciar sesión para dar me gusta',
+        severity: 'warning'
+      });
+      return;
+    }
+
+    try {
+      const result = await marketplaceApi.toggleLikeListing(id);
+
+      // Update listings
+      setListings(prev =>
+        prev.map(listing => {
+          if (listing.id === id) {
+            return {
+              ...listing,
+              isLiked: result.isLiked,
+              likes: result.likes
+            };
+          }
+          return listing;
+        })
+      );
+
+      // Also update filtered listings
+      setFilteredListings(prev =>
+        prev.map(listing => {
+          if (listing.id === id) {
+            return {
+              ...listing,
+              isLiked: result.isLiked,
+              likes: result.likes
+            };
+          }
+          return listing;
+        })
+      );
+
+      // Update selected listing if it's the one being liked
+      if (selectedListing && selectedListing.id === id) {
+        setSelectedListing({
+          ...selectedListing,
+          isLiked: result.isLiked,
+          likes: result.likes
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al dar me gusta',
+        severity: 'error'
+      });
+    }
   };
 
   // Toggle save on a listing
-  const toggleSave = (id: string) => {
-    setListings(prev =>
-      prev.map(listing => {
-        if (listing.id === id) {
-          return {
-            ...listing,
-            isSaved: !listing.isSaved
-          };
-        }
-        return listing;
-      })
-    );
+  const toggleSave = async (id: string) => {
+    if (!isAuthenticated) {
+      setSnackbar({
+        open: true,
+        message: 'Debes iniciar sesión para guardar anuncios',
+        severity: 'warning'
+      });
+      return;
+    }
+
+    try {
+      const result = await marketplaceApi.toggleSaveListing(id);
+
+      // Update listings
+      setListings(prev =>
+        prev.map(listing => {
+          if (listing.id === id) {
+            return {
+              ...listing,
+              isSaved: result.isSaved
+            };
+          }
+          return listing;
+        })
+      );
+
+      // Update filtered listings
+      setFilteredListings(prev =>
+        prev.map(listing => {
+          if (listing.id === id) {
+            return {
+              ...listing,
+              isSaved: result.isSaved
+            };
+          }
+          return listing;
+        })
+      );
+
+      // Update selected listing if it's the one being saved
+      if (selectedListing && selectedListing.id === id) {
+        setSelectedListing({
+          ...selectedListing,
+          isSaved: result.isSaved
+        });
+      }
+
+      // If we're in saved only mode and the listing was unsaved, refresh the list
+      if (savedOnly && !result.isSaved) {
+        const savedListings = await marketplaceApi.fetchSavedListings();
+        setFilteredListings(savedListings);
+      }
+    } catch (error) {
+      console.error('Error toggling save:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al guardar el anuncio',
+        severity: 'error'
+      });
+    }
   };
 
   // Handle selecting a listing to view
-  const handleViewListing = (listing: Listing) => {
-    // Increment views count
-    setListings(prev =>
-      prev.map(item => {
-        if (item.id === listing.id) {
-          return {
-            ...item,
-            views: item.views + 1
-          };
-        }
-        return item;
-      })
-    );
-
-    setSelectedListing(listing);
+  const handleViewListing = async (listingId: string) => {
+    try {
+      // Fetch the latest version of the listing
+      const listing = await marketplaceApi.fetchListingById(listingId);
+      setSelectedListing(listing);
+    } catch (error) {
+      console.error('Error fetching listing:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al cargar el anuncio',
+        severity: 'error'
+      });
+    }
   };
 
   // Handle closing the selected listing view
@@ -791,8 +564,7 @@ const MarketplacePage: React.FC = () => {
     setNewListing(prev => ({
       ...prev,
       location: {
-        type: 'campus',
-        campus: prev.location?.campus || '',
+        ...prev.location as any,
         position,
         locationName: name
       }
@@ -861,8 +633,13 @@ const MarketplacePage: React.FC = () => {
     }
 
     // Validate location
-    if (newListing.location?.type === 'campus' && !newListing.location.position) {
-      errors.location = 'Debe seleccionar una ubicación en el mapa';
+    if (newListing.location?.type === 'campus') {
+      if (!newListing.location.campus) {
+        errors.location = 'Debe seleccionar un campus';
+      }
+      if (!selectedLocation) {
+        errors.location = 'Debe seleccionar una ubicación en el mapa';
+      }
     }
 
     if (newListing.location?.type === 'express' && !newListing.location.locationName) {
@@ -883,7 +660,16 @@ const MarketplacePage: React.FC = () => {
   };
 
   // Create new listing
-  const handleCreateListing = () => {
+  const handleCreateListing = async () => {
+    if (!isAuthenticated) {
+      setSnackbar({
+        open: true,
+        message: 'Debes iniciar sesión para publicar anuncios',
+        severity: 'warning'
+      });
+      return;
+    }
+
     if (!validateNewListing()) {
       setSnackbar({
         open: true,
@@ -893,95 +679,84 @@ const MarketplacePage: React.FC = () => {
       return;
     }
 
-    // Create new listing object
-    const newListingObj: Listing = {
-      id: uuidv4(),
-      title: newListing.title || '',
-      description: newListing.description || '',
-      price: newListing.price || 0,
-      category: newListing.category || 'other',
-      subcategory: newListing.subcategory || 'general',
-      condition: newListing.condition || 'not_applicable',
-      location: newListing.location as Listing['location'],
-      photos: newListing.photos || [],
-      contactInfo: newListing.contactInfo || {},
-      isAnonymous: newListing.isAnonymous || false,
-      startDate: newListing.startDate || new Date(),
-      endDate: newListing.endDate,
-      createdBy: {
-        id: sampleUser.id,
-        name: newListing.isAnonymous ? 'Anónimo' : sampleUser.name,
-        faculty: sampleUser.faculty
-      },
-      createdAt: new Date(),
-      status: 'active',
-      views: 0,
-      likes: 0,
-      isLiked: false,
-      isSaved: false
-    };
+    try {
+      const response = await marketplaceApi.createListing(newListing as ListingFormData);
 
-    // Add new listing to the list
-    setListings(prev => [newListingObj, ...prev]);
+      // Add the new listing to state
+      setListings(prev => [response, ...prev]);
 
-    // Close dialog and show success message
-    setCreateDialogOpen(false);
-    setSnackbar({
-      open: true,
-      message: 'Anuncio creado exitosamente',
-      severity: 'success'
-    });
+      // Apply filters again to update filtered listings
+      const updatedListings = await marketplaceApi.fetchListings(filters);
+      setFilteredListings(updatedListings);
 
-    // Reset form
-    setNewListing({
-      title: '',
-      description: '',
-      price: 0,
-      category: '',
-      subcategory: '',
-      condition: '',
-      location: {
-        campus: '',
-        type: 'campus'
-      },
-      photos: [],
-      contactInfo: {},
-      isAnonymous: false,
-      startDate: new Date(),
-      createdBy: sampleUser
-    });
-    setSelectedLocation(null);
+      // Close dialog and show success message
+      setCreateDialogOpen(false);
+      setSnackbar({
+        open: true,
+        message: 'Anuncio creado exitosamente',
+        severity: 'success'
+      });
+
+      // Reset form
+      setNewListing({
+        title: '',
+        description: '',
+        price: 0,
+        category: '' as ListingCategory,
+        subcategory: '',
+        condition: '' as ListingCondition,
+        location: {
+          type: 'campus',
+          campus: ''
+        },
+        photos: [],
+        contactInfo: {},
+        isAnonymous: false,
+        startDate: new Date()
+      });
+      setSelectedLocation(null);
+
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al crear el anuncio',
+        severity: 'error'
+      });
+    }
   };
 
   // Handle deleting a listing
-  const handleDeleteListing = (id: string) => {
-    setListings(prev => prev.filter(listing => listing.id !== id));
+  const handleDeleteListing = async (id: string) => {
+    try {
+      await marketplaceApi.deleteListing(id);
 
-    if (selectedListing?.id === id) {
-      setSelectedListing(null);
+      // Remove the listing from state
+      setListings(prev => prev.filter(listing => listing.id !== id));
+      setFilteredListings(prev => prev.filter(listing => listing.id !== id));
+
+      if (selectedListing?.id === id) {
+        setSelectedListing(null);
+      }
+
+      setSnackbar({
+        open: true,
+        message: 'Anuncio eliminado exitosamente',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error al eliminar el anuncio',
+        severity: 'error'
+      });
     }
-
-    setSnackbar({
-      open: true,
-      message: 'Anuncio eliminado exitosamente',
-      severity: 'success'
-    });
   };
 
   // Format date string
-  const formatDate = (date: Date) => {
-    return format(date, 'dd/MM/yyyy');
-  };
-
-  // Format relative time (e.g., "2 days ago")
-  const formatRelativeTime = (date: Date) => {
-    return formatDistanceToNow(date, { addSuffix: true });
-  };
-
-  // Get category label from value
-  const getCategoryLabel = (categoryValue: string) => {
-    const category = productCategories.find(cat => cat.value === categoryValue);
-    return category ? category.label : categoryValue;
+  const formatDate = (date: Date | string) => {
+    return format(new Date(date), 'dd/MM/yyyy');
   };
 
   // Get subcategory label from values
@@ -999,8 +774,37 @@ const MarketplacePage: React.FC = () => {
     return condition ? condition.label : conditionValue;
   };
 
+  // Get category color
+  const getCategoryColor = (category: string) => {
+    const colorMap: Record<string, string> = {
+      books: 'var(--neon-blue)',
+      electronics: 'var(--neon-red)',
+      clothing: 'var(--neon-green)',
+      furniture: 'var(--neon-orange)',
+      services: 'var(--neon-secondary)',
+      tickets: 'var(--neon-primary)',
+      housing: 'var(--neon-yellow)',
+      other: '#94a3b8'
+    };
+
+    return colorMap[category] || 'var(--neon-primary)';
+  };
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+          <div className="neon-loading"></div>
+        </Box>
+      </Container>
+    );
+  }
+
   // Render listing cards for grid view
   const renderListingCards = () => {
+    console.log('Filtered Listings:', filteredListings); // Debugging line
+
     if (filteredListings.length === 0) {
       return (
         <Box sx={{ py: 5, textAlign: 'center' }}>
@@ -1093,7 +897,9 @@ const MarketplacePage: React.FC = () => {
 
               {/* Image */}
               <Box
-                onClick={() => handleViewListing(listing)}
+                onClick={() => {
+                  console.error('handleViewListing is not defined');
+                }}
                 sx={{
                   cursor: 'pointer',
                   height: 140,
@@ -1202,10 +1008,10 @@ const MarketplacePage: React.FC = () => {
                           ? 'rgba(255, 0, 128, 0.2)'
                           : 'rgba(255, 136, 0, 0.2)',
                       border: `1px solid ${listing.condition === 'new' || listing.condition === 'like_new'
-                          ? 'var(--neon-green)'
-                          : listing.condition === 'poor'
-                            ? 'var(--neon-red)'
-                            : 'var(--neon-orange)'
+                        ? 'var(--neon-green)'
+                        : listing.condition === 'poor'
+                          ? 'var(--neon-red)'
+                          : 'var(--neon-orange)'
                         }`,
                       color: listing.condition === 'new' || listing.condition === 'like_new'
                         ? 'var(--neon-green)'
@@ -1282,7 +1088,7 @@ const MarketplacePage: React.FC = () => {
 
                   <IconButton
                     size="small"
-                    onClick={() => handleViewListing(listing)}
+                    onClick={() => handleViewListing(listing.id)}
                     sx={{ color: 'white' }}
                   >
                     <VisibilityIcon />
@@ -1293,159 +1099,6 @@ const MarketplacePage: React.FC = () => {
           </Grid>
         ))}
       </Grid>
-    );
-  };
-
-  // Render map view with listings
-  const renderMapView = () => {
-    // Filter for campus listings only
-    const campusListings = filteredListings.filter(
-      listing => listing.location.type === 'campus' && listing.location.position
-    );
-
-    // Render express listings separately below the map
-    const expressListings = filteredListings.filter(
-      listing => listing.location.type === 'express'
-    );
-
-    return (
-      <Box>
-        <Box sx={{ height: 500, width: '100%', borderRadius: 2, overflow: 'hidden', mb: 3 }}>
-          <MapContainer
-            center={UCR_CENTER}
-            zoom={DEFAULT_ZOOM}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-
-            {campusListings.map(listing => (
-              listing.location.position && (
-                <Marker
-                  key={listing.id}
-                  position={listing.location.position}
-                  icon={createMarkerIcon(listing.category)}
-                >
-                  <Popup>
-                    <Box sx={{ p: 1, minWidth: 200 }}>
-                      <Typography variant="subtitle2" fontWeight="bold">
-                        {listing.title}
-                      </Typography>
-
-                      <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
-                        ₡{listing.price.toLocaleString()}
-                      </Typography>
-
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
-                        <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
-                        {listing.location.locationName}
-                      </Box>
-
-                      <Box sx={{ mt: 1 }}>
-                        <Chip
-                          size="small"
-                          label={getCategoryLabel(listing.category)}
-                          sx={{
-                            backgroundColor: 'rgba(0, 140, 255, 0.2)',
-                            border: '1px solid var(--neon-blue)',
-                            color: 'var(--neon-blue)',
-                            fontSize: '0.7rem'
-                          }}
-                        />
-                      </Box>
-
-                      <Button
-                        fullWidth
-                        size="small"
-                        onClick={() => handleViewListing(listing)}
-                        sx={{
-                          mt: 1.5,
-                          color: 'var(--neon-primary)',
-                          borderColor: 'var(--neon-primary)',
-                          '&:hover': {
-                            borderColor: 'var(--neon-blue)',
-                            color: 'var(--neon-blue)'
-                          }
-                        }}
-                        variant="outlined"
-                      >
-                        Ver Detalles
-                      </Button>
-                    </Box>
-                  </Popup>
-                </Marker>
-              )
-            ))}
-          </MapContainer>
-        </Box>
-
-        {/* Express listings section */}
-        {expressListings.length > 0 && (
-          <Box>
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-              <LocalShippingIcon sx={{ mr: 1, color: 'var(--neon-primary)' }} />
-              Anuncios con Entrega Express
-            </Typography>
-
-            <Grid container spacing={2}>
-              {expressListings.map(listing => (
-                <Grid container key={listing.id}>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      boxShadow: '0 0 5px rgba(0, 255, 255, 0.3)',
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 6px 12px rgba(0, 255, 255, 0.2)'
-                      },
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleViewListing(listing)}
-                  >
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="subtitle2" fontWeight="bold">
-                        {listing.title}
-                      </Typography>
-
-                      <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
-                        ₡{listing.price.toLocaleString()}
-                      </Typography>
-
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
-                        <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
-                        {listing.location.locationName || 'Entrega Express'}
-                      </Box>
-
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Chip
-                          size="small"
-                          label={getCategoryLabel(listing.category)}
-                          sx={{
-                            backgroundColor: 'rgba(0, 140, 255, 0.2)',
-                            border: '1px solid var(--neon-blue)',
-                            color: 'var(--neon-blue)',
-                            fontSize: '0.7rem'
-                          }}
-                        />
-
-                        <Typography variant="caption" color="text.secondary">
-                          {formatRelativeTime(listing.createdAt)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
-      </Box>
     );
   };
 
@@ -1460,7 +1113,7 @@ const MarketplacePage: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2 }}>
           <TextField
             placeholder="Buscar productos o servicios..."
-            value={searchTerm}
+            value={filters.search}
             onChange={handleSearchChange}
             variant="outlined"
             size="small"
@@ -1510,9 +1163,9 @@ const MarketplacePage: React.FC = () => {
             <Select
               labelId="sort-select-label"
               id="sort-select"
-              value={sortOption}
+              value={filters.sortBy || 'newest'}
               label="Ordenar"
-              onChange={(e) => setSortOption(e.target.value)}
+              onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value as any }))}
               sx={{
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'var(--neon-primary)',
@@ -1552,18 +1205,18 @@ const MarketplacePage: React.FC = () => {
       </Box>
 
       {/* Applied filters chips */}
-      {(filterCategory !== 'all' ||
-        filterSubcategory !== 'all' ||
-        filterCondition !== 'all' ||
-        filterLocation !== 'all' ||
-        filterPriceRange[0] > 0 ||
-        filterPriceRange[1] !== null ||
+      {(filters.category !== 'all' ||
+        filters.subcategory !== 'all' ||
+        filters.condition !== 'all' ||
+        filters.locationType !== 'all' ||
+        (filters.priceMin && filters.priceMin > 0) ||
+        filters.priceMax !== null ||
         savedOnly) && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            {filterCategory !== 'all' && (
+            {filters.category !== 'all' && (
               <Chip
-                label={`Categoría: ${getCategoryLabel(filterCategory)}`}
-                onDelete={() => setFilterCategory('all')}
+                label={`Categoría: ${getCategoryLabel(filters.category || '')}`}
+                onDelete={() => setFilters(prev => ({ ...prev, category: 'all', subcategory: 'all' }))}
                 sx={{
                   backgroundColor: 'rgba(0, 140, 255, 0.2)',
                   color: 'var(--neon-blue)',
@@ -1572,10 +1225,10 @@ const MarketplacePage: React.FC = () => {
               />
             )}
 
-            {filterSubcategory !== 'all' && (
+            {filters.subcategory !== 'all' && (
               <Chip
-                label={`Subcategoría: ${getSubcategoryLabel(filterCategory, filterSubcategory)}`}
-                onDelete={() => setFilterSubcategory('all')}
+                label={`Subcategoría: ${getSubcategoryLabel(filters.category || '', filters.subcategory || '')}`}
+                onDelete={() => setFilters(prev => ({ ...prev, subcategory: 'all' }))}
                 sx={{
                   backgroundColor: 'rgba(0, 140, 255, 0.2)',
                   color: 'var(--neon-blue)',
@@ -1584,10 +1237,10 @@ const MarketplacePage: React.FC = () => {
               />
             )}
 
-            {filterCondition !== 'all' && (
+            {filters.condition !== 'all' && (
               <Chip
-                label={`Condición: ${getConditionLabel(filterCondition)}`}
-                onDelete={() => setFilterCondition('all')}
+                label={`Condición: ${getConditionLabel(filters.condition || '')}`}
+                onDelete={() => setFilters(prev => ({ ...prev, condition: 'all' }))}
                 sx={{
                   backgroundColor: 'rgba(0, 255, 128, 0.2)',
                   color: 'var(--neon-green)',
@@ -1596,10 +1249,10 @@ const MarketplacePage: React.FC = () => {
               />
             )}
 
-            {filterLocation !== 'all' && (
+            {filters.locationType !== 'all' && (
               <Chip
-                label={`Ubicación: ${filterLocation === 'campus' ? 'Campus' : 'Express'}`}
-                onDelete={() => setFilterLocation('all')}
+                label={`Ubicación: ${filters.locationType === 'campus' ? 'Campus' : 'Express'}`}
+                onDelete={() => setFilters(prev => ({ ...prev, locationType: 'all' }))}
                 sx={{
                   backgroundColor: 'rgba(255, 0, 255, 0.2)',
                   color: 'var(--neon-secondary)',
@@ -1608,10 +1261,10 @@ const MarketplacePage: React.FC = () => {
               />
             )}
 
-            {(filterPriceRange[0] > 0 || filterPriceRange[1] !== null) && (
+            {((filters.priceMin && filters.priceMin > 0) || filters.priceMax !== null) && (
               <Chip
-                label={`Precio: ${filterPriceRange[0]} - ${filterPriceRange[1] ? filterPriceRange[1] : 'Max'}`}
-                onDelete={() => setFilterPriceRange([0, null])}
+                label={`Precio: ${filters.priceMin || 0} - ${filters.priceMax ? filters.priceMax : 'Max'}`}
+                onDelete={() => setFilters(prev => ({ ...prev, priceMin: 0, priceMax: null }))}
                 sx={{
                   backgroundColor: 'rgba(0, 255, 255, 0.2)',
                   color: 'var(--neon-primary)',
@@ -1706,7 +1359,7 @@ const MarketplacePage: React.FC = () => {
       </Box>
 
       {/* Main Content Based on Tab Value */}
-      {tabValue === 0 ? renderListingCards() : renderMapView()}
+      {tabValue === 0 ? renderListingCards() : renderMapView(filteredListings, setSelectedListing)}
 
       {/* Selected Listing Details Dialog */}
       <Dialog
@@ -2053,7 +1706,7 @@ const MarketplacePage: React.FC = () => {
                         <ReportIcon />
                       </IconButton>
 
-                      {selectedListing.createdBy.id === sampleUser.id && (
+                      {isAuthenticated && user && selectedListing.createdBy.id === user._id && (
                         <IconButton
                           color="error"
                           aria-label="delete listing"
@@ -2516,19 +2169,12 @@ const MarketplacePage: React.FC = () => {
                   sx={{
                     backgroundColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'transparent',
                     color: newListing.location?.type === 'campus' ? 'black' : 'var(--neon-primary)',
-                    borderColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    borderColor: 'var(--neon-primary)',
                     '&:hover': {
                       backgroundColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'rgba(0, 140, 255, 0.1)',
                       color: newListing.location?.type === 'campus' ? 'black' : 'var(--neon-primary)',
-                      borderColor: newListing.location?.type === 'campus' ? 'var(--neon-primary)' : 'var(--neon-primary)',
-                    },
-                    '&.MuiButton-outlined': {
                       borderColor: 'var(--neon-primary)',
-                    },
-                    '&.MuiButton-contained': {
-                      backgroundColor: 'var(--neon-primary)',
-                      color: 'black',
-                    },
+                    }
                   }}
                 >
                   Campus
@@ -2537,74 +2183,68 @@ const MarketplacePage: React.FC = () => {
                 <Button
                   variant={newListing.location?.type === 'express' ? 'contained' : 'outlined'}
                   onClick={() => handleLocationTypeChange('express')}
-                  startIcon={<MapIcon />}
+                  startIcon={<LocalShippingIcon />}
                   sx={{
                     backgroundColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'transparent',
                     color: newListing.location?.type === 'express' ? 'black' : 'var(--neon-primary)',
-                    borderColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'var(--neon-primary)',
+                    borderColor: 'var(--neon-primary)',
                     '&:hover': {
                       backgroundColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'rgba(0, 140, 255, 0.1)',
                       color: newListing.location?.type === 'express' ? 'black' : 'var(--neon-primary)',
-                      borderColor: newListing.location?.type === 'express' ? 'var(--neon-primary)' : 'var(--neon-primary)',
-                    },
-                    '&.MuiButton-outlined': {
                       borderColor: 'var(--neon-primary)',
-                    },
-                    '&.MuiButton-contained': {
-                      backgroundColor: 'var(--neon-primary)',
-                      color: 'black',
-                    },
+                    }
                   }}
-
                 >
-                  Personalizada
-
+                  Express
                 </Button>
               </Box>
 
               {newListing.location?.type === 'campus' && (
-                <FormControl
-                  fullWidth
-                  required
-                  error={!!validationErrors.location}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': {
-                        borderColor: 'var(--neon-primary)',
+                <>
+                  <FormControl
+                    fullWidth
+                    required
+                    error={!!validationErrors.location}
+                    sx={{
+                      mb: 2,
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: 'var(--neon-primary)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'var(--neon-primary)',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: 'var(--neon-primary)',
+                        },
                       },
-                      '&:hover fieldset': {
-                        borderColor: 'var(--neon-primary)',
+                      '& .MuiInputLabel-root': {
+                        color: 'var(--neon-primary)',
                       },
-                      '&.Mui-focused fieldset': {
-                        borderColor: 'var(--neon-primary)',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'var(--neon-primary)',
-                    },
-                  }}
-                >
-                  <InputLabel id="location-label">Ubicación</InputLabel>
-                  <Select
-                    labelId="location-label"
-                    id="location"
-                    name="location"
-                    value={newListing.location?.campus || ''}
-                    label="Ubicación"
-                    onChange={handleNewListingChange}
+                    }}
                   >
-                    {campusLocations.map((location) => (
-                      <MenuItem key={location.value} value={location.value}>
-                        {location.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {validationErrors.location && (
-                    <Typography variant="caption" color="error">
-                      {validationErrors.location}
-                    </Typography>
-                  )}
-                </FormControl>
+                    <InputLabel id="location-label">Ubicación</InputLabel>
+                    <Select
+                      labelId="location-label"
+                      id="location.campus"
+                      name="location.campus"
+                      value={newListing.location?.campus || ''}
+                      label="Ubicación"
+                      onChange={handleNewListingChange}
+                    >
+                      {campusLocations.map((location) => (
+                        <MenuItem key={location.value} value={location.value}>
+                          {location.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <LocationPicker
+                    onLocationSelect={handleLocationSelect}
+                    initialPosition={selectedLocation ?? undefined}
+                  />
+                </>
               )}
 
               {newListing.location?.type === 'express' && (
@@ -2635,28 +2275,6 @@ const MarketplacePage: React.FC = () => {
                   }}
                 />
               )}
-
-              {newListing.location?.type === 'express' && (
-                <Box sx={{ mt: 2, height: 200, borderRadius: '8px', overflow: 'hidden' }}>
-                  <MapContainer
-                    center={newListing.location?.position || [9.9281, -84.0907]} // Default to Costa Rica coordinates
-                    zoom={16}
-                    style={{ height: '100%', width: '100%' }}
-                    scrollWheelZoom={false}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    {newListing.location?.position && (
-                      <Marker position={newListing.location.position}>
-                        <Popup>{newListing.location.locationName}</Popup>
-                      </Marker>
-                    )}
-                  </MapContainer>
-                </Box>
-              )}
-
             </Grid>
 
             <Grid container sx={{ mt: 2 }}>
@@ -2675,39 +2293,425 @@ const MarketplacePage: React.FC = () => {
                 Publicar Anuncio
               </Button>
 
+              <Button
+                variant="outlined"
+                onClick={() => setCreateDialogOpen(false)}
+                sx={{
+                  ml: 2,
+                  color: 'white',
+                  borderColor: 'white',
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                Cancelar
+              </Button>
             </Grid>
-
           </Grid>
-
         </Box>
       </Dialog>
+
+      {/* Filter Dialog */}
+      <Dialog
+        open={filterDialogOpen}
+        onClose={() => setFilterDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(5, 5, 25, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '8px',
+            border: '1px solid var(--neon-primary)',
+            boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+          }
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ color: 'var(--neon-primary)' }}>
+            Filtrar Anuncios
+          </Typography>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--neon-blue)', mt: 2 }}>
+            Categoría
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <Select
+              value={filters.category || 'all'}
+              onChange={(e) => setFilters(prev => ({
+                ...prev,
+                category: e.target.value,
+                subcategory: 'all' // Reset subcategory when category changes
+              }))}
+              displayEmpty
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--neon-primary)',
+                },
+              }}
+            >
+              <MenuItem value="all">Todas las categorías</MenuItem>
+              {productCategories.map((category) => (
+                <MenuItem key={category.value} value={category.value}>
+                  {category.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {filters.category !== 'all' && (
+            <>
+              <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--neon-blue)' }}>
+                Subcategoría
+              </Typography>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <Select
+                  value={filters.subcategory || 'all'}
+                  onChange={(e) => setFilters(prev => ({ ...prev, subcategory: e.target.value }))}
+                  displayEmpty
+                  sx={{
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'var(--neon-primary)',
+                    },
+                  }}
+                >
+                  <MenuItem value="all">Todas las subcategorías</MenuItem>
+                  {productCategories
+                    .find(cat => cat.value === filters.category)
+                    ?.subcategories.map((subcategory) => (
+                      <MenuItem key={subcategory.value} value={subcategory.value}>
+                        {subcategory.label}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </>
+          )}
+
+          <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--neon-blue)' }}>
+            Condición
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <Select
+              value={filters.condition || 'all'}
+              onChange={(e) => setFilters(prev => ({ ...prev, condition: e.target.value }))}
+              displayEmpty
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--neon-primary)',
+                },
+              }}
+            >
+              <MenuItem value="all">Todas las condiciones</MenuItem>
+              {productConditions.map((condition) => (
+                <MenuItem key={condition.value} value={condition.value}>
+                  {condition.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--neon-blue)' }}>
+            Ubicación
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <Select
+              value={filters.locationType || 'all'}
+              onChange={(e) => setFilters(prev => ({ ...prev, locationType: e.target.value }))}
+              displayEmpty
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--neon-primary)',
+                },
+              }}
+            >
+              <MenuItem value="all">Todas las ubicaciones</MenuItem>
+              <MenuItem value="campus">Campus</MenuItem>
+              <MenuItem value="express">Express</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Typography variant="subtitle2" gutterBottom sx={{ color: 'var(--neon-blue)' }}>
+            Rango de precio (colones)
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Mínimo"
+              type="number"
+              value={filters.priceMin || ''}
+              onChange={(e) => setFilters(prev => ({
+                ...prev,
+                priceMin: e.target.value ? Number(e.target.value) : 0
+              }))}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">₡</InputAdornment>,
+              }}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'var(--neon-primary)',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'var(--neon-primary)',
+                },
+              }}
+            />
+            <TextField
+              label="Máximo"
+              type="number"
+              value={filters.priceMax || ''}
+              onChange={(e) => setFilters(prev => ({
+                ...prev,
+                priceMax: e.target.value ? Number(e.target.value) : null
+              }))}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">₡</InputAdornment>,
+              }}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'var(--neon-primary)',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'var(--neon-primary)',
+                },
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                resetFilters();
+                setFilterDialogOpen(false);
+              }}
+              sx={{
+                color: 'var(--neon-red)',
+                borderColor: 'var(--neon-red)',
+                '&:hover': {
+                  borderColor: 'var(--neon-red)',
+                  backgroundColor: 'rgba(255, 0, 128, 0.1)',
+                },
+              }}
+            >
+              Reiniciar
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setFilterDialogOpen(false)}
+              sx={{
+                backgroundColor: 'var(--neon-primary)',
+                color: 'black',
+                '&:hover': {
+                  backgroundColor: 'var(--neon-blue)',
+                  boxShadow: '0 0 15px var(--neon-blue)',
+                },
+              }}
+            >
+              Aplicar Filtros
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        sx={{ zIndex: 10000 }}
-        message={snackbar.message}
-        action={
-          <IconButton size="small" aria-label="close" color="inherit" onClick={() => setSnackbar({ ...snackbar, open: false })}>
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        }
-        ContentProps={{
-          sx: {
-            backgroundColor: snackbar.severity === 'error' ? 'var(--neon-red)' : 'var(--neon-green)',
-            color: 'white',
-            borderRadius: '8px',
-            boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
-          },
-        }}
       >
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
   );
-}
+};
 
 export default MarketplacePage;
+
+// Render map view with listings
+const renderMapView = (filteredListings: Listing[], setSelectedListing: (listing: Listing) => void) => {
+  // Filter for campus listings only
+  const campusListings = filteredListings.filter(
+    listing => listing.location.type === 'campus' && listing.location.position
+  );
+
+  // Render express listings separately below the map
+  const expressListings = filteredListings.filter(
+    listing => listing.location.type === 'express'
+  );
+
+  return (
+    <Box>
+      <Box sx={{ height: 500, width: '100%', borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+        <MapContainer
+          center={UCR_CENTER}
+          zoom={DEFAULT_ZOOM}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+
+          {campusListings.map(listing => (
+            listing.location.position && (
+              <Marker
+                key={listing.id}
+                position={listing.location.position}
+                icon={createMarkerIcon(listing.category)}
+              >
+                <Popup>
+                  <Box sx={{ p: 1, minWidth: 200 }}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {listing.title}
+                    </Typography>
+
+                    <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
+                      ₡{listing.price.toLocaleString()}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
+                      <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
+                      {listing.location.locationName}
+                    </Box>
+
+                    <Box sx={{ mt: 1 }}>
+                      <Chip
+                        size="small"
+                        label={getCategoryLabel(listing.category)}
+                        sx={{
+                          backgroundColor: 'rgba(0, 140, 255, 0.2)',
+                          border: '1px solid var(--neon-blue)',
+                          color: 'var(--neon-blue)',
+                          fontSize: '0.7rem'
+                        }}
+                      />
+                    </Box>
+
+                    <Button
+                      fullWidth
+                      size="small"
+                      onClick={() => handleViewListing(listing.id, setSelectedListing)}
+                      sx={{
+                        mt: 1.5,
+                        color: 'var(--neon-primary)',
+                        borderColor: 'var(--neon-primary)',
+                        '&:hover': {
+                          borderColor: 'var(--neon-blue)',
+                          color: 'var(--neon-blue)'
+                        }
+                      }}
+                      variant="outlined"
+                    >
+                      Ver Detalles
+                    </Button>
+                  </Box>
+                </Popup>
+              </Marker>
+            )
+          ))}
+        </MapContainer>
+      </Box>
+
+      {/* Express listings section */}
+      {expressListings.length > 0 && (
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <LocalShippingIcon sx={{ mr: 1, color: 'var(--neon-primary)' }} />
+            Anuncios con Entrega Express
+          </Typography>
+
+          <Grid container spacing={2}>
+            {expressListings.map(listing => (
+              <Grid container key={listing.id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    boxShadow: '0 0 5px rgba(0, 255, 255, 0.3)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 6px 12px rgba(0, 255, 255, 0.2)'
+                    },
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleViewListing(listing.id, setSelectedListing)}
+                >
+                  <Box sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {listing.title}
+                    </Typography>
+
+                    <Typography variant="body2" fontWeight="bold" color="var(--neon-green)">
+                      ₡{listing.price.toLocaleString()}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.875rem' }}>
+                      <LocationOnIcon sx={{ fontSize: 'small', mr: 1, color: 'var(--neon-primary)' }} />
+                      {listing.location.locationName || 'Entrega Express'}
+                    </Box>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                      <Chip
+                        size="small"
+                        label={getCategoryLabel(listing.category)}
+                        sx={{
+                          backgroundColor: 'rgba(0, 140, 255, 0.2)',
+                          border: '1px solid var(--neon-blue)',
+                          color: 'var(--neon-blue)',
+                          fontSize: '0.7rem'
+                        }}
+                      />
+
+                      <Typography variant="caption" color="text.secondary">
+                        {formatRelativeTime(listing.createdAt)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+// Format relative time (e.g., "2 days ago")
+const formatRelativeTime = (date: Date | string) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true });
+};
+
+// Get category label from value
+const getCategoryLabel = (categoryValue: string) => {
+  const category = productCategories.find(cat => cat.value === categoryValue);
+  return category ? category.label : categoryValue;
+};
+
+// Handle selecting a listing to view
+const handleViewListing = async (listingId: string, setSelectedListing: (listing: Listing) => void) => {
+  try {
+    const listing = await marketplaceApi.fetchListingById(listingId);
+    setSelectedListing(listing);
+  } catch (error) {
+    console.error('Error fetching listing:', error);
+  }
+};
