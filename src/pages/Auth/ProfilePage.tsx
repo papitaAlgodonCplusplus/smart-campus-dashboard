@@ -34,18 +34,16 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   Event as EventIcon,
-  Room as RoomIcon,
   School as SchoolIcon,
   Language as LanguageIcon,
-  Contacts as ContactsIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   Security as SecurityIcon,
-  Logout as LogoutIcon,
-  CheckCircle as CheckCircleIcon
+  Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
 
 // Interface for TabPanel props
 interface TabPanelProps {
@@ -54,37 +52,17 @@ interface TabPanelProps {
   value: number;
 }
 
-// Mock recent activities
-const mockRecentActivities = [
-  {
-    id: 1,
-    type: 'reservation',
-    title: 'Reserva: Sala de Estudio 101',
-    date: '2023-04-20T14:30:00Z',
-    icon: <EventIcon sx={{ color: 'var(--neon-blue)' }} />
-  },
-  {
-    id: 2,
-    type: 'event',
-    title: 'Asistencia: Conferencia de IA',
-    date: '2023-04-15T16:00:00Z',
-    icon: <EventIcon sx={{ color: 'var(--neon-green)' }} />
-  },
-  {
-    id: 3,
-    type: 'location',
-    title: 'Visita: Biblioteca Carlos Monge',
-    date: '2023-04-14T10:15:00Z',
-    icon: <RoomIcon sx={{ color: 'var(--neon-orange)' }} />
-  },
-  {
-    id: 4,
-    type: 'reservation',
-    title: 'Reserva: Laboratorio Química',
-    date: '2023-04-10T09:00:00Z',
-    icon: <EventIcon sx={{ color: 'var(--neon-blue)' }} />
-  }
-];
+// Interface for activity items
+interface Activity {
+  id: number;
+  type: string;
+  title: string;
+  date: string;
+  icon: React.ReactNode;
+}
+
+// API base URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // TabPanel component
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
@@ -104,11 +82,12 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 // Profile Page Component
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, token, logout, updateProfile, loading: authLoading } = useAuth();
 
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [tempProfileData, setTempProfileData] = useState<any>(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -137,9 +116,56 @@ const ProfilePage: React.FC = () => {
   // Set temp profile data when user data is loaded
   useEffect(() => {
     if (user) {
-      setTempProfileData({ ...user });
+      setTempProfileData({ 
+        firstName: user.firstName,
+        lastName: user.lastName,
+        faculty: user.faculty
+      });
     }
   }, [user]);
+
+  // Fetch user's recent activities
+  useEffect(() => {
+    const fetchActivities = async () => {
+      if (!token) return;
+      
+      try {
+        // We'll create mock activities for now, but this could be replaced with a real API call
+        // For example: const response = await axios.get(`${API_URL}/reservations/user`, { headers: { Authorization: `Bearer ${token}` } });
+        
+        // Mock activities
+        const mockActivities: Activity[] = [
+          {
+            id: 1,
+            type: 'reservation',
+            title: 'Reserva: Sala de Estudio 101',
+            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+            icon: <EventIcon sx={{ color: 'var(--neon-blue)' }} />
+          },
+          {
+            id: 2,
+            type: 'event',
+            title: 'Asistencia: Conferencia de IA',
+            date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+            icon: <EventIcon sx={{ color: 'var(--neon-green)' }} />
+          },
+          {
+            id: 3,
+            type: 'login',
+            title: 'Inicio de sesión',
+            date: user?.lastLogin || new Date().toISOString(),
+            icon: <SecurityIcon sx={{ color: 'var(--neon-orange)' }} />
+          }
+        ];
+        
+        setActivities(mockActivities);
+      } catch (error) {
+        console.error('Error fetching activities:', error);
+      }
+    };
+    
+    fetchActivities();
+  }, [token, user?.lastLogin]);
 
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -150,7 +176,11 @@ const ProfilePage: React.FC = () => {
   const toggleEditMode = () => {
     if (editMode) {
       // Cancel edit mode and restore original data
-      setTempProfileData({ ...user });
+      setTempProfileData({ 
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        faculty: user?.faculty
+      });
     }
     setEditMode(!editMode);
   };
@@ -173,20 +203,37 @@ const ProfilePage: React.FC = () => {
   };
 
   // Handle save profile changes
-  const handleSaveProfile = () => {
-    // Mock API call to save profile
+  const handleSaveProfile = async () => {
+    if (!user || !updateProfile) return;
+    
     setLoading(true);
 
-    setTimeout(() => {
-      // In a real implementation, you would update the user in the auth context here
-      setEditMode(false);
-      setLoading(false);
+    try {
+      const success = await updateProfile(tempProfileData);
+      
+      if (success) {
+        setEditMode(false);
+        setSnackbar({
+          open: true,
+          message: 'Perfil actualizado correctamente',
+          severity: 'success'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Error al actualizar perfil',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
       setSnackbar({
         open: true,
-        message: 'Perfil actualizado correctamente',
-        severity: 'success'
+        message: 'Error al actualizar perfil',
+        severity: 'error'
       });
-    }, 1000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle password change
@@ -207,7 +254,7 @@ const ProfilePage: React.FC = () => {
   };
 
   // Submit password change
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     // Simple validation
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setSnackbar({
@@ -227,29 +274,48 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
-    // Mock API call
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setShowChangePassword(false);
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
+    try {
+      // Update profile with new password
+      if (updateProfile) {
+        const success = await updateProfile({ ...tempProfileData, password: passwordData.newPassword });
+        
+        if (success) {
+          setShowChangePassword(false);
+          setPasswordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+          setSnackbar({
+            open: true,
+            message: 'Contraseña actualizada correctamente',
+            severity: 'success'
+          });
+        } else {
+          setSnackbar({
+            open: true,
+            message: 'Error al actualizar contraseña',
+            severity: 'error'
+          });
+        }
+      }
+    } catch (error) {
       setSnackbar({
         open: true,
-        message: 'Contraseña actualizada correctamente',
-        severity: 'success'
+        message: 'Error al actualizar contraseña',
+        severity: 'error'
       });
-    }, 1000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle logout
   const handleLogout = () => {
     logout();
-    // Navigate handled by the auth context
+    // Navigation handled by the auth context
   };
 
   // Format date string
@@ -386,6 +452,30 @@ const ProfilePage: React.FC = () => {
                           },
                         }}
                       />
+                      <TextField
+                        label="Facultad"
+                        name="faculty"
+                        value={tempProfileData?.faculty || ''}
+                        onChange={handleProfileChange}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'var(--neon-primary)',
+                            },
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'var(--neon-primary)',
+                          },
+                        }}
+                      />
                     </Box>
                   ) : (
                     <>
@@ -474,11 +564,25 @@ const ProfilePage: React.FC = () => {
             {/* Last Login Info */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Último acceso: {formatDate(user.lastLogin || '')} {'<'}{'- '}
+                Último acceso: {formatDate(user.lastLogin)}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-              {'>'} Miembro desde: {formatDate(user.createdAt || '')} 
-              </Typography>
+              <Button
+                color="error"
+                variant="outlined"
+                startIcon={<LogoutIcon />}
+                onClick={() => setLogoutDialog(true)}
+                sx={{
+                  color: 'var(--neon-red)',
+                  borderColor: 'var(--neon-red)',
+                  '&:hover': {
+                    borderColor: 'var(--neon-red)',
+                    backgroundColor: 'rgba(255, 0, 128, 0.1)',
+                    boxShadow: '0 0 8px var(--neon-red)',
+                  }
+                }}
+              >
+                Cerrar Sesión
+              </Button>
             </Box>
           </Paper>
         </Grid>
@@ -544,7 +648,7 @@ const ProfilePage: React.FC = () => {
               </Typography>
 
               <List>
-                {mockRecentActivities.map((activity) => (
+                {activities.map((activity) => (
                   <ListItem
                     key={activity.id}
                     sx={{
@@ -581,6 +685,466 @@ const ProfilePage: React.FC = () => {
                   }}
                 >
                   Ver Historial Completo
+                </Button>
+              </Box>
+            </TabPanel>
+
+            {/* Academic Info Tab */}
+            <TabPanel value={tabValue} index={1}>
+              <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
+                Información Académica
+              </Typography>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
+                  Facultad
+                </Typography>
+                <Typography variant="body1">{user.faculty}</Typography>
+              </Box>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
+                  Carné Estudiantil
+                </Typography>
+                <Typography variant="body1">{user.studentId}</Typography>
+              </Box>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
+                  Correo Institucional
+                </Typography>
+                <Typography variant="body1">{user.email}</Typography>
+              </Box>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 1 }}>
+                  Miembro desde
+                </Typography>
+                <Typography variant="body1">{formatDate(user.createdAt)}</Typography>
+              </Box>
+            </TabPanel>
+
+            {/* Preferences Tab */}
+            <TabPanel value={tabValue} index={2}>
+              <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
+                Preferencias
+              </Typography>
+              
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
+                  Notificaciones
+                </Typography>
+                
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <NotificationsIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Notificaciones por Email" />
+                    <Button
+                      variant={notifications.email ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => handleNotificationToggle('email')}
+                      sx={{
+                        backgroundColor: notifications.email ? 'var(--neon-primary)' : 'transparent',
+                        color: notifications.email ? 'black' : 'var(--neon-primary)',
+                        borderColor: 'var(--neon-primary)',
+                        '&:hover': {
+                          backgroundColor: notifications.email ? 'var(--neon-blue)' : 'rgba(0, 255, 255, 0.1)',
+                          borderColor: 'var(--neon-primary)',
+                        },
+                      }}
+                    >
+                      {notifications.email ? 'Activado' : 'Desactivado'}
+                    </Button>
+                  </ListItem>
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <NotificationsIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Notificaciones en la App" />
+                    <Button
+                      variant={notifications.app ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => handleNotificationToggle('app')}
+                      sx={{
+                        backgroundColor: notifications.app ? 'var(--neon-primary)' : 'transparent',
+                        color: notifications.app ? 'black' : 'var(--neon-primary)',
+                        borderColor: 'var(--neon-primary)',
+                        '&:hover': {
+                          backgroundColor: notifications.app ? 'var(--neon-blue)' : 'rgba(0, 255, 255, 0.1)',
+                          borderColor: 'var(--neon-primary)',
+                        },
+                      }}
+                    >
+                      {notifications.app ? 'Activado' : 'Desactivado'}
+                    </Button>
+                  </ListItem>
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <EventIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Notificaciones de Eventos" />
+                    <Button
+                      variant={notifications.events ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => handleNotificationToggle('events')}
+                      sx={{
+                        backgroundColor: notifications.events ? 'var(--neon-primary)' : 'transparent',
+                        color: notifications.events ? 'black' : 'var(--neon-primary)',
+                        borderColor: 'var(--neon-primary)',
+                        '&:hover': {
+                          backgroundColor: notifications.events ? 'var(--neon-blue)' : 'rgba(0, 255, 255, 0.1)',
+                          borderColor: 'var(--neon-primary)',
+                        },
+                      }}
+                    >
+                      {notifications.events ? 'Activado' : 'Desactivado'}
+                    </Button>
+                  </ListItem>
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <EventIcon sx={{ color: 'var(--neon-primary)' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Notificaciones de Reservaciones" />
+                    <Button
+                      variant={notifications.reservations ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => handleNotificationToggle('reservations')}
+                      sx={{
+                        backgroundColor: notifications.reservations ? 'var(--neon-primary)' : 'transparent',
+                        color: notifications.reservations ? 'black' : 'var(--neon-primary)',
+                        borderColor: 'var(--neon-primary)',
+                        '&:hover': {
+                          backgroundColor: notifications.reservations ? 'var(--neon-blue)' : 'rgba(0, 255, 255, 0.1)',
+                          borderColor: 'var(--neon-primary)',
+                        },
+                      }}
+                    >
+                      {notifications.reservations ? 'Activado' : 'Desactivado'}
+                    </Button>
+                  </ListItem>
+                </List>
+              </Box>
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
+                  Tema de la Interfaz
+                </Typography>
+                
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: 'var(--neon-primary)',
+                    color: 'black',
+                    mr: 2,
+                    '&:hover': {
+                      backgroundColor: 'var(--neon-blue)',
+                      boxShadow: '0 0 10px var(--neon-blue)',
+                    },
+                  }}
+                >
+                  Neón (Actual)
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  sx={{
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Clásico
+                </Button>
+              </Box>
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
+                  Idioma
+                </Typography>
+                
+                <Button
+                  variant="contained"
+                  startIcon={<LanguageIcon />}
+                  sx={{
+                    backgroundColor: 'var(--neon-primary)',
+                    color: 'black',
+                    mr: 2,
+                    '&:hover': {
+                      backgroundColor: 'var(--neon-blue)',
+                      boxShadow: '0 0 10px var(--neon-blue)',
+                    },
+                  }}
+                >
+                  Español (Actual)
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  startIcon={<LanguageIcon />}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  English
+                </Button>
+              </Box>
+            </TabPanel>
+
+            {/* Security Tab */}
+            <TabPanel value={tabValue} index={3}>
+              <Typography variant="h6" sx={{ mb: 3, color: 'var(--neon-primary)' }}>
+                Seguridad
+              </Typography>
+              
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
+                  Cambiar Contraseña
+                </Typography>
+                
+                {showChangePassword ? (
+                  <Box component="form" sx={{ maxWidth: 400 }}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="currentPassword"
+                      label="Contraseña Actual"
+                      type={showPassword.current ? 'text' : 'password'}
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => togglePasswordVisibility('current')}
+                              edge="end"
+                              sx={{ color: 'var(--neon-primary)' }}
+                            >
+                              {showPassword.current ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'var(--neon-primary)',
+                        },
+                      }}
+                    />
+                    
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="newPassword"
+                      label="Nueva Contraseña"
+                      type={showPassword.new ? 'text' : 'password'}
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => togglePasswordVisibility('new')}
+                              edge="end"
+                              sx={{ color: 'var(--neon-primary)' }}
+                            >
+                              {showPassword.new ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'var(--neon-primary)',
+                        },
+                      }}
+                    />
+                    
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="confirmPassword"
+                      label="Confirmar Contraseña"
+                      type={showPassword.confirm ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => togglePasswordVisibility('confirm')}
+                              edge="end"
+                              sx={{ color: 'var(--neon-primary)' }}
+                            >
+                              {showPassword.confirm ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'var(--neon-primary)',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'var(--neon-primary)',
+                        },
+                      }}
+                    />
+                    
+                    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handlePasswordSubmit}
+                        disabled={loading}
+                        sx={{
+                          backgroundColor: 'var(--neon-primary)',
+                          color: 'black',
+                          '&:hover': {
+                            backgroundColor: 'var(--neon-blue)',
+                            boxShadow: '0 0 10px var(--neon-blue)',
+                          },
+                          '&.Mui-disabled': {
+                            backgroundColor: 'rgba(0, 255, 255, 0.3)',
+                            color: 'rgba(0, 0, 0, 0.7)',
+                          },
+                        }}
+                      >
+                        Guardar
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setShowChangePassword(false);
+                          setPasswordData({
+                            currentPassword: '',
+                            newPassword: '',
+                            confirmPassword: ''
+                          });
+                        }}
+                        sx={{
+                          color: 'var(--neon-primary)',
+                          borderColor: 'var(--neon-primary)',
+                          '&:hover': {
+                            borderColor: 'var(--neon-primary)',
+                            backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={() => setShowChangePassword(true)}
+                    sx={{
+                      color: 'var(--neon-primary)',
+                      borderColor: 'var(--neon-primary)',
+                      '&:hover': {
+                        borderColor: 'var(--neon-blue)',
+                        color: 'var(--neon-blue)',
+                        boxShadow: '0 0 10px var(--neon-blue)',
+                      },
+                    }}
+                  >
+                    Cambiar Contraseña
+                  </Button>
+                )}
+              </Box>
+              
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-blue)', mb: 2 }}>
+                  Sesiones Activas
+                </Typography>
+                
+                <List>
+                  <ListItem
+                    sx={{
+                      backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                      borderRadius: '4px',
+                      mb: 1,
+                    }}
+                  >
+                    <ListItemIcon>
+                      <SecurityIcon sx={{ color: 'var(--neon-green)' }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Sesión Actual" 
+                      secondary="Iniciada el: hoy" 
+                    />
+                    <Typography variant="body2" color="var(--neon-green)">
+                      Activa
+                    </Typography>
+                  </ListItem>
+                </List>
+              </Box>
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ color: 'var(--neon-red)', mb: 2 }}>
+                  Zona de Peligro
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => setLogoutDialog(true)}
+                  sx={{
+                    color: 'var(--neon-red)',
+                    borderColor: 'var(--neon-red)',
+                    '&:hover': {
+                      borderColor: 'var(--neon-red)',
+                      backgroundColor: 'rgba(255, 0, 128, 0.1)',
+                      boxShadow: '0 0 8px var(--neon-red)',
+                    },
+                  }}
+                >
+                  Cerrar Sesión en Todos los Dispositivos
                 </Button>
               </Box>
             </TabPanel>

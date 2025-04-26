@@ -1,5 +1,4 @@
-// src/pages/Auth/RegisterPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -58,12 +57,13 @@ const facultyOptions = [
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register, loading, error, clearError } = useAuth();
+  const { register, error: authError, clearError, isAuthenticated } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -97,6 +97,30 @@ const RegisterPage: React.FC = () => {
     message: '',
     severity: 'info',
   });
+
+  // Clear any previous auth errors when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Display auth error in snackbar when it changes
+  useEffect(() => {
+    if (authError) {
+      setSnackbar({
+        open: true,
+        message: authError,
+        severity: 'error',
+      });
+      setIsLoading(false);
+    }
+  }, [authError]);
 
   // Steps definition
   const steps = ['Información Personal', 'Información Académica', 'Credenciales de Acceso'];
@@ -182,8 +206,8 @@ const RegisterPage: React.FC = () => {
     if (!formData.studentId.trim()) {
       newErrors.studentId = 'El carné estudiantil es requerido';
       isValid = false;
-    } else if (!/^[A-B-C-D][0-9]{5}$/.test(formData.studentId)) {
-      newErrors.studentId = 'Formato inválido. Debe ser letra (A-B-C-D) seguida de 5 dígitos';
+    } else if (!/^[A-D][0-9]{5}$/.test(formData.studentId)) {
+      newErrors.studentId = 'Formato inválido. Debe ser letra (A-D) seguida de 5 dígitos';
       isValid = false;
     }
 
@@ -265,6 +289,7 @@ const RegisterPage: React.FC = () => {
   // Handle form submission
   const handleSubmit = async () => {
     clearError();
+    setIsLoading(true);
 
     try {
       const success = await register({
@@ -283,23 +308,11 @@ const RegisterPage: React.FC = () => {
           severity: 'success',
         });
 
-        // Redirect to login after successful registration
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        setSnackbar({
-          open: true,
-          message: error || 'Error durante el registro',
-          severity: 'error',
-        });
+        // Redirect will happen automatically through the useEffect watching isAuthenticated
       }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: 'Error durante el registro. Intente nuevamente.',
-        severity: 'error',
-      });
+    } catch (error) {
+      // Error handling is done through the authError useEffect
+      setIsLoading(false);
     }
   };
 
@@ -446,7 +459,7 @@ const RegisterPage: React.FC = () => {
               value={formData.studentId}
               onChange={handleInputChange}
               error={!!errors.studentId}
-              helperText={errors.studentId || 'Ejemplo: B12345678'}
+              helperText={errors.studentId || 'Ejemplo: B12345'}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -790,7 +803,7 @@ const RegisterPage: React.FC = () => {
             <Button
               variant="contained"
               onClick={handleNext}
-              disabled={loading}
+              disabled={isLoading}
               sx={{
                 backgroundColor: 'var(--neon-primary)',
                 color: 'black',
@@ -807,7 +820,7 @@ const RegisterPage: React.FC = () => {
               }}
             >
               {activeStep === steps.length - 1
-                ? (loading ? 'Procesando...' : 'Registrarse')
+                ? (isLoading ? 'Procesando...' : 'Registrarse')
                 : 'Siguiente'}
             </Button>
           </Box>

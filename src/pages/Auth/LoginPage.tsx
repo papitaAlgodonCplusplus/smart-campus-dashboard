@@ -27,7 +27,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, error: authError, isAuthenticated } = useAuth();
+  const { login, error: authError, isAuthenticated, clearError } = useAuth();
   
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -43,6 +43,11 @@ const LoginPage: React.FC = () => {
     severity: 'success',
   });
 
+  // Clear any previous auth errors when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   // Check if user is already authenticated and redirect if necessary
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,6 +55,17 @@ const LoginPage: React.FC = () => {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
+
+  // Display auth error in snackbar when it changes
+  useEffect(() => {
+    if (authError) {
+      setSnackbar({
+        open: true,
+        message: authError,
+        severity: 'error',
+      });
+    }
+  }, [authError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,19 +91,9 @@ const LoginPage: React.FC = () => {
         });
         
         // Redirection will be handled by the useEffect above
-      } else {
-        setSnackbar({
-          open: true,
-          message: authError || 'Credenciales inválidas',
-          severity: 'error',
-        });
       }
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Error de conexión. Intente nuevamente.',
-        severity: 'error',
-      });
+      // Error handling is done by the auth context and displayed via useEffect
     } finally {
       setIsLoading(false);
     }

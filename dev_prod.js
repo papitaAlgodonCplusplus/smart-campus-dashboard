@@ -17,7 +17,7 @@ const fileConfigs = [
   {
     path: 'api/src/server.js',
     sections: [
-      { devStart: 1, devEnd: 3, prodStart: 4, prodEnd: 6 }
+      { devStart: 1, devEnd: 4, prodStart: 5, prodEnd: 8 }
     ],
     specialCase: true
   },
