@@ -21,5 +21,6 @@ router.post('/:id/save', protect, listingController.toggleSave);
 // User-specific routes
 router.get('/user/saved', protect, listingController.getSavedListings);
 router.get('/user/my-listings', protect, listingController.getMyListings);
+router.get('/user/:userId/likes', protect, listingController.getUserLikedListings);
 
 export default router;

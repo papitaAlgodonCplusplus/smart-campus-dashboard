@@ -344,6 +344,30 @@ export const getSavedListings = async (req, res) => {
   }
 };
 
+// @desc    Get user liked listings
+// @route   GET /api/marketplace/user/:userId/likes
+// @access  Private
+export const getUserLikedListings = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch listings liked by the user
+    const likedListings = await Listing.find({
+      likedBy: userId,
+      status: 'active'
+    }).select('_id'); // Only return the IDs of liked listings
+
+    const likedListingIds = likedListings.map(listing => listing._id);
+
+    res.json({ likedListingIds });
+  } catch (error) {
+    console.error('Error fetching user liked listings:', error);
+    res.status(500).json({
+      message: (error instanceof Error) ? error.message : 'An unknown error occurred'
+    });
+  }
+};
+
 // @desc    Get my listings
 // @route   GET /api/marketplace/my-listings
 // @access  Private

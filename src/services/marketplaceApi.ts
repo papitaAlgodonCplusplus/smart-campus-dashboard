@@ -19,7 +19,7 @@ export const fetchListings = async (filters: Record<string, any> = {}) => {
         queryParams.append(key, String(value));
       }
     });
-    
+
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     const response = await axios.get(`${REACT_APP_API_URL}/marketplace${queryString}`, {
       headers: getAuthHeader()
@@ -86,6 +86,18 @@ export const deleteListing = async (id: string) => {
   } catch (error) {
     console.error('Error deleting listing:', error);
     throw error;
+  }
+};
+
+export const fetchUserLikes = async (userId: string) => {
+  try {
+    const response = await axios.get(`${REACT_APP_API_URL}/marketplace/user/${userId}/likes`, {
+      headers: getAuthHeader()
+    });
+    return response.data.likedListingIds || [];
+  } catch (error) {
+    console.error('Error fetching user likes:', error);
+    return [];
   }
 };
 

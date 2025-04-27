@@ -256,14 +256,31 @@ const MarketplacePage: React.FC = () => {
     severity: 'success' as 'success' | 'error' | 'warning' | 'info'
   });
 
-  // Fetch listings on component mount
+  // Modified useEffect for the initial data loading
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        // Fetch all listings
         const data = await marketplaceApi.fetchListings();
-        setListings(data);
-        setFilteredListings(data);
+
+        if (isAuthenticated) {
+          // If user is authenticated, fetch their liked listings
+          const userLikes = user ? await marketplaceApi.fetchUserLikes(user._id) : [];
+
+          // Update each listing with the user's like status
+          const updatedListings = data.map((listing: { _id: any; }) => ({
+            ...listing,
+            isLiked: userLikes.includes(listing._id)
+          }));
+
+          setListings(updatedListings);
+          setFilteredListings(updatedListings);
+        } else {
+          // If not authenticated, use the data as is
+          setListings(data);
+          setFilteredListings(data);
+        }
       } catch (error) {
         console.error('Error fetching listings:', error);
         setSnackbar({
@@ -277,7 +294,7 @@ const MarketplacePage: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   // Apply filters when they change
   useEffect(() => {
@@ -310,17 +327,6 @@ const MarketplacePage: React.FC = () => {
           setIsLoading(true);
           const data = await marketplaceApi.fetchListings(filters);
           setFilteredListings(data);
-          for (const listing of data) {
-            const isLiked = listing.likedBy.includes(user?._id || '');
-            setFavoriteListings(prev => {
-              const existing = prev.find(fav => fav._id === listing._id);
-              if (existing) {
-                return prev.map(fav => (fav._id === listing._id ? { ...fav, isLiked } : fav));
-              } else {
-                return [...prev, { ...listing, isLiked }];
-              }
-            });
-          }
         } catch (error) {
           console.error('Error fetching filtered listings:', error);
           setSnackbar({
@@ -375,57 +381,29 @@ const MarketplacePage: React.FC = () => {
 
     try {
       const result = await marketplaceApi.toggleLikeListing(id);
-      console.log('Toggle Like Result:', result); // Debugging line
 
-      // Update listings
-      setListings(prev =>
-        prev.map(listing => {
-          if (listing._id === id) {
-            return {
-              ...listing,
-              isLiked: result.isLiked,
-              likes: result.likes
-            };
-          }
-          return listing;
-        })
-      );
+      // Create updater function
+      const updateListingLikeStatus = (listing: Listing) => {
+        if (listing._id === id) {
+          return {
+            ...listing,
+            isLiked: result.isLiked,
+            likes: result.likes
+          };
+        }
+        return listing;
+      };
 
-      // Also update filtered listings
-      setFilteredListings(prev =>
-        prev.map(listing => {
-          if (listing._id === id) {
-            return {
-              ...listing,
-              isLiked: result.isLiked,
-              likes: result.likes
-            };
-          }
-          return listing;
-        })
-      );
+      // Update all listing states with the same updater function
+      setListings(prev => prev.map(updateListingLikeStatus));
+      setFilteredListings(prev => prev.map(updateListingLikeStatus));
+      setFavoriteListings(prev => prev.map(updateListingLikeStatus));
 
-      // Update selected listing if it's the one being liked
+      // Update selected listing if it's the one being liked/unliked
       if (selectedListing && selectedListing._id === id) {
-        setSelectedListing({
-          ...selectedListing,
-          isLiked: result.isLiked,
-          likes: result.likes
-        });
+        setSelectedListing(updateListingLikeStatus(selectedListing));
       }
 
-      setFavoriteListings(prev =>
-        prev.map(listing => {
-          if (listing._id === id) {
-            return {
-              ...listing,
-              isLiked: result.isLiked,
-              likes: result.likes
-            };
-          }
-          return listing;
-        })
-      );
     } catch (error) {
       console.error('Error toggling like:', error);
       setSnackbar({
@@ -504,6 +482,7 @@ const MarketplacePage: React.FC = () => {
     try {
       // Fetch the latest version of the listing
       const listing = await marketplaceApi.fetchListingById(listingId);
+      listing.isLiked = listing.likedBy.includes(user?._id);
       setSelectedListing(listing);
     } catch (error) {
       console.error('Error fetching listing:', error);
@@ -1094,9 +1073,9 @@ const MarketplacePage: React.FC = () => {
                   <IconButton
                     size="small"
                     onClick={() => toggleLike(listing._id)}
-                    sx={{ color: favoriteListings.some(fav => fav._id === listing._id) ? 'var(--neon-red)' : 'white' }}
+                    sx={{ color: listing.isLiked ? 'var(--neon-red)' : 'white' }}
                   >
-                    {favoriteListings.some(fav => fav._id === listing._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                    {listing.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                   </IconButton>
                   <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
                     {listing.likes}
@@ -1482,13 +1461,13 @@ const MarketplacePage: React.FC = () => {
                   onClick={() => toggleLike(selectedListing._id)}
                   sx={{
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    color: favoriteListings.some(fav => fav._id === selectedListing._id) ? 'var(--neon-red)' : 'white',
+                    color: selectedListing.isLiked ? 'var(--neon-red)' : 'white',
                     '&:hover': {
                       backgroundColor: 'rgba(0, 0, 0, 0.7)',
                     }
                   }}
                 >
-                  {favoriteListings.some(fav => fav._id === selectedListing._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                  {selectedListing.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                 </IconButton>
 
                 <IconButton
