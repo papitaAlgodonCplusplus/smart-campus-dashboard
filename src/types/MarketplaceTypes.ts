@@ -54,6 +54,7 @@ export type ListingStatus = 'active' | 'sold' | 'reserved' | 'expired';
 // Main Listing Interface
 export interface Listing {
   id: string;
+  _id: string;
   title: string;
   description: string;
   price: number;
@@ -73,7 +74,9 @@ export interface Listing {
   views: number;
   likes: number;
   isLiked: boolean;
+  likedBy: string[];
   isSaved: boolean;
+  savedBy: string[];
 }
 
 // Form data for creating/updating listings

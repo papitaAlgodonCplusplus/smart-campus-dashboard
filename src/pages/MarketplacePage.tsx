@@ -212,6 +212,7 @@ const MarketplacePage: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [favoriteListings, setFavoriteListings] = useState<Listing[]>([]);
 
   // Filters state
   const [filters, setFilters] = useState<ListingFilters>({
@@ -309,6 +310,17 @@ const MarketplacePage: React.FC = () => {
           setIsLoading(true);
           const data = await marketplaceApi.fetchListings(filters);
           setFilteredListings(data);
+          for (const listing of data) {
+            const isLiked = listing.likedBy.includes(user?._id || '');
+            setFavoriteListings(prev => {
+              const existing = prev.find(fav => fav._id === listing._id);
+              if (existing) {
+                return prev.map(fav => (fav._id === listing._id ? { ...fav, isLiked } : fav));
+              } else {
+                return [...prev, { ...listing, isLiked }];
+              }
+            });
+          }
         } catch (error) {
           console.error('Error fetching filtered listings:', error);
           setSnackbar({
@@ -363,11 +375,12 @@ const MarketplacePage: React.FC = () => {
 
     try {
       const result = await marketplaceApi.toggleLikeListing(id);
+      console.log('Toggle Like Result:', result); // Debugging line
 
       // Update listings
       setListings(prev =>
         prev.map(listing => {
-          if (listing.id === id) {
+          if (listing._id === id) {
             return {
               ...listing,
               isLiked: result.isLiked,
@@ -381,7 +394,7 @@ const MarketplacePage: React.FC = () => {
       // Also update filtered listings
       setFilteredListings(prev =>
         prev.map(listing => {
-          if (listing.id === id) {
+          if (listing._id === id) {
             return {
               ...listing,
               isLiked: result.isLiked,
@@ -393,13 +406,26 @@ const MarketplacePage: React.FC = () => {
       );
 
       // Update selected listing if it's the one being liked
-      if (selectedListing && selectedListing.id === id) {
+      if (selectedListing && selectedListing._id === id) {
         setSelectedListing({
           ...selectedListing,
           isLiked: result.isLiked,
           likes: result.likes
         });
       }
+
+      setFavoriteListings(prev =>
+        prev.map(listing => {
+          if (listing._id === id) {
+            return {
+              ...listing,
+              isLiked: result.isLiked,
+              likes: result.likes
+            };
+          }
+          return listing;
+        })
+      );
     } catch (error) {
       console.error('Error toggling like:', error);
       setSnackbar({
@@ -427,7 +453,7 @@ const MarketplacePage: React.FC = () => {
       // Update listings
       setListings(prev =>
         prev.map(listing => {
-          if (listing.id === id) {
+          if (listing._id === id) {
             return {
               ...listing,
               isSaved: result.isSaved
@@ -440,7 +466,7 @@ const MarketplacePage: React.FC = () => {
       // Update filtered listings
       setFilteredListings(prev =>
         prev.map(listing => {
-          if (listing.id === id) {
+          if (listing._id === id) {
             return {
               ...listing,
               isSaved: result.isSaved
@@ -451,7 +477,7 @@ const MarketplacePage: React.FC = () => {
       );
 
       // Update selected listing if it's the one being saved
-      if (selectedListing && selectedListing.id === id) {
+      if (selectedListing && selectedListing._id === id) {
         setSelectedListing({
           ...selectedListing,
           isSaved: result.isSaved
@@ -732,10 +758,10 @@ const MarketplacePage: React.FC = () => {
       await marketplaceApi.deleteListing(id);
 
       // Remove the listing from state
-      setListings(prev => prev.filter(listing => listing.id !== id));
-      setFilteredListings(prev => prev.filter(listing => listing.id !== id));
+      setListings(prev => prev.filter(listing => listing._id !== id));
+      setFilteredListings(prev => prev.filter(listing => listing._id !== id));
 
-      if (selectedListing?.id === id) {
+      if (selectedListing?._id === id) {
         setSelectedListing(null);
       }
 
@@ -834,7 +860,7 @@ const MarketplacePage: React.FC = () => {
     return (
       <Grid container spacing={2}>
         {filteredListings.map(listing => (
-          <Grid container key={listing.id}>
+          <Grid container key={listing._id}>
             <Card
               sx={{
                 height: '100%',
@@ -1067,10 +1093,10 @@ const MarketplacePage: React.FC = () => {
                 <Box>
                   <IconButton
                     size="small"
-                    onClick={() => toggleLike(listing.id)}
-                    sx={{ color: listing.isLiked ? 'var(--neon-red)' : 'white' }}
+                    onClick={() => toggleLike(listing._id)}
+                    sx={{ color: favoriteListings.some(fav => fav._id === listing._id) ? 'var(--neon-red)' : 'white' }}
                   >
-                    {listing.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                    {favoriteListings.some(fav => fav._id === listing._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                   </IconButton>
                   <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
                     {listing.likes}
@@ -1080,7 +1106,7 @@ const MarketplacePage: React.FC = () => {
                 <Box>
                   <IconButton
                     size="small"
-                    onClick={() => toggleSave(listing.id)}
+                    onClick={() => toggleSave(listing._id)}
                     sx={{ color: listing.isSaved ? 'var(--neon-primary)' : 'white' }}
                   >
                     {listing.isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
@@ -1088,7 +1114,7 @@ const MarketplacePage: React.FC = () => {
 
                   <IconButton
                     size="small"
-                    onClick={() => handleViewListing(listing.id)}
+                    onClick={() => handleViewListing(listing._id)}
                     sx={{ color: 'white' }}
                   >
                     <VisibilityIcon />
@@ -1453,20 +1479,20 @@ const MarketplacePage: React.FC = () => {
                 }}
               >
                 <IconButton
-                  onClick={() => toggleLike(selectedListing.id)}
+                  onClick={() => toggleLike(selectedListing._id)}
                   sx={{
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    color: selectedListing.isLiked ? 'var(--neon-red)' : 'white',
+                    color: favoriteListings.some(fav => fav._id === selectedListing._id) ? 'var(--neon-red)' : 'white',
                     '&:hover': {
                       backgroundColor: 'rgba(0, 0, 0, 0.7)',
                     }
                   }}
                 >
-                  {selectedListing.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                  {favoriteListings.some(fav => fav._id === selectedListing._id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                 </IconButton>
 
                 <IconButton
-                  onClick={() => toggleSave(selectedListing.id)}
+                  onClick={() => toggleSave(selectedListing._id)}
                   sx={{
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     color: selectedListing.isSaved ? 'var(--neon-primary)' : 'white',
@@ -1711,7 +1737,7 @@ const MarketplacePage: React.FC = () => {
                           color="error"
                           aria-label="delete listing"
                           onClick={() => {
-                            handleDeleteListing(selectedListing.id);
+                            handleDeleteListing(selectedListing._id);
                             handleCloseListing();
                           }}
                           sx={{ color: 'var(--neon-red)' }}
@@ -2570,7 +2596,7 @@ const renderMapView = (filteredListings: Listing[], setSelectedListing: (listing
           {campusListings.map(listing => (
             listing.location.position && (
               <Marker
-                key={listing.id}
+                key={listing._id}
                 position={listing.location.position}
                 icon={createMarkerIcon(listing.category)}
               >
@@ -2605,7 +2631,7 @@ const renderMapView = (filteredListings: Listing[], setSelectedListing: (listing
                     <Button
                       fullWidth
                       size="small"
-                      onClick={() => handleViewListing(listing.id, setSelectedListing)}
+                      onClick={() => handleViewListing(listing._id, setSelectedListing)}
                       sx={{
                         mt: 1.5,
                         color: 'var(--neon-primary)',
@@ -2637,7 +2663,7 @@ const renderMapView = (filteredListings: Listing[], setSelectedListing: (listing
 
           <Grid container spacing={2}>
             {expressListings.map(listing => (
-              <Grid container key={listing.id}>
+              <Grid container key={listing._id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -2652,7 +2678,7 @@ const renderMapView = (filteredListings: Listing[], setSelectedListing: (listing
                     },
                     cursor: 'pointer'
                   }}
-                  onClick={() => handleViewListing(listing.id, setSelectedListing)}
+                  onClick={() => handleViewListing(listing._id, setSelectedListing)}
                 >
                   <Box sx={{ p: 2 }}>
                     <Typography variant="subtitle2" fontWeight="bold">
